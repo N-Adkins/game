@@ -41,7 +41,7 @@ pub const VulkanState = struct {
             .enabledExtensionCount = @truncate(extensions.len),
             .ppEnabledExtensionNames = extensions.ptr,
         };
-        
+
         var instance: c.VkInstance = undefined;
         if (c.vkCreateInstance(&create_info, null, &instance) != c.VK_SUCCESS) {
             std.log.err("Failed to create Vulkan instance", .{});
@@ -58,9 +58,7 @@ pub const VulkanState = struct {
             std.log.err("Failed to enumerate instance extension properties", .{});
             return Error.Vulkan;
         }
-        const extensions: []c.VkExtensionProperties = state.frame_arena.alloc(
-            c.VkExtensionProperties, extension_count
-        ) catch {
+        const extensions: []c.VkExtensionProperties = state.frame_arena.alloc(c.VkExtensionProperties, extension_count) catch {
             @panic("OOM");
         };
         if (c.vkEnumerateInstanceExtensionProperties(null, &extension_count, extensions.ptr) != c.VK_SUCCESS) {

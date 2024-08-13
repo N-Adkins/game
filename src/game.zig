@@ -8,7 +8,7 @@ pub const State = struct {
 var state: State = undefined;
 
 pub fn initState(new_state: State) void {
-    state = new_state; 
+    state = new_state;
 }
 
 pub fn getState() *State {

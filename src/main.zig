@@ -6,7 +6,7 @@ const std = @import("std");
 pub fn main() !void {
     try platform.Current.init();
     defer platform.Current.deinit();
-    
+
     var gpa_alloc = std.heap.GeneralPurposeAllocator(.{}){};
     defer _ = gpa_alloc.deinit();
     const gpa = gpa_alloc.allocator();
