@@ -9,13 +9,16 @@ pub const Current = struct {
     var initialized: bool = false;
 
     pub fn init() !void {
+        std.log.info("Initializing Platform", .{});
         if (c.glfwInit() != c.GLFW_TRUE) {
+            std.log.err("Failed to initialize GLFW", .{});
             return error.GLFW;
         }
         initialized = true;
     }
 
     pub fn deinit() void {
+        std.log.info("Deinitializing Platform", .{});
         c.glfwTerminate();
         initialized = false;
     }
