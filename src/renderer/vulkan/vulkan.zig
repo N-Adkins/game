@@ -48,7 +48,9 @@ pub const VulkanState = struct {
         const layer_names: [*c][*c]const u8 = if (enable_layers) blk: {
             try checkLayerSupport();
             layer_count = @truncate(requested_layers.len);
-            break :blk @constCast(@ptrCast(&requested_layers[0])); // yeah yeah, scary const cast. This is the intended usecase
+            // Yeah yeah, scary const cast. This is the intended usecase, Vulkan should not be touching
+            // that memory.
+            break :blk @constCast(@ptrCast(&requested_layers[0]));      
         } else undefined;
         var create_info: c.VkInstanceCreateInfo = .{
             .sType = c.VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
