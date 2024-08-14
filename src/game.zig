@@ -2,6 +2,7 @@ const std = @import("std");
 
 pub const State = struct {
     gpa: std.mem.Allocator,
+    static_arena: std.mem.Allocator, // Arena allocator that is freed on exit (use sparingly for obvious reasons)
     frame_arena: std.mem.Allocator, // Arena allocator that is freed after each frame
 };
 

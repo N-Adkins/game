@@ -15,8 +15,13 @@ pub fn main() !void {
     defer frame_arena_alloc.deinit();
     const frame_arena = frame_arena_alloc.allocator();
 
+    var static_arena_alloc = std.heap.ArenaAllocator.init(gpa);
+    defer static_arena_alloc.deinit();
+    const static_arena = static_arena_alloc.allocator();
+
     game.initState(.{
         .gpa = gpa,
+        .static_arena = static_arena,
         .frame_arena = frame_arena,
     });
 
