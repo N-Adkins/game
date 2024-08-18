@@ -1,5 +1,6 @@
 const std = @import("std");
 const c = @import("root").c;
+const game = @import("root").game;
 const assert = std.debug.assert;
 
 // For the windowing stuff we can migrate later on if we have a need to use platform-specific APIs
@@ -23,11 +24,20 @@ pub const Current = struct {
         initialized = false;
     }
 
-    pub fn getExtensions() [][*c]const u8 {
+    /// The array outputted by this is on the frame arena so no need to free it.
+    pub fn getExtensions() std.ArrayListUnmanaged([*c]const u8) {
         assert(initialized);
+        const state = game.getState();
         var count: u32 = 0;
-        var extensions: [*c][*c]const u8 = null;
-        extensions = c.glfwGetRequiredInstanceExtensions(&count);
-        return extensions[0..count];
+        var extensions: [*c][*c]const u8 = c.glfwGetRequiredInstanceExtensions(&count);
+        var array = std.ArrayListUnmanaged([*c]const u8).initCapacity(state.frame_arena, count) catch {
+            @panic("OOM");
+        };
+        for (extensions[0..count]) |extension| {
+            array.append(state.frame_arena, extension) catch {
+                @panic("OOM");
+            };
+        }
+        return array;
     }
 };

@@ -25,6 +25,9 @@ pub fn main() !void {
         .frame_arena = frame_arena,
     });
 
-    var renderer = try @import("renderer/vulkan/vulkan.zig").VulkanState.init();
-    defer renderer.deinit();
+    var vulkan_renderer = try @import("renderer/vulkan/vulkan.zig").VulkanState.init();
+    defer vulkan_renderer.deinit();
+
+    const renderer = vulkan_renderer.renderer();
+    _ = renderer;
 }
