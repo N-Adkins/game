@@ -102,7 +102,9 @@ impl Window for GlfwWindow {
         events
     }
 
+    #[instrument]
     fn close(&mut self) {
+        trace!("Closing GLFW window");
         self.handle.set_should_close(true);
     }
 }
