@@ -24,11 +24,9 @@ impl Backend for GlfwBackend {
 
         trace!("Initialized GLFW backend");
 
-        return Self {
-            glfw,
-        }
+        return Self { glfw };
     }
-    
+
     fn create_window(&mut self) -> impl Window {
         GlfwWindow::new(self)
     }
@@ -37,7 +35,7 @@ impl Backend for GlfwBackend {
 #[derive(Debug)]
 struct GlfwWindow {
     handle: glfw::PWindow,
-    event_receiver: glfw::GlfwReceiver<(f64, glfw::WindowEvent)>
+    event_receiver: glfw::GlfwReceiver<(f64, glfw::WindowEvent)>,
 }
 
 impl GlfwWindow {
@@ -45,13 +43,17 @@ impl GlfwWindow {
     fn new(backend: &mut GlfwBackend) -> Self {
         trace!("Attempting to create GLFW window");
 
-        let (handle, event_receiver) = match backend.glfw.create_window(1280, 720, "Game", glfw::WindowMode::Windowed) {
-            Some(handle) => handle,
-            None => {
-                error!("Failed to create GLFW window");
-                panic!("Failed to create GLFW window");
-            }
-        };
+        let (handle, event_receiver) =
+            match backend
+                .glfw
+                .create_window(1280, 720, "Game", glfw::WindowMode::Windowed)
+            {
+                Some(handle) => handle,
+                None => {
+                    error!("Failed to create GLFW window");
+                    panic!("Failed to create GLFW window");
+                }
+            };
 
         trace!("Created GLFW window");
 
