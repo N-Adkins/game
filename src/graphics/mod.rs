@@ -7,6 +7,7 @@ pub trait Window: std::fmt::Debug {
     fn should_close(&self) -> bool;
     fn set_should_close(&mut self, value: bool);
     fn get_events(&mut self) -> Vec<Event>;
+    fn get_requested_extensions(&mut self) -> Vec<String>;
 }
 
 #[derive(Debug, Clone, Copy)]

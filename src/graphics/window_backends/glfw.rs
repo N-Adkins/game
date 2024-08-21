@@ -3,7 +3,7 @@
 /// We just use FFI for GLFW because the API is super simple and the main bindings I found
 /// did some stupid mutable reference stuff to the GLFW context and it was just weird.
 use std::ffi::CStr;
-use std::ptr::null_mut;
+use std::ptr::{null, null_mut};
 
 use anyhow::{anyhow, Result};
 use libc::{c_char, c_int, c_void};
@@ -175,6 +175,7 @@ extern "C" {
     fn glfwWindowShouldClose(window: *mut GLFWwindow) -> c_int;
     fn glfwSetWindowShouldClose(window: *mut GLFWwindow, value: c_int);
     fn glfwMakeContextCurrent(window: *mut GLFWwindow);
+    fn glfwGetRequiredInstanceExtensions(count: *const u32) -> *const *const c_char;
     fn glfwPollEvents();
     fn glfwSetKeyCallback(
         window: *mut GLFWwindow,
@@ -327,5 +328,22 @@ impl Window for GLFWWindow {
 
     fn set_should_close(&mut self, value: bool) {
         unsafe { glfwSetWindowShouldClose(self.handle, value as i32) }
+    }
+
+    fn get_requested_extensions(&mut self) -> Vec<String> {
+        let mut names: Vec<String> = Vec::new();
+        let extension_count: u32 = 0;
+        let mut extension_names: *const *const c_char = null();
+        extension_names = unsafe { glfwGetRequiredInstanceExtensions(&extension_count) };
+        for i in 0..extension_count {
+            let str = unsafe {
+                CStr::from_ptr(*extension_names.offset(i as isize))
+                    .to_str()
+                    .unwrap()
+                    .to_owned()
+            };
+            names.push(str);
+        }
+        names
     }
 }
