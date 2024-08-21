@@ -1,10 +1,13 @@
+use anyhow::Result;
 use graphics::{window_backends::glfw, Event, KeyCode, Window};
 
 mod graphics;
 
-fn main() {
+fn main() -> Result<()> {
     tracing_subscriber::fmt::init();
-    let mut window: Box<dyn Window> = Box::new(glfw::GLFWWindow::new());
+
+    let glfw_window = glfw::GLFWWindow::new()?;
+    let mut window: Box<dyn Window> = Box::new(glfw_window);
     window.set_callbacks();
 
     while !window.should_close() {
@@ -15,4 +18,6 @@ fn main() {
             }
         }
     }
+
+    Ok(())
 }

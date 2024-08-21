@@ -1,20 +1,25 @@
-#![allow(unused)]
+#![allow(unused)] // Constants and stuff aren't all going to be used.
 
-use std::ffi::{CStr};
+/// We just use FFI for GLFW because the API is super simple and the main bindings I found
+/// did some stupid mutable reference stuff to the GLFW context and it was just weird.
+use std::ffi::CStr;
 use std::ptr::null_mut;
 
+use anyhow::{anyhow, Result};
 use libc::{c_char, c_int, c_void};
 use tracing::instrument;
 use tracing::{error, trace};
 
 use crate::graphics::{Event, KeyCode, Window};
 
+/// Opaque pointer for C ABI
 #[repr(C)]
 struct GLFWwindow {
     _data: [u8; 0],
     _marker: core::marker::PhantomData<(*mut u8, core::marker::PhantomPinned)>,
 }
 
+/// Opaque pointer for C ABI
 #[repr(C)]
 struct GLFWmonitor {
     _data: [u8; 0],
@@ -183,6 +188,8 @@ extern "C" {
     );
 }
 
+/// GLFW state, not the actual window. We use this for callbacks because it's
+/// a little nicer to hold a mutable pointer to this rather than the window struct.
 #[derive(Debug)]
 struct GLFWContext {
     events: Vec<Event>,
@@ -190,15 +197,16 @@ struct GLFWContext {
 
 impl GLFWContext {
     #[instrument]
-    pub fn new() -> Self {
+    pub fn new() -> Result<Self> {
         trace!("Attempting to initialize GLFW context");
         let result: c_int = unsafe { glfwInit() };
         if result != GLFW_TRUE {
             error!("Failed to initialize GLFW context");
-            panic!("Failed to initialize GLFW context");
+            anyhow!("Failed to initialize GLFW context");
         }
         unsafe { glfwSetErrorCallback(Self::error_callback) };
-        Self { events: Vec::new() }
+        let this = Self { events: Vec::new() };
+        Ok(this)
     }
 
     #[instrument]
@@ -249,6 +257,7 @@ impl Drop for GLFWContext {
     }
 }
 
+/// The actual window itself, self-explanatory.
 #[derive(Debug)]
 pub struct GLFWWindow {
     handle: *mut GLFWwindow,
@@ -257,9 +266,9 @@ pub struct GLFWWindow {
 
 impl GLFWWindow {
     #[instrument]
-    pub fn new() -> Self {
+    pub fn new() -> Result<Self> {
         trace!("Attempting to create GLFW window");
-        let context = GLFWContext::new();
+        let context = GLFWContext::new()?;
         let handle = unsafe {
             let handle = glfwCreateWindow(
                 1280,
@@ -269,12 +278,13 @@ impl GLFWWindow {
                 null_mut(),
             );
             if handle.is_null() {
-                panic!("Failed to create GLFW window");
+                anyhow!("Failed to create GLFW window");
             }
             handle
         };
         unsafe { glfwMakeContextCurrent(handle) };
-        Self { handle, context }
+        let this = Self { handle, context };
+        Ok(this)
     }
 }
 
