@@ -1,9 +1,13 @@
-use anyhow::Result;
+use std::ffi::{CStr, CString};
+
+use anyhow::{anyhow, Context, Result};
 use ash::{vk, Entry, Instance};
+use tracing::{error, instrument, trace};
 
-use crate::graphics::Renderer;
+use crate::graphics::{Renderer, Window};
 
-/// This literally only exists to implement Debug on ash::Entry.
+const VALIDATION_LAYERS: &'static [&'static str] = &["VK_LAYER_KHRONOS_validation"];
+
 struct EntryWrapper(Entry);
 
 impl std::fmt::Debug for EntryWrapper {
@@ -27,29 +31,80 @@ pub struct VulkanRenderer {
 }
 
 impl VulkanRenderer {
-    pub fn new() -> Result<Self> {
-        let entry = unsafe { Entry::load()? };
-        let instance = Self::create_instance(&entry)?;
-        let this = Self {
-            entry: EntryWrapper(entry),
-            instance: InstanceWrapper(instance),
-        };
+    pub fn new(window: &dyn Window) -> Result<Self> {
+        let entry = EntryWrapper(unsafe { Entry::load()? });
+        let instance = InstanceWrapper(Self::create_instance(&entry, window)?);
+        Self::init_validation_layers(&entry)?;
+        let this = Self { entry, instance };
         Ok(this)
     }
 
-    fn create_instance(entry: &Entry) -> Result<Instance> {
+    fn create_instance(entry: &EntryWrapper, window: &dyn Window) -> Result<Instance> {
+        trace!("Attempting to create Vulkan instance");
+        let EntryWrapper(entry) = entry;
+
         let app_info = vk::ApplicationInfo {
             api_version: vk::make_api_version(0, 1, 0, 0),
             ..Default::default()
         };
 
+        let extensions = window.get_requested_extensions();
+
+        // We have to have a separate vec owning the CStrings or else we get dumb stuff happening
+        // when using the Vulkan API
+        let extension_cstrs: Vec<CString> = extensions
+            .iter()
+            .map(|s| CString::new(s.clone()).with_context(|| "Failed to parse CString"))
+            .collect::<Result<Vec<CString>>>()?;
+
+        let vulkan_extensions: Vec<*const i8> =
+            extension_cstrs.iter().map(|s| s.as_ptr()).collect();
+
         let create_info = vk::InstanceCreateInfo {
             p_application_info: &app_info,
+            enabled_extension_count: vulkan_extensions.len() as u32,
+            pp_enabled_extension_names: vulkan_extensions.as_ptr(),
             ..Default::default()
         };
 
         let instance = unsafe { entry.create_instance(&create_info, None)? };
 
+        trace!("Created Vulkan instance");
+
         Ok(instance)
+    }
+
+    #[instrument]
+    fn init_validation_layers(entry: &EntryWrapper) -> Result<()> {
+        trace!("Attempting to initialize Vulkan validation layers");
+        let EntryWrapper(entry) = entry;
+
+        let available_layers = unsafe { entry.enumerate_instance_layer_properties()? };
+        trace!("Supported validation layers:");
+        for layer in available_layers.iter() {
+            trace!("{layer:?}")
+        }
+
+        let found_all_layers = VALIDATION_LAYERS
+            .iter()
+            .find_map(|s| {
+                available_layers.iter().find_map(|layer| {
+                    if layer.layer_name_as_c_str().unwrap().to_str().unwrap() == *s {
+                        Some(())
+                    } else {
+                        error!("Validation layer \"{s}\" is not supported on this device");
+                        None
+                    }
+                })
+            })
+            .is_some();
+
+        if !found_all_layers {
+            _ = anyhow!("Not all validation layers are supported"); // anyhow is being weird here
+        }
+
+        trace!("Initialized Vulkan validation layers");
+
+        Ok(())
     }
 }

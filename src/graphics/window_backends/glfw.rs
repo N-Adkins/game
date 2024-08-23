@@ -330,7 +330,7 @@ impl Window for GLFWWindow {
         unsafe { glfwSetWindowShouldClose(self.handle, value as i32) }
     }
 
-    fn get_requested_extensions(&mut self) -> Vec<String> {
+    fn get_requested_extensions(&self) -> Vec<String> {
         let mut names: Vec<String> = Vec::new();
         let extension_count: u32 = 0;
         let mut extension_names: *const *const c_char = null();
