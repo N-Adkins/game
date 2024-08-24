@@ -6,7 +6,7 @@ use tracing::{error, instrument, trace};
 
 use crate::graphics::{Renderer, Window};
 
-const VALIDATION_LAYERS: &'static [&'static str] = &["VK_LAYER_KHRONOS_validation"];
+const VALIDATION_LAYERS: &[&'static str] = &["VK_LAYER_KHRONOS_validation"];
 
 struct EntryWrapper(Entry);
 
@@ -74,7 +74,6 @@ impl VulkanRenderer {
         Ok(instance)
     }
 
-    #[instrument]
     fn init_validation_layers(entry: &EntryWrapper) -> Result<()> {
         trace!("Attempting to initialize Vulkan validation layers");
         let EntryWrapper(entry) = entry;
@@ -82,25 +81,29 @@ impl VulkanRenderer {
         let available_layers = unsafe { entry.enumerate_instance_layer_properties()? };
         trace!("Supported validation layers:");
         for layer in available_layers.iter() {
-            trace!("{layer:?}")
+            trace!("{}", layer.layer_name_as_c_str().unwrap().to_str().unwrap());
         }
 
-        let found_all_layers = VALIDATION_LAYERS
-            .iter()
-            .find_map(|s| {
-                available_layers.iter().find_map(|layer| {
-                    if layer.layer_name_as_c_str().unwrap().to_str().unwrap() == *s {
-                        Some(())
-                    } else {
-                        error!("Validation layer \"{s}\" is not supported on this device");
-                        None
+        for layer in VALIDATION_LAYERS {
+            trace!("Checking if layer \"{layer}\" is supported");
+            let found: bool = 'block: {
+                for available_layer in available_layers.iter() {
+                    if available_layer
+                        .layer_name_as_c_str()
+                        .unwrap()
+                        .to_str()
+                        .unwrap()
+                        == *layer
+                    {
+                        break 'block true;
                     }
-                })
-            })
-            .is_some();
-
-        if !found_all_layers {
-            _ = anyhow!("Not all validation layers are supported"); // anyhow is being weird here
+                }
+                break 'block false;
+            };
+            if !found {
+                error!("Validation layer \"{layer}\" is not supported on this device");
+                _ = anyhow!("Not all validation layers are supported"); // anyhow is being weird here
+            }
         }
 
         trace!("Initialized Vulkan validation layers");

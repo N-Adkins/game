@@ -197,7 +197,6 @@ struct GLFWContext {
 }
 
 impl GLFWContext {
-    #[instrument]
     pub fn new() -> Result<Self> {
         trace!("Attempting to initialize GLFW context");
         let result: c_int = unsafe { glfwInit() };
@@ -206,6 +205,7 @@ impl GLFWContext {
             anyhow!("Failed to initialize GLFW context");
         }
         unsafe { glfwSetErrorCallback(Self::error_callback) };
+        trace!("Initialized GLFW context");
         let this = Self { events: Vec::new() };
         Ok(this)
     }
@@ -251,7 +251,6 @@ impl GLFWContext {
 }
 
 impl Drop for GLFWContext {
-    #[instrument]
     fn drop(&mut self) {
         trace!("Terminating GLFW context");
         unsafe { glfwTerminate() }
@@ -266,7 +265,6 @@ pub struct GLFWWindow {
 }
 
 impl GLFWWindow {
-    #[instrument]
     pub fn new() -> Result<Self> {
         trace!("Attempting to create GLFW window");
         let context = GLFWContext::new()?;
@@ -284,6 +282,7 @@ impl GLFWWindow {
             handle
         };
         unsafe { glfwMakeContextCurrent(handle) };
+        trace!("Created GLFW window");
         let this = Self { handle, context };
         Ok(this)
     }
