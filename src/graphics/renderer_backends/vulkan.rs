@@ -1,4 +1,5 @@
 use std::{
+    collections::BTreeMap,
     ffi::{CStr, CString},
     ptr::null,
 };
@@ -28,6 +29,9 @@ impl std::fmt::Debug for InstanceWrapper {
     }
 }
 
+#[derive(Debug)]
+struct PhysicalDeviceWrapper(vk::PhysicalDevice);
+
 struct VulkanDebug {
     utils: ash::ext::debug_utils::Instance,
     messenger: vk::DebugUtilsMessengerEXT,
@@ -44,6 +48,7 @@ pub struct VulkanRenderer {
     entry: EntryWrapper, // Basically the vulkan context.
     instance: InstanceWrapper,
     debug: Option<VulkanDebug>,
+    physical_device: PhysicalDeviceWrapper,
 }
 
 impl VulkanRenderer {
@@ -56,10 +61,12 @@ impl VulkanRenderer {
         } else {
             None
         };
+        let physical_device = PhysicalDeviceWrapper(Self::pick_physical_device(&instance)?);
         let this = Self {
             entry,
             instance,
             debug,
+            physical_device,
         };
         Ok(this)
     }
@@ -217,6 +224,70 @@ impl VulkanRenderer {
             _ => error!("Invalid Vulkan debug message severity"),
         }
         vk::FALSE
+    }
+
+    fn rank_device(device: vk::PhysicalDevice, instance_wrapper: &InstanceWrapper) -> usize {
+        let InstanceWrapper(instance) = instance_wrapper;
+        let properties = unsafe { instance.get_physical_device_properties(device) };
+        let features = unsafe { instance.get_physical_device_features(device) };
+
+        if features.geometry_shader == 0 {
+            return 0; // Necessary for usage
+        }
+
+        let mut score: usize = 0;
+
+        if properties.device_type == vk::PhysicalDeviceType::DISCRETE_GPU {
+            score += 1000;
+        }
+
+        score += properties.limits.max_image_dimension2_d as usize;
+
+        trace!(
+            "Physical Device \"{}\" was scored {score}",
+            properties.device_name_as_c_str().unwrap().to_str().unwrap()
+        );
+
+        score
+    }
+
+    fn pick_physical_device(instance_wrapper: &InstanceWrapper) -> Result<vk::PhysicalDevice> {
+        trace!("Attempting to pick Vulkan Physical Device");
+
+        let InstanceWrapper(instance) = instance_wrapper;
+        let devices = unsafe { instance.enumerate_physical_devices()? };
+        let mut candidates: BTreeMap<usize, vk::PhysicalDevice> = BTreeMap::new();
+
+        for device in devices {
+            let score = Self::rank_device(device, instance_wrapper);
+            candidates.insert(score, device);
+        }
+
+        let device: Option<vk::PhysicalDevice> = {
+            if candidates.is_empty() {
+                None
+            } else if let Some((score, device)) = candidates.first_key_value() {
+                if *score == 0 {
+                    None
+                } else {
+                    Some(*device)
+                }
+            } else {
+                None
+            }
+        };
+
+        if let Some(device) = device {
+            let properties = unsafe { instance.get_physical_device_properties(device) };
+            trace!(
+                "Successfully selected Physical Device \"{}\"",
+                properties.device_name_as_c_str().unwrap().to_str().unwrap()
+            );
+            return Ok(device);
+        } else {
+            error!("Failed to find suitable GPU");
+            Err(anyhow!("Vulkan could not find a suitable GPU"))
+        }
     }
 }
 
