@@ -215,7 +215,7 @@ impl VulkanRenderer {
         _user_data: *mut std::ffi::c_void,
     ) -> vk::Bool32 {
         let vulkan_msg = CStr::from_ptr((*callback_data).p_message);
-        let msg = format!("Vulkan[{msg_type:?}]: {}", vulkan_msg.to_str().unwrap());
+        let msg = format!("Vulkan [{msg_type:?}]: {}", vulkan_msg.to_str().unwrap());
         match msg_severity {
             vk::DebugUtilsMessageSeverityFlagsEXT::VERBOSE => trace!("{msg}"),
             vk::DebugUtilsMessageSeverityFlagsEXT::INFO => info!("{msg}"),
