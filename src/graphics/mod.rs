@@ -1,6 +1,7 @@
 pub mod renderer_backends;
 pub mod window_backends;
 
+#[allow(unused)]
 pub trait Window: std::fmt::Debug {
     fn set_callbacks(&mut self);
     fn get_size(&self) -> (u32, u32);
@@ -20,8 +21,10 @@ pub enum KeyCode {
     Escape,
 }
 
+#[allow(unused)]
 pub trait Renderer: std::fmt::Debug {}
 
+#[allow(unused)]
 #[derive(Debug)]
 pub struct GraphicsContext {
     window: Box<dyn Window>,

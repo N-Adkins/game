@@ -10,7 +10,7 @@ use tracing::{error, info, trace, warn};
 
 use crate::graphics::Window;
 
-const VALIDATION_LAYERS: &[&'static str] = &["VK_LAYER_KHRONOS_validation"];
+const VALIDATION_LAYERS: &[&str] = &["VK_LAYER_KHRONOS_validation"];
 const ENABLE_VALIDATION_LAYERS: bool = true;
 
 struct EntryWrapper(Entry);
@@ -43,6 +43,7 @@ impl std::fmt::Debug for VulkanDebug {
     }
 }
 
+#[allow(unused)]
 #[derive(Debug)]
 pub struct VulkanRenderer {
     entry: EntryWrapper, // Basically the vulkan context.
@@ -283,7 +284,7 @@ impl VulkanRenderer {
                 "Successfully selected Physical Device \"{}\"",
                 properties.device_name_as_c_str().unwrap().to_str().unwrap()
             );
-            return Ok(device);
+            Ok(device)
         } else {
             error!("Failed to find suitable GPU");
             Err(anyhow!("Vulkan could not find a suitable GPU"))
