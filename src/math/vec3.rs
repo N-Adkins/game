@@ -2,7 +2,7 @@ use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Sub, SubAssign};
 
 use super::Number;
 
-#[derive(Debug, Default, Clone, Copy, PartialEq)]
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
 pub struct Vec3<T: Number = f32> {
     x: T,
     y: T,
@@ -28,7 +28,8 @@ impl<T: Number> Vec3<T> {
     }
 
     pub fn magnitude(&self) -> f32 {
-        (self.x.as_() + self.y.as_() + self.z.as_()).sqrt()
+        (self.x.as_() * self.x.as_() + self.y.as_() * self.y.as_() + self.z.as_() * self.z.as_())
+            .sqrt()
     }
 
     pub fn unit(&self) -> Self {
@@ -114,5 +115,64 @@ impl<T: Number> DivAssign<T> for Vec3<T> {
         self.x = self.x / rhs;
         self.y = self.y / rhs;
         self.z = self.z / rhs;
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    // Easier to test on integers
+    type Vec3 = super::Vec3<i32>;
+
+    #[test]
+    fn addition() {
+        let mut lhs = Vec3::new(10, 7, 5);
+        let rhs = Vec3::new(71, 23, 8);
+        let result = lhs + rhs;
+        lhs += rhs;
+        assert_eq!(result, Vec3::new(81, 30, 13));
+        assert_eq!(lhs, result);
+    }
+
+    #[test]
+    fn subtraction() {
+        let mut lhs = Vec3::new(10, 7, 5);
+        let rhs = Vec3::new(71, 23, 8);
+        let result = lhs - rhs;
+        lhs -= rhs;
+        assert_eq!(result, Vec3::new(-61, -16, -3));
+        assert_eq!(lhs, result);
+    }
+
+    #[test]
+    fn multiplication() {
+        let mut lhs = Vec3::new(10, 7, 5);
+        let rhs: i32 = 12;
+        let result = lhs * rhs;
+        lhs *= rhs;
+        assert_eq!(result, Vec3::new(120, 84, 60));
+        assert_eq!(lhs, result);
+    }
+
+    #[test]
+    fn division() {
+        let mut lhs = Vec3::new(72, 144, 36);
+        let rhs: i32 = 12;
+        let result = lhs / rhs;
+        lhs /= rhs;
+        assert_eq!(result, Vec3::new(6, 12, 3));
+        assert_eq!(lhs, result);
+    }
+
+    #[test]
+    fn magnitude() {
+        let vec = Vec3::new(4, 3, 0);
+        assert_eq!(vec.magnitude(), 5.0);
+    }
+
+    #[test]
+    fn dot() {
+        let lhs = Vec3::new(3, 4, 1);
+        let rhs = Vec3::new(5, 6, 8);
+        assert_eq!(Vec3::dot(lhs, rhs), 47.0);
     }
 }

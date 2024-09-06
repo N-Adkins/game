@@ -210,7 +210,6 @@ impl GLFWContext {
         Ok(this)
     }
 
-    #[instrument]
     extern "C" fn error_callback(error_code: c_int, description: *const c_char) {
         if description.is_null() {
             return;
@@ -223,7 +222,6 @@ impl GLFWContext {
         error!("GLFW Error {error_code}: {c_str}");
     }
 
-    #[instrument]
     extern "C" fn key_callback(
         window: *mut GLFWwindow,
         key: c_int,

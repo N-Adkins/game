@@ -6,7 +6,7 @@ use std::{
 
 use anyhow::{anyhow, Context, Result};
 use ash::{vk, Entry, Instance};
-use tracing::{error, info, trace, warn};
+use tracing::{error, info, instrument, trace, warn};
 
 use crate::graphics::Window;
 
@@ -43,6 +43,17 @@ impl std::fmt::Debug for VulkanDebug {
     }
 }
 
+#[derive(Debug, Default)]
+struct QueueFamilies {
+    graphics_family: Option<u32>,
+}
+
+impl QueueFamilies {
+    fn is_complete(&self) -> bool {
+        self.graphics_family.is_some()
+    }
+}
+
 #[allow(unused)]
 #[derive(Debug)]
 pub struct VulkanRenderer {
@@ -50,6 +61,7 @@ pub struct VulkanRenderer {
     instance: InstanceWrapper,
     debug: Option<VulkanDebug>,
     physical_device: PhysicalDeviceWrapper,
+    queue_families: QueueFamilies,
 }
 
 impl VulkanRenderer {
@@ -63,11 +75,13 @@ impl VulkanRenderer {
             None
         };
         let physical_device = PhysicalDeviceWrapper(Self::pick_physical_device(&instance)?);
+        let queue_families = Self::get_queue_families(&instance, &physical_device);
         let this = Self {
             entry,
             instance,
             debug,
             physical_device,
+            queue_families,
         };
         Ok(this)
     }
@@ -107,11 +121,7 @@ impl VulkanRenderer {
 
         let vulkan_layers: Vec<*const i8> = layer_cstrs.iter().map(|s| s.as_ptr()).collect();
 
-        let (layer_count, layer_names, debug_create_info): (
-            u32,
-            *const *const i8,
-            Option<vk::DebugUtilsMessengerCreateInfoEXT>,
-        ) = if ENABLE_VALIDATION_LAYERS {
+        let (layer_count, layer_names, debug_create_info) = if ENABLE_VALIDATION_LAYERS {
             trace!("Validation layers enabled, passing debug info to create_instance");
             (
                 vulkan_layers.len() as u32,
@@ -227,12 +237,18 @@ impl VulkanRenderer {
         vk::FALSE
     }
 
-    fn rank_device(device: vk::PhysicalDevice, instance_wrapper: &InstanceWrapper) -> usize {
+    fn rank_device(
+        instance_wrapper: &InstanceWrapper,
+        device_wrapper: &PhysicalDeviceWrapper,
+    ) -> usize {
         let InstanceWrapper(instance) = instance_wrapper;
-        let properties = unsafe { instance.get_physical_device_properties(device) };
-        let features = unsafe { instance.get_physical_device_features(device) };
+        let PhysicalDeviceWrapper(device) = device_wrapper;
+        let properties = unsafe { instance.get_physical_device_properties(*device) };
+        let features = unsafe { instance.get_physical_device_features(*device) };
 
-        if features.geometry_shader == 0 {
+        let families = Self::get_queue_families(instance_wrapper, device_wrapper);
+
+        if features.geometry_shader == 0 || !families.is_complete() {
             return 0; // Necessary for usage
         }
 
@@ -260,7 +276,7 @@ impl VulkanRenderer {
         let mut candidates: BTreeMap<usize, vk::PhysicalDevice> = BTreeMap::new();
 
         for device in devices {
-            let score = Self::rank_device(device, instance_wrapper);
+            let score = Self::rank_device(instance_wrapper, &PhysicalDeviceWrapper(device));
             candidates.insert(score, device);
         }
 
@@ -289,6 +305,42 @@ impl VulkanRenderer {
             error!("Failed to find suitable GPU");
             Err(anyhow!("Vulkan could not find a suitable GPU"))
         }
+    }
+
+    #[instrument]
+    fn get_queue_families(
+        instance_wrapper: &InstanceWrapper,
+        device_wrapper: &PhysicalDeviceWrapper,
+    ) -> QueueFamilies {
+        trace!("Getting queue families");
+
+        let InstanceWrapper(instance) = instance_wrapper;
+        let PhysicalDeviceWrapper(device) = device_wrapper;
+
+        let mut families = QueueFamilies {
+            ..Default::default()
+        };
+
+        let properties = unsafe { instance.get_physical_device_queue_family_properties(*device) };
+        for (i, property) in properties.into_iter().enumerate() {
+            #[allow(clippy::single_match)]
+            if property.queue_flags.contains(vk::QueueFlags::GRAPHICS) {
+                families.graphics_family = Some(i as u32);
+            }
+            if families.is_complete() {
+                break;
+            }
+        }
+
+        if families.is_complete() {
+            trace!("Queue families are complete");
+        } else {
+            trace!("Queue families are not complete");
+        }
+
+        trace!("Successfully got queue families");
+
+        families
     }
 }
 
