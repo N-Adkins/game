@@ -1,6 +1,8 @@
 pub mod renderer_backends;
 pub mod window_backends;
 
+use anyhow::Result;
+
 #[allow(unused)]
 pub trait Window: std::fmt::Debug {
     fn set_callbacks(&mut self);
@@ -9,6 +11,7 @@ pub trait Window: std::fmt::Debug {
     fn set_should_close(&mut self, value: bool);
     fn get_events(&mut self) -> Vec<Event>;
     fn get_requested_extensions(&self) -> Vec<String>;
+    fn get_os_surface(&self) -> Result<*const std::ffi::c_void>;
 }
 
 #[derive(Debug, Clone, Copy)]

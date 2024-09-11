@@ -2,16 +2,18 @@ use std::{
     collections::BTreeMap,
     ffi::{CStr, CString},
     ptr::null,
+    sync::OnceLock,
 };
 
 use anyhow::{anyhow, Context, Result};
 use ash::{vk, Entry, Instance};
-use tracing::{error, info, instrument, trace, warn};
+use tracing::{error, info, trace, warn};
 
 use crate::graphics::Window;
 
 const VALIDATION_LAYERS: &[&str] = &["VK_LAYER_KHRONOS_validation"];
-const ENABLE_VALIDATION_LAYERS: bool = true;
+
+static ENABLE_VALIDATION_LAYERS: OnceLock<bool> = OnceLock::new();
 
 struct EntryWrapper(Entry);
 
@@ -31,6 +33,15 @@ impl std::fmt::Debug for InstanceWrapper {
 
 #[derive(Debug)]
 struct PhysicalDeviceWrapper(vk::PhysicalDevice);
+
+#[allow(unused)]
+struct LogicalDeviceWrapper(ash::Device);
+
+impl std::fmt::Debug for LogicalDeviceWrapper {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "Vulkan Logical Device")
+    }
+}
 
 struct VulkanDebug {
     utils: ash::ext::debug_utils::Instance,
@@ -62,13 +73,20 @@ pub struct VulkanRenderer {
     debug: Option<VulkanDebug>,
     physical_device: PhysicalDeviceWrapper,
     queue_families: QueueFamilies,
+    logical_device: LogicalDeviceWrapper,
 }
 
 impl VulkanRenderer {
     pub fn new(window: &dyn Window) -> Result<Self> {
+        let enable_validation_layers: bool = match std::env::var("ENABLE_VALIDATION_LAYERS") {
+            Ok(s) => s.parse().unwrap_or(false),
+            Err(_) => false,
+        };
+        _ = ENABLE_VALIDATION_LAYERS.set(enable_validation_layers);
+
         let entry = EntryWrapper(unsafe { Entry::load()? });
         let instance = InstanceWrapper(Self::create_instance(&entry, window)?);
-        let debug = if ENABLE_VALIDATION_LAYERS {
+        let debug = if *ENABLE_VALIDATION_LAYERS.get().unwrap() {
             Self::check_validation_layers(&entry)?;
             Some(Self::create_debug(&entry, &instance)?)
         } else {
@@ -76,13 +94,21 @@ impl VulkanRenderer {
         };
         let physical_device = PhysicalDeviceWrapper(Self::pick_physical_device(&instance)?);
         let queue_families = Self::get_queue_families(&instance, &physical_device);
+        let logical_device = LogicalDeviceWrapper(Self::create_logical_device(
+            &instance,
+            &physical_device,
+            &queue_families,
+        )?);
+
         let this = Self {
             entry,
             instance,
             debug,
             physical_device,
             queue_families,
+            logical_device,
         };
+
         Ok(this)
     }
 
@@ -97,7 +123,7 @@ impl VulkanRenderer {
 
         let extensions = {
             let mut extensions = window.get_requested_extensions();
-            if ENABLE_VALIDATION_LAYERS {
+            if *ENABLE_VALIDATION_LAYERS.get().unwrap() {
                 extensions.push(ash::vk::EXT_DEBUG_UTILS_NAME.to_str().unwrap().to_owned());
             }
             extensions
@@ -121,16 +147,17 @@ impl VulkanRenderer {
 
         let vulkan_layers: Vec<*const i8> = layer_cstrs.iter().map(|s| s.as_ptr()).collect();
 
-        let (layer_count, layer_names, debug_create_info) = if ENABLE_VALIDATION_LAYERS {
-            trace!("Validation layers enabled, passing debug info to create_instance");
-            (
-                vulkan_layers.len() as u32,
-                vulkan_layers.as_ptr(),
-                Some(Self::create_debug_info()),
-            )
-        } else {
-            (0, null(), None)
-        };
+        let (layer_count, layer_names, debug_create_info) =
+            if *ENABLE_VALIDATION_LAYERS.get().unwrap() {
+                trace!("Validation layers enabled, passing debug info to create_instance");
+                (
+                    vulkan_layers.len() as u32,
+                    vulkan_layers.as_ptr(),
+                    Some(Self::create_debug_info()),
+                )
+            } else {
+                (0, null(), None)
+            };
 
         let p_next: *const std::ffi::c_void = if let Some(debug_create_info) = debug_create_info {
             &debug_create_info as *const _ as *const _ // idek bruh
@@ -307,7 +334,6 @@ impl VulkanRenderer {
         }
     }
 
-    #[instrument]
     fn get_queue_families(
         instance_wrapper: &InstanceWrapper,
         device_wrapper: &PhysicalDeviceWrapper,
@@ -342,12 +368,52 @@ impl VulkanRenderer {
 
         families
     }
+
+    fn create_logical_device(
+        instance_wrapper: &InstanceWrapper,
+        physical_device_wrapper: &PhysicalDeviceWrapper,
+        queue_families: &QueueFamilies,
+    ) -> Result<ash::Device> {
+        trace!("Attempting to create Vulkan logical device");
+
+        let InstanceWrapper(instance) = instance_wrapper;
+        let PhysicalDeviceWrapper(physical_device) = physical_device_wrapper;
+
+        let queue_priorities: f32 = 1.0;
+        let queue_info = vk::DeviceQueueCreateInfo {
+            s_type: vk::StructureType::DEVICE_QUEUE_CREATE_INFO,
+            queue_family_index: queue_families.graphics_family.unwrap(),
+            queue_count: 1,
+            p_queue_priorities: &queue_priorities,
+            ..Default::default()
+        };
+
+        let device_features = vk::PhysicalDeviceFeatures {
+            ..Default::default()
+        };
+        let device_info = vk::DeviceCreateInfo {
+            s_type: vk::StructureType::DEVICE_CREATE_INFO,
+            p_queue_create_infos: &queue_info,
+            queue_create_info_count: 1,
+            p_enabled_features: &device_features,
+            ..Default::default()
+        };
+        let device = unsafe { instance.create_device(*physical_device, &device_info, None)? };
+
+        trace!("Created Vulkan logical device");
+
+        Ok(device)
+    }
 }
 
 impl Drop for VulkanRenderer {
     fn drop(&mut self) {
         unsafe {
+            let LogicalDeviceWrapper(logical_device) = &self.logical_device;
             let InstanceWrapper(instance) = &self.instance;
+
+            logical_device.destroy_device(None);
+
             if let Some(debug) = &self.debug {
                 debug
                     .utils

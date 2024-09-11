@@ -156,6 +156,8 @@ const GLFW_KEY_RIGHT_SUPER: c_int = 347;
 const GLFW_KEY_MENU: c_int = 348;
 const GLFW_KEY_LAST: c_int = GLFW_KEY_MENU;
 
+type X11Window = u32;
+
 #[link(name = "glfw")]
 extern "C" {
     fn glfwInit() -> c_int;
@@ -187,6 +189,9 @@ extern "C" {
             mods: c_int,
         ),
     );
+
+    #[cfg(target_os = "linux")]
+    fn glfwGetX11Window(window: *mut GLFWwindow) -> X11Window;
 }
 
 /// GLFW state, not the actual window. We use this for callbacks because it's
@@ -342,5 +347,16 @@ impl Window for GLFWWindow {
             names.push(str);
         }
         names
+    }
+
+    #[cfg(target_os = "linux")]
+    fn get_os_surface(&self) -> Result<*const std::ffi::c_void> {
+        let x11_window = unsafe { glfwGetX11Window(self.handle) };
+        Ok(x11_window as *const std::ffi::c_void)
+    }
+
+    #[cfg(not(target_os = "linux"))]
+    fn get_os_surface(&self) -> Result<*const std::ffi::c_void> {
+        compile_error!("Unsupported OS");
     }
 }
