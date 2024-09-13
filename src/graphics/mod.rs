@@ -2,6 +2,7 @@ pub mod renderer_backends;
 pub mod window_backends;
 
 use anyhow::Result;
+use ash::vk;
 
 #[allow(unused)]
 pub trait Window: std::fmt::Debug {
@@ -11,7 +12,7 @@ pub trait Window: std::fmt::Debug {
     fn set_should_close(&mut self, value: bool);
     fn get_events(&mut self) -> Vec<Event>;
     fn get_requested_extensions(&self) -> Vec<String>;
-    fn get_os_surface(&self) -> Result<*const std::ffi::c_void>;
+    fn create_vulkan_surface(&self, instance: vk::Instance) -> Result<vk::SurfaceKHR>;
 }
 
 #[derive(Debug, Clone, Copy)]

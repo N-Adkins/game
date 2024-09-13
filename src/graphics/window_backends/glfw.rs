@@ -6,6 +6,7 @@ use std::ffi::CStr;
 use std::ptr::{null, null_mut};
 
 use anyhow::{anyhow, Result};
+use ash::vk;
 use libc::{c_char, c_int, c_void};
 use tracing::instrument;
 use tracing::{error, trace};
@@ -156,7 +157,8 @@ const GLFW_KEY_RIGHT_SUPER: c_int = 347;
 const GLFW_KEY_MENU: c_int = 348;
 const GLFW_KEY_LAST: c_int = GLFW_KEY_MENU;
 
-type X11Window = u32;
+const GLFW_CLIENT_API: c_int = 0x00022001;
+const GLFW_NO_API: c_int = 0;
 
 #[link(name = "glfw")]
 extern "C" {
@@ -165,6 +167,7 @@ extern "C" {
     fn glfwSetErrorCallback(callback: extern "C" fn(error_code: c_int, description: *const c_char));
     fn glfwSetWindowUserPointer(window: *mut GLFWwindow, pointer: *mut c_void);
     fn glfwGetWindowUserPointer(window: *mut GLFWwindow) -> *mut c_void;
+    fn glfwWindowHint(hint: c_int, value: c_int);
     fn glfwCreateWindow(
         width: c_int,
         height: c_int,
@@ -176,6 +179,7 @@ extern "C" {
     fn glfwGetWindowSize(window: *mut GLFWwindow, width: *mut c_int, height: *mut c_int);
     fn glfwWindowShouldClose(window: *mut GLFWwindow) -> c_int;
     fn glfwSetWindowShouldClose(window: *mut GLFWwindow, value: c_int);
+
     fn glfwMakeContextCurrent(window: *mut GLFWwindow);
     fn glfwGetRequiredInstanceExtensions(count: *const u32) -> *const *const c_char;
     fn glfwPollEvents();
@@ -190,8 +194,12 @@ extern "C" {
         ),
     );
 
-    #[cfg(target_os = "linux")]
-    fn glfwGetX11Window(window: *mut GLFWwindow) -> X11Window;
+    fn glfwCreateWindowSurface(
+        instance: vk::Instance,
+        window: *mut c_void,
+        allocator: *const vk::AllocationCallbacks,
+        surface: *mut vk::SurfaceKHR,
+    ) -> vk::Result;
 }
 
 /// GLFW state, not the actual window. We use this for callbacks because it's
@@ -272,6 +280,7 @@ impl GLFWWindow {
         trace!("Attempting to create GLFW window");
         let context = GLFWContext::new()?;
         let handle = unsafe {
+            glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
             let handle = glfwCreateWindow(
                 1280,
                 720,
@@ -284,7 +293,6 @@ impl GLFWWindow {
             }
             handle
         };
-        unsafe { glfwMakeContextCurrent(handle) };
         trace!("Created GLFW window");
         let this = Self { handle, context };
         Ok(this)
@@ -349,14 +357,17 @@ impl Window for GLFWWindow {
         names
     }
 
-    #[cfg(target_os = "linux")]
-    fn get_os_surface(&self) -> Result<*const std::ffi::c_void> {
-        let x11_window = unsafe { glfwGetX11Window(self.handle) };
-        Ok(x11_window as *const std::ffi::c_void)
-    }
-
-    #[cfg(not(target_os = "linux"))]
-    fn get_os_surface(&self) -> Result<*const std::ffi::c_void> {
-        compile_error!("Unsupported OS");
+    fn create_vulkan_surface(&self, instance: vk::Instance) -> Result<vk::SurfaceKHR> {
+        trace!("Attempting to create Vulkan window surface via GLFW");
+        let mut surface: vk::SurfaceKHR = Default::default();
+        let result = unsafe {
+            glfwCreateWindowSurface(instance, self.handle as *mut c_void, null(), &mut surface)
+        };
+        if result == vk::Result::SUCCESS {
+            Ok(surface)
+        } else {
+            error!("Failed to create Vulkan window surface via GLFW");
+            Err(anyhow!("Failed to create Vulkan surface"))
+        }
     }
 }

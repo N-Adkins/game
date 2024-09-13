@@ -1,79 +1,68 @@
 use std::{
-    collections::BTreeMap,
+    collections::{BTreeMap, HashSet},
     ffi::{CStr, CString},
     ptr::null,
     sync::OnceLock,
 };
 
 use anyhow::{anyhow, Context, Result};
-use ash::{vk, Entry, Instance};
+use ash::{
+    khr::{surface, swapchain},
+    vk::{self, SwapchainKHR},
+    Entry, Instance,
+};
+use num_traits::clamp;
 use tracing::{error, info, trace, warn};
 
 use crate::graphics::Window;
 
 const VALIDATION_LAYERS: &[&str] = &["VK_LAYER_KHRONOS_validation"];
+const DEVICE_EXTENSIONS: &[&CStr] = &[vk::KHR_SWAPCHAIN_NAME];
 
 static ENABLE_VALIDATION_LAYERS: OnceLock<bool> = OnceLock::new();
-
-struct EntryWrapper(Entry);
-
-impl std::fmt::Debug for EntryWrapper {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "Vulkan Entry")
-    }
-}
-
-struct InstanceWrapper(Instance);
-
-impl std::fmt::Debug for InstanceWrapper {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "Vulkan Instance")
-    }
-}
-
-#[derive(Debug)]
-struct PhysicalDeviceWrapper(vk::PhysicalDevice);
-
-#[allow(unused)]
-struct LogicalDeviceWrapper(ash::Device);
-
-impl std::fmt::Debug for LogicalDeviceWrapper {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "Vulkan Logical Device")
-    }
-}
 
 struct VulkanDebug {
     utils: ash::ext::debug_utils::Instance,
     messenger: vk::DebugUtilsMessengerEXT,
 }
 
-impl std::fmt::Debug for VulkanDebug {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "Vulkan Debug Data")
-    }
-}
-
 #[derive(Debug, Default)]
 struct QueueFamilies {
     graphics_family: Option<u32>,
+    present_family: Option<u32>,
 }
 
 impl QueueFamilies {
     fn is_complete(&self) -> bool {
-        self.graphics_family.is_some()
+        self.graphics_family.is_some() && self.present_family.is_some()
+    }
+}
+
+#[derive(Debug)]
+struct SwapChainSupport {
+    capabilities: vk::SurfaceCapabilitiesKHR,
+    formats: Vec<vk::SurfaceFormatKHR>,
+    present_modes: Vec<vk::PresentModeKHR>,
+}
+
+impl SwapChainSupport {
+    fn supported(&self) -> bool {
+        !self.formats.is_empty() && !self.present_modes.is_empty()
     }
 }
 
 #[allow(unused)]
-#[derive(Debug)]
 pub struct VulkanRenderer {
-    entry: EntryWrapper, // Basically the vulkan context.
-    instance: InstanceWrapper,
+    entry: ash::Entry, // Basically the vulkan context.
+    instance: ash::Instance,
     debug: Option<VulkanDebug>,
-    physical_device: PhysicalDeviceWrapper,
+    physical_device: vk::PhysicalDevice,
     queue_families: QueueFamilies,
-    logical_device: LogicalDeviceWrapper,
+    logical_device: ash::Device,
+    surface: surface::Instance,
+    surface_khr: vk::SurfaceKHR,
+    swapchain_device: swapchain::Device,
+    swapchain: vk::SwapchainKHR,
 }
 
 impl VulkanRenderer {
@@ -84,21 +73,34 @@ impl VulkanRenderer {
         };
         _ = ENABLE_VALIDATION_LAYERS.set(enable_validation_layers);
 
-        let entry = EntryWrapper(unsafe { Entry::load()? });
-        let instance = InstanceWrapper(Self::create_instance(&entry, window)?);
+        let entry = unsafe { Entry::load()? };
+        let instance = Self::create_instance(&entry, window)?;
+
         let debug = if *ENABLE_VALIDATION_LAYERS.get().unwrap() {
             Self::check_validation_layers(&entry)?;
             Some(Self::create_debug(&entry, &instance)?)
         } else {
             None
         };
-        let physical_device = PhysicalDeviceWrapper(Self::pick_physical_device(&instance)?);
-        let queue_families = Self::get_queue_families(&instance, &physical_device);
-        let logical_device = LogicalDeviceWrapper(Self::create_logical_device(
+
+        let surface = Self::create_surface(&entry, &instance);
+        let surface_khr = Self::create_surface_khr(&instance, window)?;
+
+        let physical_device = Self::pick_physical_device(&instance, &surface, &surface_khr)?;
+        let queue_families =
+            Self::get_queue_families(&instance, &physical_device, &surface, &surface_khr);
+        let logical_device =
+            Self::create_logical_device(&instance, &physical_device, &queue_families)?;
+
+        let swapchain_device = Self::create_swapchain_device(&instance, &logical_device);
+        let swapchain = Self::create_swapchain(
+            &swapchain_device,
             &instance,
+            &surface,
+            &surface_khr,
             &physical_device,
-            &queue_families,
-        )?);
+            window,
+        )?;
 
         let this = Self {
             entry,
@@ -107,14 +109,17 @@ impl VulkanRenderer {
             physical_device,
             queue_families,
             logical_device,
+            surface,
+            surface_khr,
+            swapchain_device,
+            swapchain,
         };
 
         Ok(this)
     }
 
-    fn create_instance(entry_wrapper: &EntryWrapper, window: &dyn Window) -> Result<Instance> {
+    fn create_instance(entry: &Entry, window: &dyn Window) -> Result<Instance> {
         trace!("Attempting to create Vulkan instance");
-        let EntryWrapper(entry) = entry_wrapper;
 
         let app_info = vk::ApplicationInfo {
             api_version: vk::make_api_version(0, 1, 0, 0),
@@ -182,9 +187,8 @@ impl VulkanRenderer {
         Ok(instance)
     }
 
-    fn check_validation_layers(entry_wrapper: &EntryWrapper) -> Result<()> {
+    fn check_validation_layers(entry: &ash::Entry) -> Result<()> {
         trace!("Checking supported Vulkan validation layers");
-        let EntryWrapper(entry) = entry_wrapper;
 
         let available_layers = unsafe { entry.enumerate_instance_layer_properties()? };
         trace!("Supported validation layers:");
@@ -231,13 +235,8 @@ impl VulkanRenderer {
         }
     }
 
-    fn create_debug(
-        entry_wrapper: &EntryWrapper,
-        instance_wrapper: &InstanceWrapper,
-    ) -> Result<VulkanDebug> {
+    fn create_debug(entry: &ash::Entry, instance: &ash::Instance) -> Result<VulkanDebug> {
         trace!("Attempting to create Vulkan Debug Messenger");
-        let EntryWrapper(entry) = entry_wrapper;
-        let InstanceWrapper(instance) = instance_wrapper;
         let utils = ash::ext::debug_utils::Instance::new(entry, instance);
         let create_info = Self::create_debug_info();
         let messenger = unsafe { utils.create_debug_utils_messenger(&create_info, None)? };
@@ -264,19 +263,58 @@ impl VulkanRenderer {
         vk::FALSE
     }
 
+    fn check_device_extensions(
+        instance: &ash::Instance,
+        device: &vk::PhysicalDevice,
+    ) -> Result<bool> {
+        let available_extensions =
+            unsafe { instance.enumerate_device_extension_properties(*device)? };
+        let mut required_extensions: HashSet<&CStr> =
+            HashSet::from_iter(DEVICE_EXTENSIONS.iter().cloned());
+
+        for extension in available_extensions {
+            required_extensions.remove(extension.extension_name_as_c_str()?);
+        }
+
+        Ok(required_extensions.is_empty())
+    }
+
+    fn get_swapchain_support(
+        surface: &surface::Instance,
+        surface_khr: &vk::SurfaceKHR,
+        device: &vk::PhysicalDevice,
+    ) -> Result<SwapChainSupport> {
+        let capabilities =
+            unsafe { surface.get_physical_device_surface_capabilities(*device, *surface_khr)? };
+        let formats =
+            unsafe { surface.get_physical_device_surface_formats(*device, *surface_khr)? };
+        let present_modes =
+            unsafe { surface.get_physical_device_surface_present_modes(*device, *surface_khr)? };
+        Ok(SwapChainSupport {
+            capabilities,
+            formats,
+            present_modes,
+        })
+    }
+
     fn rank_device(
-        instance_wrapper: &InstanceWrapper,
-        device_wrapper: &PhysicalDeviceWrapper,
-    ) -> usize {
-        let InstanceWrapper(instance) = instance_wrapper;
-        let PhysicalDeviceWrapper(device) = device_wrapper;
+        instance: &ash::Instance,
+        device: &vk::PhysicalDevice,
+        surface: &surface::Instance,
+        surface_khr: &vk::SurfaceKHR,
+    ) -> Result<usize> {
         let properties = unsafe { instance.get_physical_device_properties(*device) };
         let features = unsafe { instance.get_physical_device_features(*device) };
 
-        let families = Self::get_queue_families(instance_wrapper, device_wrapper);
+        let families = Self::get_queue_families(instance, device, surface, surface_khr);
+        let swapchain_support = Self::get_swapchain_support(surface, surface_khr, device)?;
 
-        if features.geometry_shader == 0 || !families.is_complete() {
-            return 0; // Necessary for usage
+        if features.geometry_shader == 0
+            || !families.is_complete()
+            || !Self::check_device_extensions(instance, device)?
+            || !swapchain_support.supported()
+        {
+            return Ok(0); // Necessary for usage
         }
 
         let mut score: usize = 0;
@@ -292,18 +330,21 @@ impl VulkanRenderer {
             properties.device_name_as_c_str().unwrap().to_str().unwrap()
         );
 
-        score
+        Ok(score)
     }
 
-    fn pick_physical_device(instance_wrapper: &InstanceWrapper) -> Result<vk::PhysicalDevice> {
+    fn pick_physical_device(
+        instance: &ash::Instance,
+        surface: &surface::Instance,
+        surface_khr: &vk::SurfaceKHR,
+    ) -> Result<vk::PhysicalDevice> {
         trace!("Attempting to pick Vulkan Physical Device");
 
-        let InstanceWrapper(instance) = instance_wrapper;
         let devices = unsafe { instance.enumerate_physical_devices()? };
         let mut candidates: BTreeMap<usize, vk::PhysicalDevice> = BTreeMap::new();
 
         for device in devices {
-            let score = Self::rank_device(instance_wrapper, &PhysicalDeviceWrapper(device));
+            let score = Self::rank_device(instance, &device, surface, surface_khr)?;
             candidates.insert(score, device);
         }
 
@@ -335,13 +376,12 @@ impl VulkanRenderer {
     }
 
     fn get_queue_families(
-        instance_wrapper: &InstanceWrapper,
-        device_wrapper: &PhysicalDeviceWrapper,
+        instance: &ash::Instance,
+        device: &vk::PhysicalDevice,
+        surface: &surface::Instance,
+        surface_khr: &vk::SurfaceKHR,
     ) -> QueueFamilies {
         trace!("Getting queue families");
-
-        let InstanceWrapper(instance) = instance_wrapper;
-        let PhysicalDeviceWrapper(device) = device_wrapper;
 
         let mut families = QueueFamilies {
             ..Default::default()
@@ -349,9 +389,16 @@ impl VulkanRenderer {
 
         let properties = unsafe { instance.get_physical_device_queue_family_properties(*device) };
         for (i, property) in properties.into_iter().enumerate() {
-            #[allow(clippy::single_match)]
             if property.queue_flags.contains(vk::QueueFlags::GRAPHICS) {
                 families.graphics_family = Some(i as u32);
+            }
+            let present_support: bool = unsafe {
+                surface
+                    .get_physical_device_surface_support(*device, i as u32, *surface_khr)
+                    .unwrap_or(false)
+            };
+            if present_support {
+                families.present_family = Some(i as u32);
             }
             if families.is_complete() {
                 break;
@@ -370,32 +417,43 @@ impl VulkanRenderer {
     }
 
     fn create_logical_device(
-        instance_wrapper: &InstanceWrapper,
-        physical_device_wrapper: &PhysicalDeviceWrapper,
+        instance: &ash::Instance,
+        physical_device: &vk::PhysicalDevice,
         queue_families: &QueueFamilies,
     ) -> Result<ash::Device> {
+        assert!(queue_families.is_complete());
+
         trace!("Attempting to create Vulkan logical device");
 
-        let InstanceWrapper(instance) = instance_wrapper;
-        let PhysicalDeviceWrapper(physical_device) = physical_device_wrapper;
+        let mut unique_families: HashSet<u32> = HashSet::new();
+        unique_families.insert(queue_families.graphics_family.unwrap());
+        unique_families.insert(queue_families.present_family.unwrap());
 
         let queue_priorities: f32 = 1.0;
-        let queue_info = vk::DeviceQueueCreateInfo {
-            s_type: vk::StructureType::DEVICE_QUEUE_CREATE_INFO,
-            queue_family_index: queue_families.graphics_family.unwrap(),
-            queue_count: 1,
-            p_queue_priorities: &queue_priorities,
-            ..Default::default()
-        };
+        let queue_infos: Vec<vk::DeviceQueueCreateInfo> = unique_families
+            .into_iter()
+            .map(|family| vk::DeviceQueueCreateInfo {
+                s_type: vk::StructureType::DEVICE_QUEUE_CREATE_INFO,
+                queue_family_index: family,
+                queue_count: 1,
+                p_queue_priorities: &queue_priorities,
+                ..Default::default()
+            })
+            .collect();
+
+        let extension_names: Vec<*const i8> =
+            DEVICE_EXTENSIONS.iter().map(|cstr| cstr.as_ptr()).collect();
 
         let device_features = vk::PhysicalDeviceFeatures {
             ..Default::default()
         };
         let device_info = vk::DeviceCreateInfo {
             s_type: vk::StructureType::DEVICE_CREATE_INFO,
-            p_queue_create_infos: &queue_info,
-            queue_create_info_count: 1,
+            p_queue_create_infos: queue_infos.as_ptr(),
+            queue_create_info_count: queue_infos.len() as u32,
             p_enabled_features: &device_features,
+            pp_enabled_extension_names: extension_names.as_ptr(),
+            enabled_extension_count: extension_names.len() as u32,
             ..Default::default()
         };
         let device = unsafe { instance.create_device(*physical_device, &device_info, None)? };
@@ -404,22 +462,162 @@ impl VulkanRenderer {
 
         Ok(device)
     }
+
+    fn create_surface(entry: &ash::Entry, instance: &ash::Instance) -> surface::Instance {
+        surface::Instance::new(entry, instance)
+    }
+
+    fn create_surface_khr(instance: &ash::Instance, window: &dyn Window) -> Result<vk::SurfaceKHR> {
+        window.create_vulkan_surface(instance.handle())
+    }
+
+    fn choose_swapchain_format(formats: &[vk::SurfaceFormatKHR]) -> Result<vk::SurfaceFormatKHR> {
+        for format in formats.iter() {
+            if format.format == vk::Format::B8G8R8A8_SRGB
+                && format.color_space == vk::ColorSpaceKHR::SRGB_NONLINEAR
+            {
+                return Ok(*format);
+            }
+        }
+
+        // If no ideal formats, just pick first one
+        if !formats.is_empty() {
+            return Ok(*formats.first().unwrap());
+        }
+
+        // No formats at all
+        Err(anyhow!("No valid swapchain formats were provided"))
+    }
+
+    fn choose_swapchain_present_mode(modes: &[vk::PresentModeKHR]) -> vk::PresentModeKHR {
+        for mode in modes {
+            if *mode == vk::PresentModeKHR::MAILBOX {
+                return *mode;
+            }
+        }
+
+        // Guaranteed to be available
+        vk::PresentModeKHR::FIFO
+    }
+
+    fn choose_swapchain_extent(
+        capabilities: &vk::SurfaceCapabilitiesKHR,
+        window: &dyn Window,
+    ) -> vk::Extent2D {
+        if capabilities.current_extent.width != u32::MAX {
+            return capabilities.current_extent;
+        }
+        let (window_width, window_height) = window.get_size();
+        let width = clamp(
+            window_width,
+            capabilities.min_image_extent.width,
+            capabilities.max_image_extent.width,
+        );
+        let height = clamp(
+            window_height,
+            capabilities.min_image_extent.height,
+            capabilities.max_image_extent.height,
+        );
+        vk::Extent2D { width, height }
+    }
+
+    fn create_swapchain_device(
+        instance: &ash::Instance,
+        device: &ash::Device,
+    ) -> swapchain::Device {
+        trace!("Creating Vulkan swapchain device");
+        swapchain::Device::new(instance, device)
+    }
+
+    fn create_swapchain(
+        swapchain_device: &swapchain::Device,
+        instance: &ash::Instance,
+        surface: &surface::Instance,
+        surface_khr: &vk::SurfaceKHR,
+        device: &vk::PhysicalDevice,
+        window: &dyn Window,
+    ) -> Result<vk::SwapchainKHR> {
+        trace!("Attempting to create Vulkan swapchain");
+
+        let support = Self::get_swapchain_support(surface, surface_khr, device)?;
+        let format = Self::choose_swapchain_format(&support.formats)?;
+        let present_mode = Self::choose_swapchain_present_mode(&support.present_modes);
+        let extent = Self::choose_swapchain_extent(&support.capabilities, window);
+
+        let image_count = if support.capabilities.max_image_count > 0
+            && support.capabilities.min_image_count + 1 > support.capabilities.max_image_count
+        {
+            support.capabilities.max_image_count
+        } else {
+            support.capabilities.min_image_count + 1
+        };
+
+        let families = Self::get_queue_families(instance, device, surface, surface_khr);
+        let indices: Vec<u32> = vec![
+            families.graphics_family.unwrap(),
+            families.present_family.unwrap(),
+        ];
+
+        let (image_sharing_mode, queue_family_index_count, p_queue_family_indices): (
+            vk::SharingMode,
+            u32,
+            *const u32,
+        ) = if families.graphics_family.unwrap() != families.present_family.unwrap() {
+            (vk::SharingMode::CONCURRENT, 2, indices.as_ptr())
+        } else {
+            (vk::SharingMode::EXCLUSIVE, 0, null())
+        };
+
+        let create_info = vk::SwapchainCreateInfoKHR {
+            s_type: vk::StructureType::SWAPCHAIN_CREATE_INFO_KHR,
+            surface: *surface_khr,
+            min_image_count: image_count,
+            image_format: format.format,
+            image_color_space: format.color_space,
+            image_extent: extent,
+            image_array_layers: 1,
+            image_usage: vk::ImageUsageFlags::COLOR_ATTACHMENT,
+            pre_transform: support.capabilities.current_transform,
+            composite_alpha: vk::CompositeAlphaFlagsKHR::OPAQUE,
+            clipped: vk::TRUE,
+            old_swapchain: SwapchainKHR::null(),
+            present_mode,
+            image_sharing_mode,
+            queue_family_index_count,
+            p_queue_family_indices,
+            ..Default::default()
+        };
+
+        let swapchain = unsafe { swapchain_device.create_swapchain(&create_info, None)? };
+
+        trace!("Created Vulkan swapchain");
+
+        Ok(swapchain)
+    }
 }
 
 impl Drop for VulkanRenderer {
     fn drop(&mut self) {
         unsafe {
-            let LogicalDeviceWrapper(logical_device) = &self.logical_device;
-            let InstanceWrapper(instance) = &self.instance;
-
-            logical_device.destroy_device(None);
+            self.swapchain_device
+                .destroy_swapchain(self.swapchain, None);
+            self.surface.destroy_surface(self.surface_khr, None);
+            self.logical_device.destroy_device(None);
 
             if let Some(debug) = &self.debug {
                 debug
                     .utils
                     .destroy_debug_utils_messenger(debug.messenger, None);
             }
-            instance.destroy_instance(None);
+
+            self.instance.destroy_instance(None);
         }
+    }
+}
+
+impl std::fmt::Debug for VulkanRenderer {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "Vulkan Renderer")?;
+        Ok(())
     }
 }
