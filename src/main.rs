@@ -11,7 +11,7 @@ fn main() -> Result<()> {
     let mut window: Box<dyn Window> = Box::new(glfw_window);
     window.set_callbacks();
 
-    let _vulkan_renderer = vulkan::VulkanRenderer::new(window.as_ref())?;
+    let vulkan_renderer = vulkan::VulkanRenderer::new(window.as_ref())?;
 
     while !window.should_close() {
         let events = window.get_events();
@@ -20,6 +20,7 @@ fn main() -> Result<()> {
                 Event::KeyPressed(KeyCode::Escape) => window.set_should_close(true),
             }
         }
+        vulkan_renderer.draw_frame()?;
     }
 
     Ok(())
