@@ -17,6 +17,7 @@ if(NOT MSVC)
     target_compile_options(game PRIVATE -Wall -Wextra -Wconversion -Wno-unused-variable -Wno-unused-private-field -Wno-unused-parameter -Werror)
 endif()
 
+set(ASAN TRUE)
 if(ASAN)
     target_compile_options(game PRIVATE -g3 -fsanitize=address,undefined -fno-omit-frame-pointer)
     target_link_options(game PRIVATE -fsanitize=address,undefined)
