@@ -8,20 +8,19 @@ public:
     Vec2(float x, float y)
         : x(x), y(y) {}
 
-    float getX();
-    float getY();
+    float getX() const;
+    float getY() const;
     void setX(float x);
     void setY(float y);
 
-    Vec2 operator+(const Vec2& rhs);
+    Vec2 operator+(const Vec2& rhs) const;
     void operator+=(const Vec2& rhs);
-    Vec2 operator-(const Vec2& rhs);
+    Vec2 operator-(const Vec2& rhs) const;
     void operator-=(const Vec2& rhs);
-    Vec2 operator*(float rhs);
+    Vec2 operator*(float rhs) const;
     void operator*=(float rhs);
-    Vec2 operator/(float rhs);
+    Vec2 operator/(float rhs) const;
     void operator/=(float rhs);
-    void operator,(float rhs);
 
 private:
     float x = 0.f;
