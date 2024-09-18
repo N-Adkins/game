@@ -4,3 +4,10 @@
 [submodule "lib/luajit"]
 	path = lib/luajit
 	url = https://github.com/WohlSoft/LuaJIT
+[submodule "lib/bgfx"]
+	path = lib/bgfx
+	url = https://github.com/bkaradzic/bgfx.cmake
+[submodule "lib/sdl2"]
+	path = lib/sdl2
+	url = https://github.com/libsdl-org/SDL
+	branch = SDL2
