@@ -22,5 +22,6 @@ if(ASAN)
     target_link_options(game PRIVATE -fsanitize=address,undefined)
 endif()
 
+add_subdirectory(shaders)
 add_subdirectory(lib)
 add_subdirectory(src)
