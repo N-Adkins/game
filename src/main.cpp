@@ -4,6 +4,8 @@
 #include "gfx/bgfx.hpp"
 #include "gfx/sdl.hpp"
 #include "math/vec2.hpp"
+#include "math/vec3.hpp"
+#include "math/mat4.hpp"
 
 #include <cassert>
 
@@ -14,6 +16,7 @@ int main()
     sol::state lua;
     lua.open_libraries(sol::lib::base, sol::lib::io, sol::lib::string);
     Vec2::registerLua(lua);
+    Vec3::registerLua(lua);
     
     assert(SDL_Init(SDL_INIT_VIDEO) == 0);
     SDL_Window *window = SDL_CreateWindow(
@@ -58,8 +61,13 @@ int main()
                 loop = false;
             }
         }
-        bgfx::dbgTextClear();
-        bgfx::setDebug(BGFX_DEBUG_STATS);
+
+        const Vec3 at(0.f, 0.f, 0.f);
+        const Vec3 eye(0.f, 0.f, -5.f);
+        Mat4 view = Mat4::lookAt(eye, at);
+        Mat4 projection = Mat4::projection(60.f, 1280.f / 720.f, 0.1f, 100.f, bgfx::getCaps()->homogeneousDepth);
+        bgfx::setViewTransform(0, view.getValues(), projection.getValues());
+
         bgfx::frame();
     }
     

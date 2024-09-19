@@ -39,6 +39,16 @@ float Vec3::dot(const Vec3& lhs, const Vec3& rhs)
     return lhs.x * rhs.x + lhs.y * rhs.y + lhs.z * rhs.z;
 }
 
+
+Vec3 Vec3::cross(const Vec3& lhs, const Vec3& rhs)
+{
+    return Vec3(
+        lhs.getY() * rhs.getZ() - lhs.getZ() * rhs.getY(),
+        lhs.getZ() * rhs.getX() - lhs.getX() * rhs.getZ(),
+        lhs.getX() * rhs.getY() - lhs.getY() * rhs.getX()
+    );
+}
+
 float Vec3::magnitude() const
 {
     return std::sqrt(x * x + y * y + z * z);
@@ -55,69 +65,74 @@ Vec3 Vec3::operator+(const Vec3& rhs) const
     return Vec3(x + rhs.x, y + rhs.y, z + rhs.z);
 }
 
-void Vec2::operator+=(const Vec2& rhs)
+void Vec3::operator+=(const Vec3& rhs)
 {
     x += rhs.x;
     y += rhs.y;
+    z += rhs.z;
 }
 
-Vec2 Vec2::operator-(const Vec2& rhs) const
+Vec3 Vec3::operator-(const Vec3& rhs) const
 {
-    return Vec2(x - rhs.x, y - rhs.y);
+    return Vec3(x - rhs.x, y - rhs.y, z - rhs.z);
 }
 
-void Vec2::operator-=(const Vec2& rhs)
+void Vec3::operator-=(const Vec3& rhs)
 {
     x -= rhs.x;
     y -= rhs.y;
+    z -= rhs.z;
 }
 
-Vec2 Vec2::operator*(float rhs) const
+Vec3 Vec3::operator*(float rhs) const
 {
-    return Vec2(x * rhs, y * rhs);
+    return Vec3(x * rhs, y * rhs, z * rhs);
 }
 
-void Vec2::operator*=(float rhs)
+void Vec3::operator*=(float rhs)
 {
     x *= rhs;
     y *= rhs;
+    z *= rhs;
 }
 
-Vec2 Vec2::operator/(float rhs) const
+Vec3 Vec3::operator/(float rhs) const
 {
-    return Vec2(x / rhs, y / rhs);
+    return Vec3(x / rhs, y / rhs, z / rhs);
 }
 
-void Vec2::operator/=(float rhs)
+void Vec3::operator/=(float rhs)
 {
     x /= rhs;
     y /= rhs;
+    z /= rhs;
 }
 
-Vec2 Vec2::operator-() const
+Vec3 Vec3::operator-() const
 {
-    return Vec2(-x, -y);
+    return Vec3(-x, -y, -z);
 }
 
-void Vec2::registerLua(sol::state &lua)
+void Vec3::registerLua(sol::state &lua)
 {
-    auto vec2 = lua.new_usertype<Vec2>("Vec2", sol::constructors<Vec2(float, float)>());
-    vec2["x"] = sol::property(&Vec2::getX, &Vec2::setX);
-    vec2["y"] = sol::property(&Vec2::getY, &Vec2::setY);
-    vec2["magnitude"] = &Vec2::magnitude;
-    vec2["unit"] = &Vec2::unit;
-    vec2["dot"] = &Vec2::dot;
-    vec2["__add"] = &Vec2::operator+; 
-    vec2["__mul"] = &Vec2::operator*;
-    vec2["__div"] = &Vec2::operator/;
-    vec2["__eq"] = &Vec2::operator==;
-    vec2["__tostring"] = [](const Vec2& self) {
-        return std::format("Vec2 {{ x: {}, y: {} }}", self.getX(), self.getY()); 
+    auto vec3 = lua.new_usertype<Vec3>("Vec3", sol::constructors<Vec3(float, float, float)>());
+    vec3["x"] = sol::property(&Vec3::getX, &Vec3::setX);
+    vec3["y"] = sol::property(&Vec3::getY, &Vec3::setY);
+    vec3["z"] = sol::property(&Vec3::getZ, &Vec3::setZ);
+    vec3["magnitude"] = &Vec3::magnitude;
+    vec3["unit"] = &Vec3::unit;
+    vec3["dot"] = &Vec3::dot;
+    vec3["__add"] = &Vec3::operator+; 
+    vec3["__mul"] = &Vec3::operator*;
+    vec3["__div"] = &Vec3::operator/;
+    vec3["__eq"] = &Vec3::operator==;
+    vec3["__tostring"] = [](const Vec3& self) {
+        return std::format("Vec3 {{ x: {}, y: {}, z: {} }}", self.getX(), self.getY(), self.getZ()); 
     };
 
     // Ambiguous operators so we have to do casts
-    vec2["__sub"] = static_cast<Vec2(Vec2::*)(const Vec2&) const>(&Vec2::operator-);
-    vec2["__unm"] = static_cast<Vec2(Vec2::*)() const>(&Vec2::operator-);
+    vec3["__sub"] = static_cast<Vec3(Vec3::*)(const Vec3&) const>(&Vec3::operator-);
+    vec3["__unm"] = static_cast<Vec3(Vec3::*)() const>(&Vec3::operator-);
 }
 
 } // namespace Engine
