@@ -7,7 +7,7 @@ namespace Engine {
     
 class Vec2 {
 public:
-    Vec2(float x, float y)
+    Vec2(float x, float y = 0)
         : x(x), y(y) {}
 
     float getX() const;
