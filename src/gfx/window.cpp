@@ -1,9 +1,13 @@
 #include "window.hpp"
+#include "SDL_events.h"
+#include "SDL_video.h"
 
 constexpr int DEFAULT_WIDTH = 1280;
 constexpr int DEFAULT_HEIGHT = 720;
 
 namespace Engine {
+
+int eventHandler(void *user_data, SDL_Event *event);
 
 Window::Window()
 {
@@ -16,9 +20,10 @@ Window::Window()
         DEFAULT_HEIGHT, 
         SDL_WINDOW_SHOWN
     );
+    assert(handle != nullptr);
     size.setX(DEFAULT_WIDTH);
     size.setY(DEFAULT_HEIGHT);
-    assert(handle != nullptr);
+    SDL_AddEventWatch(eventHandler, this);
 }
 
 Window::~Window()
@@ -49,5 +54,24 @@ PlatformDisplayData Window::getPlatformData() const
 
     return data;
 }
+
+int eventHandler(void *user_data, SDL_Event *event)
+{
+    Window* window = static_cast<Window*>(user_data);
+    switch (event->type) {
+    case SDL_WINDOWEVENT:
+        if (event->window.event == SDL_WINDOWEVENT_RESIZED) {
+            int width, height;
+            SDL_GetWindowSize(window->handle, &width, &height);
+            window->size.setX(static_cast<float>(width));
+            window->size.setY(static_cast<float>(height));
+        }
+        break;
+    default:
+        break;
+    }
+    return 0;
+}
+
 
 } // namespace Engine

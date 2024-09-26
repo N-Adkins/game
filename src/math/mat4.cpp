@@ -53,9 +53,4 @@ Mat4 Mat4::projection(float fov, float aspect, float near, float far, bool depth
     return mat;
 }
 
-const float* Mat4::getValues() const
-{
-    return &values[0];
-}
-
 } // namespace Engine

@@ -27,13 +27,16 @@ class Window {
 public:
     Window();
     ~Window();
-    
+
     Vec2 getSize() const;
     PlatformDisplayData getPlatformData() const;
     
 private:
+    friend int eventHandler(void *user_data, SDL_Event *event);
+
     SDL_Window* handle = nullptr;
     Vec2 size = Vec2(0.f, 0.f);
+
 };
 
 } // namespace Engine
