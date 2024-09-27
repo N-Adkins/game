@@ -1,6 +1,7 @@
 #include "window.hpp"
-#include "SDL_events.h"
-#include "SDL_video.h"
+#include "bgfx.hpp"
+#include "bgfx/bgfx.h"
+#include "logging.hpp"
 
 constexpr int DEFAULT_WIDTH = 1280;
 constexpr int DEFAULT_HEIGHT = 720;
@@ -11,6 +12,7 @@ int eventHandler(void *user_data, SDL_Event *event);
 
 Window::Window()
 {
+    Log::debug("Attempting to create SDL window");
     assert(SDL_Init(SDL_INIT_VIDEO) == 0);
     handle = SDL_CreateWindow(
         "Window", 
@@ -18,7 +20,7 @@ Window::Window()
         SDL_WINDOWPOS_UNDEFINED, 
         DEFAULT_WIDTH, 
         DEFAULT_HEIGHT, 
-        SDL_WINDOW_SHOWN
+        SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE
     );
     assert(handle != nullptr);
     size.setX(DEFAULT_WIDTH);
@@ -28,6 +30,7 @@ Window::Window()
 
 Window::~Window()
 {
+    Log::debug("Destroying SDL window");
     SDL_DestroyWindow(handle);
     SDL_Quit();
 }
@@ -55,7 +58,7 @@ PlatformDisplayData Window::getPlatformData() const
     return data;
 }
 
-int eventHandler(void *user_data, SDL_Event *event)
+int eventHandler(void* user_data, SDL_Event* event)
 {
     Window* window = static_cast<Window*>(user_data);
     switch (event->type) {
@@ -65,6 +68,9 @@ int eventHandler(void *user_data, SDL_Event *event)
             SDL_GetWindowSize(window->handle, &width, &height);
             window->size.setX(static_cast<float>(width));
             window->size.setY(static_cast<float>(height));
+            bgfx::setViewRect(0, 0, 0, static_cast<uint16_t>(window->size.getX()), static_cast<uint16_t>(window->size.getY()));
+            bgfx::reset(static_cast<uint32_t>(window->size.getX()), static_cast<uint32_t>(window->size.getY()));
+            Log::debug("Window size changed: ({}, {})", width, height);
         }
         break;
     default:
