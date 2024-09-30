@@ -58,7 +58,7 @@ int main()
         const Engine::Vec3 eye(0.f, 0.f, -5.f);
         Engine::Mat4 view = Engine::Mat4::lookAt(eye, at);
         Engine::Mat4 projection = Engine::Mat4::projection(60.f, window_size.getX() / window_size.getY(), 0.1f, 100.f, bgfx::getCaps()->homogeneousDepth);
-        bgfx::setViewTransform(0, view.values.begin(), projection.values.begin());
+        bgfx::setViewTransform(0, view.getValues(), projection.getValues());
 
         bgfx::dbgTextClear();
         bgfx::setDebug(BGFX_DEBUG_STATS);

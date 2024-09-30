@@ -5,9 +5,7 @@
 #include <source_location>
 #include <string>
 
-namespace Engine {
-
-namespace Log {
+namespace Engine::Log {
 
 class Logger {
 public:
@@ -85,8 +83,6 @@ struct error {
 template <typename... Args>
 error(std::format_string<Args...>, Args&&...) -> error<Args...>;
 
-}; // namespace Log
-
-} // namespace Engine
+} // namespace Engine::Log
 
 #endif

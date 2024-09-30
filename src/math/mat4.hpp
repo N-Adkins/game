@@ -10,6 +10,11 @@ class Mat4 {
 public:
     static Mat4 lookAt(const Vec3& eye, const Vec3& at, const Vec3& up = Vec3(0.f, 1.f, 0.f));
     static Mat4 projection(float fov, float aspect, float near, float far, bool depth);
+    float get(size_t index) const;
+    void set(size_t index, float value);
+    const float* getValues() const;
+
+private:
     std::array<float, 16> values = { 0 };
 };
 

@@ -53,4 +53,19 @@ Mat4 Mat4::projection(float fov, float aspect, float near, float far, bool depth
     return mat;
 }
 
+float Mat4::get(size_t index) const
+{
+    return values[index];
+}
+
+void Mat4::set(size_t index, float value)
+{
+    values[index] = value;
+}
+
+const float* Mat4::getValues() const
+{
+    return values.begin();
+}
+
 } // namespace Engine
