@@ -17,3 +17,5 @@ target_compile_options(game PRIVATE -Wall -Wextra -Wconversion -Wno-unused-varia
 
 add_subdirectory(lib)
 add_subdirectory(src)
+add_subdirectory(shaders)
+

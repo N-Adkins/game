@@ -5,12 +5,3 @@
 	path = lib/sdl2
 	url = https://github.com/libsdl-org/SDL
 	branch = SDL2
-[submodule "lib/DiligentCore"]
-	path = lib/DiligentCore
-	url = https://github.com/DiligentGraphics/DiligentCore
-[submodule "lib/DiligentTools"]
-	path = lib/DiligentTools
-	url = https://github.com/DiligentGraphics/DiligentTools
-[submodule "lib/DiligentFX"]
-	path = lib/DiligentFX
-	url = https://github.com/DiligentGraphics/DiligentFX
