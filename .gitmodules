@@ -1,10 +1,16 @@
 [submodule "lib/sol2"]
 	path = lib/sol2
 	url = https://github.com/ThePhD/sol2
-[submodule "lib/bgfx"]
-	path = lib/bgfx
-	url = https://github.com/bkaradzic/bgfx.cmake
 [submodule "lib/sdl2"]
 	path = lib/sdl2
 	url = https://github.com/libsdl-org/SDL
 	branch = SDL2
+[submodule "lib/DiligentCore"]
+	path = lib/DiligentCore
+	url = https://github.com/DiligentGraphics/DiligentCore
+[submodule "lib/DiligentTools"]
+	path = lib/DiligentTools
+	url = https://github.com/DiligentGraphics/DiligentTools
+[submodule "lib/DiligentFX"]
+	path = lib/DiligentFX
+	url = https://github.com/DiligentGraphics/DiligentFX

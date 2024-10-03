@@ -1,6 +1,4 @@
 #include "window.hpp"
-#include "bgfx.hpp"
-#include "bgfx/bgfx.h"
 #include "logging.hpp"
 
 constexpr int DEFAULT_WIDTH = 1280;
@@ -68,8 +66,6 @@ int eventHandler(void* user_data, SDL_Event* event)
             SDL_GetWindowSize(window->handle, &width, &height);
             window->size.setX(static_cast<float>(width));
             window->size.setY(static_cast<float>(height));
-            bgfx::setViewRect(0, 0, 0, static_cast<uint16_t>(window->size.getX()), static_cast<uint16_t>(window->size.getY()));
-            bgfx::reset(static_cast<uint32_t>(window->size.getX()), static_cast<uint32_t>(window->size.getY()));
             Log::debug("Window size changed: ({}, {})", width, height);
         }
         break;
