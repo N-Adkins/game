@@ -2,9 +2,13 @@
 #include <sol/sol.hpp>
 
 #include "gfx/window.hpp"
+#include "gfx/shader.hpp"
 #include "math/vec2.hpp"
 #include "math/vec3.hpp"
 #include "math/mat4.hpp"
+
+#include <shaders/test_vert.hpp>
+#include <shaders/test_frag.hpp>
 
 #include <cassert>
 
@@ -16,7 +20,14 @@ int main()
     Engine::Vec3::registerLua(lua);
 
     Engine::Window window;
-    auto window_platform = window.getPlatformData();
+    Engine::Renderer renderer = window.createRenderer();
+    Engine::Shader shader = renderer.loadShader(
+        "Test Shader",
+        shaders::test_vert.begin(), 
+        shaders::test_vert.size(),
+        shaders::test_frag.begin(),
+        shaders::test_frag.size()
+    );
     
     bool loop = true;
     while (loop) {
@@ -35,7 +46,5 @@ int main()
         Engine::Mat4 projection = Engine::Mat4::projection(60.f, window_size.getX() / window_size.getY(), 0.1f, 100.f, 0);
     }
     
-    SDL_Quit();
-
     return 0;
 }
