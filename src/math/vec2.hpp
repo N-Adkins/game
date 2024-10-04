@@ -29,13 +29,18 @@ public:
     Vec2 operator/(float rhs) const;
     void operator/=(float rhs);
     Vec2 operator-() const; // unary negation
-    bool operator==(const Vec2&) const = default;
+    bool operator==(const Vec2& rhs) const;
 
     static void registerLua(sol::state& lua);
 
 private:
-    float x = 0.f;
-    float y = 0.f;
+    union {
+        struct {
+            float x;
+            float y;
+        };
+        float raw[2];
+    };
 };
 
 } // namespace Engine

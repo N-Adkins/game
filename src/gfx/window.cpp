@@ -1,3 +1,4 @@
+#include <cstdlib>
 #include <pch.hpp>
 
 #include "window.hpp"
@@ -13,7 +14,10 @@ int eventHandler(void *user_data, SDL_Event *event);
 Window::Window()
 {
     Log::debug("Attempting to create SDL window");
-    assert(SDL_Init(SDL_INIT_VIDEO) == 0);
+    if (SDL_Init(SDL_INIT_VIDEO) != 0) {
+        Log::error("Failed to initialize SDL");
+        std::exit(EXIT_FAILURE);
+    }
 
 #if defined (GAME_RENDER_BACKEND_OPENGL)
     SDL_GL_LoadLibrary(nullptr);
@@ -36,19 +40,30 @@ Window::Window()
 #endif
     );
 
+    if (handle == nullptr) {
+        Log::error("Failed to create SDL window");
+        std::exit(EXIT_FAILURE);
+    }
+
 #if defined (GAME_RENDER_BACKEND_OPENGL)
     gl_context = SDL_GL_CreateContext(handle);
-    assert(gl_context != nullptr);
-    assert(gladLoadGLLoader(SDL_GL_GetProcAddress));
+    if (gl_context == nullptr) {
+        Log::error("Failed to create OpenGL context for SDL");
+        std::exit(EXIT_FAILURE);
+    }
+    if (!gladLoadGLLoader(SDL_GL_GetProcAddress)) {
+        Log::error("Failed to load GLAD for OpenGL");
+        std::exit(EXIT_FAILURE);
+    }
     Log::info("Loaded OpenGL");
     Log::info("Vendor: {}", std::string_view{reinterpret_cast<const char *>(glGetString(GL_VENDOR))});
     Log::info("Renderer: {}", std::string_view{reinterpret_cast<const char *>(glGetString(GL_RENDERER))});
     Log::info("Version: {}", std::string_view{reinterpret_cast<const char *>(glGetString(GL_VERSION))});
 #endif
 
-    assert(handle != nullptr);
     size.setX(DEFAULT_WIDTH);
     size.setY(DEFAULT_HEIGHT);
+
     SDL_AddEventWatch(eventHandler, this);
 }
 

@@ -1,6 +1,7 @@
 #include <pch.hpp>
 
 #include "vec3.hpp"
+#include "floats.hpp"
 #include <cmath>
 
 namespace Engine {
@@ -112,6 +113,13 @@ void Vec3::operator/=(float rhs)
 Vec3 Vec3::operator-() const
 {
     return Vec3(-x, -y, -z);
+}
+
+bool Vec3::operator==(const Vec3& rhs) const
+{
+    return approxEqual(x, rhs.getX()) 
+        && approxEqual(y, rhs.getY()) 
+        && approxEqual(z, rhs.getZ());
 }
 
 void Vec3::registerLua(sol::state &lua)

@@ -66,7 +66,7 @@ Shader Renderer::loadShader(
     glDeleteShader(vert);
     glDeleteShader(frag);
 
-    Log::info("Successfully loaded shader \"{}\"", name);
+    Log::debug("Successfully loaded shader \"{}\"", name);
 
     Shader shader;
     shader.program = program;

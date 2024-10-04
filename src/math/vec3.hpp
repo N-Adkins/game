@@ -32,14 +32,19 @@ public:
     Vec3 operator/(float rhs) const;
     void operator/=(float rhs);
     Vec3 operator-() const; // unary negation
-    bool operator==(const Vec3&) const = default;
+    bool operator==(const Vec3& rhs) const;
 
     static void registerLua(sol::state& lua);
 
 private:
-    float x = 0.f;
-    float y = 0.f;
-    float z = 0.f;
+    union {
+        struct {
+            float x;
+            float y;
+            float z;
+        };
+        float raw[3];
+    };
 };
 
 } // namespace Engine
