@@ -20,7 +20,13 @@ int main()
     Engine::Vec3::registerLua(lua);
 
     Engine::Window window;
-    Engine::Renderer renderer = window.createRenderer();
+    Engine::Renderer renderer;
+    renderer.setViewport(
+        static_cast<size_t>(window.getSize().getX()), 
+        static_cast<size_t>(window.getSize().getY())
+    );
+    window.setRenderer(&renderer);
+
     Engine::Shader shader = renderer.loadShader(
         "Test Shader",
         shaders::test_vert.begin(), 
@@ -44,6 +50,13 @@ int main()
         const Engine::Vec3 eye(0.f, 0.f, -5.f);
         Engine::Mat4 view = Engine::Mat4::lookAt(eye, at);
         Engine::Mat4 projection = Engine::Mat4::projection(60.f, window_size.getX() / window_size.getY(), 0.1f, 100.f, 0);
+
+        renderer.startFrame();
+        {
+
+        }
+        renderer.endFrame();
+        window.endFrame();
     }
     
     return 0;

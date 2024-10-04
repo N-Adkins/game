@@ -27,12 +27,14 @@ public:
     ~Window();
     
     Vec2 getSize() const;
+    void setRenderer(Renderer* renderer);
     PlatformDisplayData getPlatformData() const;
-    Renderer createRenderer() const;
+    void endFrame() const;
     
 private:
     friend int eventHandler(void *user_data, SDL_Event *event);
-
+    
+    Renderer* renderer = nullptr;
     SDL_Window* handle = nullptr;
     Vec2 size = Vec2(0.f, 0.f);
 

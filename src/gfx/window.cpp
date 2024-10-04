@@ -69,6 +69,11 @@ Vec2 Window::getSize() const
     return size;
 }
 
+void Window::setRenderer(Renderer* renderer)
+{
+    this->renderer = renderer;
+}
+
 PlatformDisplayData Window::getPlatformData() const
 {
     SDL_SysWMinfo info;
@@ -87,14 +92,19 @@ PlatformDisplayData Window::getPlatformData() const
     return data;
 }
 
-Renderer Window::createRenderer() const
+void Window::endFrame() const
 {
-    return Renderer();
+#if defined (GAME_RENDER_BACKEND_OPENGL)
+    SDL_GL_SwapWindow(handle);
+#endif
 }
 
 int eventHandler(void* user_data, SDL_Event* event)
 {
     Window* window = static_cast<Window*>(user_data);
+    assert(window != nullptr);
+    assert(window->renderer != nullptr);
+
     switch (event->type) {
     case SDL_WINDOWEVENT:
         if (event->window.event == SDL_WINDOWEVENT_RESIZED) {
@@ -102,6 +112,7 @@ int eventHandler(void* user_data, SDL_Event* event)
             SDL_GetWindowSize(window->handle, &width, &height);
             window->size.setX(static_cast<float>(width));
             window->size.setY(static_cast<float>(height));
+            window->renderer->setViewport(static_cast<size_t>(width), static_cast<size_t>(height));
             Log::debug("Window size changed: ({}, {})", width, height);
         }
         break;
