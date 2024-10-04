@@ -1,6 +1,7 @@
+#include <pch.hpp>
+
 #include "vec3.hpp"
 #include <cmath>
-#include <format>
 
 namespace Engine {
 

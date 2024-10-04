@@ -1,5 +1,4 @@
-#ifndef GAME_PLATFORM_HPP
-#define GAME_PLATFORM_HPP
+#pragma once
 
 #if defined(__unix__) || defined(__linux__)
 #define GAME_PLATFORM_LINUX
@@ -9,6 +8,4 @@
 #define GAME_PLATFORM_OSX
 #else
 #error Unsupported platform
-#endif
-
 #endif

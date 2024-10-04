@@ -1,6 +1,6 @@
-#include "logging.hpp"
+#include <pch.hpp>
+
 #include <cstring>
-#include <format>
 #include <iostream>
 
 namespace Engine::Log {

@@ -1,7 +1,8 @@
-#ifndef GAME_MATH_VEC3_HPP
-#define GAME_MATH_VEC3_HPP
+#pragma once
 
-#include <sol/sol.hpp>
+namespace sol {
+    class state;
+}
 
 namespace Engine {
     
@@ -42,5 +43,3 @@ private:
 };
 
 } // namespace Engine
-
-#endif

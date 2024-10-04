@@ -1,5 +1,4 @@
-#ifndef GAME_MATH_MAT4_HPP
-#define GAME_MATH_MAT4_HPP
+#pragma once
 
 #include "vec3.hpp"
 #include <array>
@@ -19,5 +18,3 @@ private:
 };
 
 } // namespace Engine
-
-#endif

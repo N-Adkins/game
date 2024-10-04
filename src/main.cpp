@@ -1,7 +1,10 @@
+#include <pch.hpp>
+
 #define SOL_ALL_SAFETIES_ON 1
 #include <sol/sol.hpp>
 
 #include "gfx/window.hpp"
+#include "gfx/renderer.hpp"
 #include "gfx/shader.hpp"
 #include "math/vec2.hpp"
 #include "math/vec3.hpp"
@@ -34,7 +37,7 @@ int main()
         shaders::test_frag.begin(),
         shaders::test_frag.size()
     );
-    
+
     bool loop = true;
     while (loop) {
         SDL_Event e;

@@ -1,12 +1,12 @@
-#ifndef GAME_GFX_RENDERER_HPP
-#define GAME_GFX_RENDERER_HPP
+#pragma once
 
 #include "../math/vec3.hpp"
-#include "shader.hpp"
 #include <cstddef>
 #include <string>
 
 namespace Engine {
+
+struct Shader;
 
 class Renderer {
 public:
@@ -29,5 +29,3 @@ private:
 };
 
 } // namespace Engine
-
-#endif

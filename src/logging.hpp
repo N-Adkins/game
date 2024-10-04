@@ -1,5 +1,4 @@
-#ifndef GAME_LOGGING_HPP
-#define GAME_LOGGING_HPP
+#pragma once
 
 #include <format>
 #include <source_location>
@@ -84,5 +83,3 @@ template <typename... Args>
 error(std::format_string<Args...>, Args&&...) -> error<Args...>;
 
 } // namespace Engine::Log
-
-#endif

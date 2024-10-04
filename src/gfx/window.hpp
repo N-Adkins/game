@@ -1,20 +1,12 @@
-#ifndef GAME_GFX_WINDOW_HPP
-#define GAME_GFX_WINDOW_HPP
+#pragma once
 
 #include <SDL.h>
-#include "renderer.hpp"
 #include "render_backend.hpp"
 #include "../math/vec2.hpp"
-#include "../platform.hpp"
 
-#if defined(GAME_PLATFORM_LINUX)
-#define SDL_VIDEO_DRIVER_X11
-#elif defined(GAME_PLATFORM_WINDOWS)
-#define SDL_VIDEO_DRIVER_WINDOWS
-#elif defined(GAME_PLATFORM_OSX)
-#define SDL_VIDEO_DRIVER_COCOA
-#endif
 namespace Engine {
+
+class Renderer;
 
 struct PlatformDisplayData {
     void* display;
@@ -44,5 +36,3 @@ private:
 };
 
 } // namespace Engine
-
-#endif

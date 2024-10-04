@@ -1,12 +1,7 @@
-#include "window.hpp"
-#include "logging.hpp"
-#include <string_view>
+#include <pch.hpp>
 
-#if defined (GAME_RENDER_BACKEND_OPENGL)
-#include <SDL_opengl.h>
-#endif
-#include <SDL_syswm.h>
-#include <SDL_video.h>
+#include "window.hpp"
+#include "renderer.hpp"
 
 constexpr int DEFAULT_WIDTH = 1280;
 constexpr int DEFAULT_HEIGHT = 720;
