@@ -3,6 +3,7 @@
 #include <SDL.h>
 #include "render_backend.hpp"
 #include "../math/vec2.hpp"
+#include "../constructors.hpp"
 
 namespace Engine {
 
@@ -17,7 +18,9 @@ class Window {
 public:
     Window();
     ~Window();
-    
+    DELETE_COPY(Window);
+    DEFAULT_MOVE(Window);
+
     Vec2 getSize() const;
     void setRenderer(Renderer* renderer);
     PlatformDisplayData getPlatformData() const;
