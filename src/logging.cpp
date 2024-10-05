@@ -28,6 +28,7 @@ void Logger::log(Severity severity, const std::string& message, const std::sourc
             case Severity::Warning: return "Warning";
             case Severity::Error: return "Error";
         }
+        return "N/A";
     }();
     std::string complete_message = std::format(
         "[{}:{}] {}: {}",

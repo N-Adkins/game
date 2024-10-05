@@ -5,7 +5,7 @@
 
 #include "gfx/window.hpp"
 #include "gfx/renderer.hpp"
-#include "gfx/shader.hpp"
+#include "resource/resource_manager.hpp"
 #include "math/vec2.hpp"
 #include "math/vec3.hpp"
 #include "math/mat4.hpp"
@@ -29,7 +29,8 @@ int main()
         static_cast<size_t>(window.getSize().getY())
     );
     window.setRenderer(&renderer);
-
+    
+    /*
     Engine::Shader shader = renderer.loadShader(
         "Test Shader",
         shaders::test_vert.begin(), 
@@ -37,6 +38,7 @@ int main()
         shaders::test_frag.begin(),
         shaders::test_frag.size()
     );
+    */
 
     bool loop = true;
     while (loop) {
@@ -46,12 +48,14 @@ int main()
                 loop = false;
             }
         }
-
+        
+        /*
         const Engine::Vec2 window_size = window.getSize();
         const Engine::Vec3 at(0.f, 0.f, 0.f);
         const Engine::Vec3 eye(0.f, 0.f, -5.f);
         const Engine::Mat4 view = Engine::Mat4::lookAt(eye, at);
         const Engine::Mat4 projection = Engine::Mat4::projection(60.f, window_size.getX() / window_size.getY(), 0.1f, 100.f, 0);
+        */ 
 
         renderer.startFrame();
         {

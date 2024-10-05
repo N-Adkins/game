@@ -2,22 +2,11 @@
 
 #include "../math/vec3.hpp"
 #include <cstddef>
-#include <string>
 
 namespace Engine {
 
-struct Shader;
-
 class Renderer {
 public:
-    Shader loadShader(
-        const std::string& name,
-        const unsigned char* vert_bytes, 
-        size_t vert_len, 
-        const unsigned char* frag_bytes, 
-        size_t frag_len
-    );
-
     void setViewport(size_t width, size_t height);
     void setBackgroundColor(const Vec3& color);
 

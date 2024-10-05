@@ -24,7 +24,7 @@ Mat4 Mat4::lookAt(const Vec3& eye, const Vec3& at, const Vec3& up)
     mat.values[10] = -forward.getZ();
     mat.values[11] = 0.f;
     mat.values[12] = -Vec3::dot(right, eye);
-    mat.values[13] = -Vec3::dot(up, eye);
+    mat.values[13] = -Vec3::dot(true_up, eye);
     mat.values[14] = Vec3::dot(forward, eye);
     mat.values[15] = 1.f;
     return mat;
