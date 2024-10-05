@@ -5,3 +5,6 @@
 	path = lib/sdl2
 	url = https://github.com/libsdl-org/SDL
 	branch = SDL2
+[submodule "lib/ctre"]
+	path = lib/ctre
+	url = https://github.com/hanickadot/compile-time-regular-expressions

@@ -1,28 +1,50 @@
 #include <pch.hpp>
 
 #include "shader.hpp"
+#include <fstream>
+#include <sstream>
 
 namespace Engine {
 
-Shader::Shader(
-    const std::string& name,
-    const unsigned char* vert_bytes, 
-    size_t vert_len, 
-    const unsigned char* frag_bytes, 
-    size_t frag_len)
+Shader::Shader(const std::filesystem::path& path)
 {
-    Log::debug("Attempting to load shader \"{}\"", name);
+    Log::debug("Attempting to load shader \"{}\"", path.string());
+
+    std::ifstream file(path);
+    if (!file) {
+        Log::error("Shader \"{}\" could not be found or opened", path.string());
+        return;
+    }
+    
+    std::stringstream buf;
+    buf << file.rdbuf();
+
+    std::string full_shader = buf.str();
+
+    Shader::ShaderData data;
+    if (auto maybe_data = preProcessShader(full_shader)) {
+        data = *maybe_data;
+    } else {
+        Log::error("Failed to process shader \"{}\"", path.string());
+        return;
+    }
 
 #if defined(GAME_RENDER_BACKEND_OPENGL)
+
+    const char* vert_cstr = data.vert.c_str();
+    const char* frag_cstr = data.frag.c_str();
+
+    Log::debug("Vert for \"{}\" -> \n{}", path.string(), vert_cstr);
+    Log::debug("Frag for \"{}\" -> \n{}", path.string(), frag_cstr);
 
     const GLuint vert = glCreateShader(GL_VERTEX_SHADER);
     const GLuint frag = glCreateShader(GL_FRAGMENT_SHADER);
 
-    glShaderBinary(1, &vert, GL_SHADER_BINARY_FORMAT_SPIR_V_ARB, vert_bytes, static_cast<GLsizei>(vert_len));
-    glShaderBinary(1, &frag, GL_SHADER_BINARY_FORMAT_SPIR_V_ARB, frag_bytes, static_cast<GLsizei>(frag_len));
+    glShaderSource(vert, 1, &vert_cstr, nullptr);
+    glShaderSource(frag, 1, &frag_cstr, nullptr);
 
-    glSpecializeShader(vert, "main", 0, 0, 0);
-    glSpecializeShader(frag, "main", 0, 0, 0);
+    glCompileShader(vert);
+    glCompileShader(frag);
 
     int compiled = 0;
     char log[512];
@@ -30,7 +52,7 @@ Shader::Shader(
     if (!compiled) {
         glGetShaderInfoLog(vert, 512, nullptr, log);
         std::string_view safe_log = log;
-        Log::error("Failed to compile vertex shader for \"{}\" -> \"{}\"", name, safe_log);
+        Log::error("Failed to compile vertex shader for \"{}\" -> \"{}\"", path.string(), safe_log);
         return;
     }
     
@@ -38,7 +60,7 @@ Shader::Shader(
     if (!compiled) {
         glGetShaderInfoLog(frag, 512, nullptr, log);
         std::string_view safe_log = log;
-        Log::error("Failed to compile fragment shader for \"{}\" -> \"{}\"", name, safe_log);
+        Log::error("Failed to compile fragment shader for \"{}\" -> \"{}\"", path.string(), safe_log);
         glDeleteShader(vert);
         return;
     }
@@ -52,14 +74,14 @@ Shader::Shader(
     if (!compiled) {
         glGetProgramInfoLog(program, 512, nullptr, log);
         std::string_view safe_log = log;
-        Log::error("Failed to link shader program for \"{}\" -> \"{}\"", name, safe_log);
+        Log::error("Failed to link shader program for \"{}\" -> \"{}\"", path.string(), safe_log);
         return;
     }
 
     glDeleteShader(vert);
     glDeleteShader(frag);
 
-    Log::debug("Successfully loaded shader \"{}\"", name);
+    Log::debug("Successfully loaded shader \"{}\"", path.string());
 
 #endif
 }
@@ -71,6 +93,40 @@ Shader::~Shader()
         glDeleteProgram(program);
     }
 #endif
+}
+
+std::optional<Shader::ShaderData> Shader::preProcessShader(const std::string& file)
+{
+    constexpr auto vert_pattern = ctll::fixed_string{"#section\\s+vert\\s*\n((?:(?!#section).)*)"};
+    constexpr auto frag_pattern = ctll::fixed_string{"#section\\s+frag\\s*\n((?:(?!#section).)*)"};
+
+    std::optional<std::string> vert = std::nullopt;
+    std::optional<std::string> frag = std::nullopt;
+
+    // Match vertex shader section
+    if (auto [whole, content] = ctre::search<vert_pattern>(file); whole) {
+        vert = content;
+    }
+
+    // Match fragment shader section
+    if (auto [whole, content] = ctre::search<frag_pattern>(file); whole) {
+        frag = content;
+    }
+
+    if (!vert || !frag) {
+        return std::nullopt;
+    }
+    
+    auto data = Shader::ShaderData {
+        .vert = *vert,
+        .frag = *frag,
+    };
+
+    std::string header = "#version " + std::to_string(OPENGL_MAJOR_VERSION) + std::to_string(OPENGL_MINOR_VERSION) + "0\n\n";
+    data.vert = data.vert.insert(0, header);
+    data.frag = data.frag.insert(0, header);
+
+    return data;
 }
 
 } // namespace Engine

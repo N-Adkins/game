@@ -29,4 +29,6 @@
 
 #include <sol/sol.hpp>
 
+#include <ctre.hpp>
+
 #include "logging.hpp"

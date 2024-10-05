@@ -2,9 +2,12 @@
 
 #include "resource.hpp"
 #include "../constructors.hpp"
+#include <filesystem>
 #include <string_view>
 
 namespace Engine {
+
+class ResourceManager;
 
 class Shader : public Resource {
 public:
@@ -14,14 +17,17 @@ public:
 
     constexpr static std::string_view RESOURCE_NAME = "Shader";
 
-private:
-    Shader(
-        const std::string& name,
-        const unsigned char* vert_bytes, 
-        size_t vert_len, 
-        const unsigned char* frag_bytes, 
-        size_t frag_len
-    );
+private: 
+    friend ResourceManager;
+
+    struct ShaderData {
+        std::string vert;
+        std::string frag;
+    };
+
+    Shader(const std::filesystem::path& path);
+    std::optional<ShaderData> preProcessShader(const std::string& file);
+
     unsigned int program = 0;
 };
 
