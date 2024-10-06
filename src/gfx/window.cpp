@@ -88,7 +88,7 @@ PlatformDisplayData Window::getPlatformData() const
 {
     SDL_SysWMinfo info;
     SDL_VERSION(&info.version);
-    assert(SDL_GetWindowWMInfo(handle, &info) != 0);
+    SDL_GetWindowWMInfo(handle, &info);
 
     PlatformDisplayData data;
     
