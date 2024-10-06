@@ -8,7 +8,7 @@ namespace Engine {
 
 Shader::Shader(const std::filesystem::path& path)
 {
-    Log::debug("Attempting to load shader \"{}\"", path.string());
+    Log::info("Attempting to load shader \"{}\"", path.string());
 
     std::ifstream file(path);
     if (!file) {
@@ -81,7 +81,7 @@ Shader::Shader(const std::filesystem::path& path)
     glDeleteShader(vert);
     glDeleteShader(frag);
 
-    Log::debug("Successfully loaded shader \"{}\"", path.string());
+    Log::info("Successfully loaded shader \"{}\"", path.string());
 
 #endif
 }
@@ -122,9 +122,11 @@ std::optional<Shader::ShaderData> Shader::preProcessShader(const std::string& fi
         .frag = *frag,
     };
 
+#if defined(GAME_RENDER_BACKEND_OPENGL)
     std::string header = "#version " + std::to_string(OPENGL_MAJOR_VERSION) + std::to_string(OPENGL_MINOR_VERSION) + "0\n\n";
     data.vert = data.vert.insert(0, header);
     data.frag = data.frag.insert(0, header);
+#endif
 
     return data;
 }

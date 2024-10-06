@@ -1,5 +1,6 @@
 target_sources(game PRIVATE
     main.cpp
+    platform.cpp
     logging.cpp
     pch.cpp
 )

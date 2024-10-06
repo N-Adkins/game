@@ -2,6 +2,7 @@
 
 #include "resource.hpp"
 #include "../logging.hpp"
+#include "../platform.hpp"
 #include <cstddef>
 #include <cstdlib>
 #include <filesystem>
@@ -45,7 +46,7 @@ const T& ResourceManager::load(const std::filesystem::path& path)
     const ResourceId new_id = resources.size();
     path_to_id[path] = new_id;
 
-    std::unique_ptr<T> resource = std::unique_ptr<T>(new T(RESOURCE_DIR / path));
+    std::unique_ptr<T> resource = std::unique_ptr<T>(new T(getExecutablePath() / RESOURCE_DIR / path));
     const T& resource_ref = *resource.get();
     resources.push_back(std::move(resource));
 
