@@ -86,11 +86,9 @@ Shader::Shader(const std::filesystem::path& path)
 
 Shader::~Shader()
 {
-#if defined(GAME_RENDER_BACKEND_OPENGL)
     if (program != 0) {
         glDeleteProgram(program);
     }
-#endif
 }
 
 std::optional<Shader::ShaderData> Shader::preProcessShader(const std::string& file)

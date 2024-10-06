@@ -29,6 +29,7 @@ int main()
     window.setRenderer(&renderer);
 
     Engine::ResourceManager resource_manager;
+
     const auto& shader = resource_manager.load<Engine::Shader>("test.shader");
     
     bool loop = true;
