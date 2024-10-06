@@ -1,6 +1,8 @@
 #include <pch.hpp>
 
 #include "shader.hpp"
+#include "../gfx/render_backend.hpp"
+#include "gfx/buffer.hpp"
 #include <fstream>
 #include <sstream>
 
@@ -28,8 +30,6 @@ Shader::Shader(const std::filesystem::path& path)
         Log::error("Failed to process shader \"{}\"", path.string());
         return;
     }
-
-#if defined(GAME_RENDER_BACKEND_OPENGL)
 
     const char* vert_cstr = data.vert.c_str();
     const char* frag_cstr = data.frag.c_str();
@@ -82,8 +82,6 @@ Shader::Shader(const std::filesystem::path& path)
     glDeleteShader(frag);
 
     Log::info("Successfully loaded shader \"{}\"", path.string());
-
-#endif
 }
 
 Shader::~Shader()
@@ -122,13 +120,36 @@ std::optional<Shader::ShaderData> Shader::preProcessShader(const std::string& fi
         .frag = *frag,
     };
 
-#if defined(GAME_RENDER_BACKEND_OPENGL)
     std::string header = "#version " + std::to_string(OPENGL_MAJOR_VERSION) + std::to_string(OPENGL_MINOR_VERSION) + "0\n\n";
     data.vert = data.vert.insert(0, header);
     data.frag = data.frag.insert(0, header);
-#endif
 
     return data;
+}
+
+VertexBufferLayout Shader::getUniformLayout() const
+{
+    VertexBufferLayout layout;
+
+    int max_length;
+    glGetProgramiv(program, GL_ACTIVE_ATTRIBUTE_MAX_LENGTH, &max_length);
+
+    int uniform_count;
+    glGetProgramiv(program, GL_ACTIVE_UNIFORMS, &uniform_count);
+
+    for (int i = 0; i < uniform_count; i++) {
+        int size;
+        unsigned int type;
+        glGetActiveUniform(program, i, max_length, nullptr, &size, &type, nullptr);
+
+        auto attrib_type = static_cast<AttributeType>(type);
+        switch (attrib_type) {
+        case AttributeType::Float: layout.push<float>(static_cast<size_t>(size)); break;
+        default: Log::error("Unhandled OpenGL attribute type {}", type); break;
+        }
+    }
+
+    return layout;
 }
 
 } // namespace Engine

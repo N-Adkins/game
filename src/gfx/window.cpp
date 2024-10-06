@@ -19,14 +19,12 @@ Window::Window()
         std::exit(EXIT_FAILURE);
     }
 
-#if defined (GAME_RENDER_BACKEND_OPENGL)
     SDL_GL_LoadLibrary(nullptr);
     SDL_GL_SetAttribute(SDL_GL_ACCELERATED_VISUAL, 1);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 6);
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
     SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
-#endif
 
     handle = SDL_CreateWindow(
         "Window", 
@@ -34,10 +32,7 @@ Window::Window()
         SDL_WINDOWPOS_UNDEFINED, 
         DEFAULT_WIDTH, 
         DEFAULT_HEIGHT, 
-        SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE
-#if defined (GAME_RENDER_BACKEND_OPENGL)
-        | SDL_WINDOW_OPENGL
-#endif
+        SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE | SDL_WINDOW_OPENGL
     );
 
     if (handle == nullptr) {
@@ -45,21 +40,21 @@ Window::Window()
         std::exit(EXIT_FAILURE);
     }
 
-#if defined (GAME_RENDER_BACKEND_OPENGL)
     gl_context = SDL_GL_CreateContext(handle);
     if (gl_context == nullptr) {
         Log::error("Failed to create OpenGL context for SDL");
         std::exit(EXIT_FAILURE);
     }
+
     if (!gladLoadGLLoader(SDL_GL_GetProcAddress)) {
         Log::error("Failed to load GLAD for OpenGL");
         std::exit(EXIT_FAILURE);
     }
+
     Log::info("Loaded OpenGL");
     Log::info("Vendor: {}", std::string_view{reinterpret_cast<const char *>(glGetString(GL_VENDOR))});
     Log::info("Renderer: {}", std::string_view{reinterpret_cast<const char *>(glGetString(GL_RENDERER))});
     Log::info("Version: {}", std::string_view{reinterpret_cast<const char *>(glGetString(GL_VERSION))});
-#endif
 
     size.setX(DEFAULT_WIDTH);
     size.setY(DEFAULT_HEIGHT);
@@ -104,9 +99,7 @@ PlatformDisplayData Window::getPlatformData() const
 
 void Window::endFrame() const
 {
-#if defined (GAME_RENDER_BACKEND_OPENGL)
     SDL_GL_SwapWindow(handle);
-#endif
 }
 
 int eventHandler(void* user_data, SDL_Event* event)

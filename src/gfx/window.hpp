@@ -33,9 +33,7 @@ private:
     SDL_Window* handle = nullptr;
     Vec2 size = Vec2(0.f, 0.f);
 
-#if defined(GAME_RENDER_BACKEND_OPENGL)
     SDL_GLContext gl_context;
-#endif
 };
 
 } // namespace Engine

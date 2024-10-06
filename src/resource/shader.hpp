@@ -2,6 +2,7 @@
 
 #include "resource.hpp"
 #include "../constructors.hpp"
+#include "../gfx/buffer.hpp"
 #include <filesystem>
 #include <string_view>
 
@@ -16,6 +17,8 @@ public:
     DEFAULT_MOVE(Shader);
 
     constexpr static std::string_view RESOURCE_NAME = "Shader";
+
+    VertexBufferLayout getUniformLayout() const;
 
 private: 
     friend ResourceManager;

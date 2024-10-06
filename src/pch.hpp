@@ -17,13 +17,10 @@
 #define SDL_VIDEO_DRIVER_COCOA
 #endif
 
-#include "gfx/render_backend.hpp"
-#if defined(GAME_RENDER_BACKEND_OPENGL)
 #include <glad/glad.h>
-#include <SDL_opengl.h>
-#endif
 
 #include <SDL.h>
+#include <SDL_opengl.h>
 #include <SDL_syswm.h>
 #include <SDL_video.h>
 
