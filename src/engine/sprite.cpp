@@ -56,9 +56,8 @@ Sprite& SpriteManager::createSprite()
         free_ids.erase(id);
     } else {
         id = sprites.size();
+        sprites.push_back(Sprite(this, id));
     }
-
-    sprites.push_back(Sprite(this, id));
 
     return sprites[id];
 }
@@ -66,37 +65,46 @@ Sprite& SpriteManager::createSprite()
 void SpriteManager::render()
 {
     std::vector<SpriteVertexData> vert_data;
-    for (size_t i = 0; i < sprites.size(); i++) {
-        if (free_ids.contains(i)) {
-            continue;
-        }
-        const auto& sprite = sprites[i];
-        auto data = SpriteVertexData{
-            .index = 0,
-            .position = sprite.getPosition(),
-            .scale = sprite.getScale(),
-        };
-        for (int j = 0; j < 3; j++) {
-            data.index = j;
-            vert_data.push_back(data);
-        }
-    }
+    
+    shader.use();
+    vert_array.bind();
     
     if (!updated_sprites.empty()) {
+        for (size_t i = 0; i < sprites.size(); i++) {
+            const auto& sprite = sprites[i];
+            if (free_ids.contains(sprite.id)) {
+                continue;
+            }
+
+            auto data = SpriteVertexData {
+                .position = Vec2(0.f, 0.f), // sprite.getPosition(),
+                .scale = 1.f // sprite.getScale(),
+            };
+
+            for (int j = 0; j < 3; j++) {
+                const Vec2 positions[3] = { Vec2(-0.5f, -0.5f), Vec2(0.5f, -0.5f), Vec2(0.5f, 0.5f) };
+                data.position = positions[j];
+                Log::debug(
+                    "Pushing sprite vert, position ({}, {}) scale {}",
+                    float(data.position.getX()),
+                    float(data.position.getY()),
+                    float(data.scale)
+                );
+                vert_data.push_back(data);
+            }
+        }
+        Log::debug("Buffering {} verts for sprites", vert_data.size());
         vert_buffer.buffer(
             static_cast<const void*>(&vert_data[0]),
             vert_data.size() * sizeof(SpriteVertexData)
         );
     }
-    
-    shader.use();
-    vert_array.bind();
-        
+
     if (!vert_buffer.isEmpty()) {
         OPENGL_CALL(glDrawArrays(
             GL_TRIANGLES,
             0,
-            static_cast<GLsizei>(vert_data.size())
+            static_cast<GLsizei>((sprites.size() - free_ids.size()) * 3)
         ));
     }
         

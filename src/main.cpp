@@ -11,6 +11,7 @@
 #include "math/vec2.hpp"
 #include "math/vec3.hpp"
 #include "math/mat4.hpp"
+#include "logging.hpp"
 
 #include <cassert>
 
@@ -34,12 +35,11 @@ int main()
     const auto& shader = resource_manager.load<Engine::Shader>("test.shader");
 
     Engine::SpriteManager sprite_manager(shader);
-    sprite_manager.createSprite();
     auto& sprite = sprite_manager.createSprite();
     sprite_manager.createSprite();
     sprite.destroy();
     sprite_manager.createSprite();
-    
+
     bool loop = true;
     while (loop) {
         SDL_Event e;
@@ -56,7 +56,8 @@ int main()
         const Engine::Mat4 view = Engine::Mat4::lookAt(eye, at);
         const Engine::Mat4 projection = Engine::Mat4::projection(60.f, window_size.getX() / window_size.getY(), 0.1f, 100.f, 0);
         */
- 
+
+        //sprite.setPosition(sprite.getPosition() + Engine::Vec2(0.001f, 0.001f));
         renderer.clearBackground();
         sprite_manager.render();
         window.swapBuffers();

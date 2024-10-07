@@ -119,8 +119,8 @@ std::optional<Shader::ShaderData> Shader::preProcessShader(const std::string& fi
         .frag = *frag,
     };
 
-    //std::string header = "#version " + std::to_string(OPENGL_MAJOR_VERSION) + std::to_string(OPENGL_MINOR_VERSION) + "0\n\n";
-    std::string header = "#version 330 core\n\n";
+    std::string header = "#version " + std::to_string(OPENGL_MAJOR_VERSION) + std::to_string(OPENGL_MINOR_VERSION) + "0\n\n";
+    //std::string header = "#version 330 core\n\n";
     data.vert = data.vert.insert(0, header);
     data.frag = data.frag.insert(0, header);
 

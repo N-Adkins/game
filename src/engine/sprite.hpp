@@ -5,7 +5,6 @@
 #include "../math/vec2.hpp"
 #include "../constructors.hpp"
 #include "../platform.hpp"
-#include <queue>
 #include <unordered_set>
 
 namespace Engine {
@@ -15,7 +14,7 @@ using SpriteId = size_t;
 class SpriteManager;
 
 GAME_PACKED_STRUCT(SpriteVertexData, {
-    int index;
+    //Vec2 real_position = Vec2(0.f, 0.f);
     Vec2 position = Vec2(0.f, 0.f);
     float scale = 1.f;
 });

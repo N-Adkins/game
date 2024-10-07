@@ -65,11 +65,11 @@ struct AttributeDescriptor {
     inline static size_t getTypeSize(AttributeType type)
     {
         switch (type) {
-        case AttributeType::Int: return sizeof(int);
-        case AttributeType::Float: return sizeof(float);
-        case AttributeType::Vec2: return sizeof(float) * 2;
-        case AttributeType::Vec3: return sizeof(float) * 3;
-        case AttributeType::Mat4: return sizeof(float) * 16;
+        case AttributeType::Int: return sizeof(GLint);
+        case AttributeType::Float: return sizeof(GLfloat);
+        case AttributeType::Vec2: return sizeof(GLfloat) * 2;
+        case AttributeType::Vec3: return sizeof(GLfloat) * 3;
+        case AttributeType::Mat4: return sizeof(GLfloat) * 16;
         default: return 0;
         }
     } 
@@ -95,31 +95,31 @@ private:
 template<>
 inline void VertexBufferLayout::push<int>(size_t count) {
     attributes.push_back(AttributeDescriptor(AttributeType::Int, count));
-    stride += sizeof(int) * count;
+    stride += sizeof(GLint) * count;
 }
 
 template <>
 inline void VertexBufferLayout::push<float>(size_t count) {
     attributes.push_back(AttributeDescriptor(AttributeType::Float, count));
-    stride += sizeof(float) * count;
+    stride += sizeof(GLfloat) * count;
 }
 
 template <>
 inline void VertexBufferLayout::push<Vec2>(size_t count) {
     attributes.push_back(AttributeDescriptor(AttributeType::Vec2, count));
-    stride += sizeof(float) * 2 * count;
+    stride += sizeof(GLfloat) * 2 * count;
 }
 
 template <>
 inline void VertexBufferLayout::push<Vec3>(size_t count) {
     attributes.push_back(AttributeDescriptor(AttributeType::Vec3, count));
-    stride += sizeof(float) * 3 * count;
+    stride += sizeof(GLfloat) * 3 * count;
 }
 
 template <>
 inline void VertexBufferLayout::push<Mat4>(size_t count) {
     attributes.push_back(AttributeDescriptor(AttributeType::Mat4, count));
-    stride += sizeof(float) * 16 * count;
+    stride += sizeof(GLfloat) * 16 * count;
 }
 
 } // namespace Engine

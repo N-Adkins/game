@@ -31,7 +31,8 @@ Renderer::Renderer()
     };
 
     OPENGL_CALL(glEnable(GL_DEBUG_OUTPUT));
-    OPENGL_CALL(glDebugMessageCallback(callback, 0));
+    OPENGL_CALL(glDebugMessageCallback(callback, nullptr));
+    OPENGL_CALL(glDisable(GL_DEPTH_TEST));
 }
 
 void Renderer::setViewport(size_t width, size_t height)

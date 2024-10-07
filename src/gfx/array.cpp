@@ -20,10 +20,15 @@ void VertexArray::addBuffer(const VertexBuffer& buffer, const VertexBufferLayout
 {
     bind();
     buffer.bind();
+
     const auto& attribs = layout.getAttributes();
     size_t offset = 0;
+
     for (size_t i = 0; i < attribs.size(); i++) {
         const auto& attrib = attribs[i];
+        Log::debug("Attrib pointer call, index {} count {} type {} stride {} offset {}",
+            i, attrib.getCount(), static_cast<GLenum>(attrib.getType()), layout.getStride(), offset
+        );
         OPENGL_CALL(glVertexAttribPointer(
                 static_cast<GLuint>(i), 
                 static_cast<GLint>(attrib.getCount()),
@@ -32,9 +37,9 @@ void VertexArray::addBuffer(const VertexBuffer& buffer, const VertexBufferLayout
                 static_cast<GLsizei>(layout.getStride()),
                 reinterpret_cast<const void*>(static_cast<uintptr_t>(offset))
         ));
+        OPENGL_CALL(glEnableVertexAttribArray(static_cast<GLuint>(i)));
         offset += attrib.getCount() * AttributeDescriptor::getTypeSize(attrib.getType());
     }
-    OPENGL_CALL(glEnableVertexAttribArray(0));
 }
 
 void VertexArray::bind() const
