@@ -3,6 +3,7 @@
 #include "../constructors.hpp"
 #include "../math/vec2.hpp"
 #include "../math/vec3.hpp"
+#include "../math/mat4.hpp"
 #include <vector>
 #include <glad/glad.h>
 
@@ -23,19 +24,36 @@ private:
 };
 
 enum class AttributeType {
-    Float = GL_FLOAT,
+    Float,
+    Vec2,
+    Vec3,
+    Mat4,
 };
 
 struct AttributeDescriptor {
     AttributeType type;
     size_t count;
 
+    inline static unsigned int getTypeGLValue(AttributeType type)
+    {
+        switch (type) {
+        case AttributeType::Float: return GL_FLOAT;
+        case AttributeType::Vec2: return GL_FLOAT * 2;
+        case AttributeType::Vec3: return GL_FLOAT * 3;
+        case AttributeType::Mat4: return GL_FLOAT * 16;
+        default: return 0;
+        }
+    }
+
     inline static size_t getTypeSize(AttributeType type)
     {
         switch (type) {
-            case AttributeType::Float: return sizeof(float);
+        case AttributeType::Float: return sizeof(float);
+        case AttributeType::Vec2: return sizeof(float) * 2;
+        case AttributeType::Vec3: return sizeof(float) * 3;
+        case AttributeType::Mat4: return sizeof(float) * 16;
+        default: return 0;
         }
-        return 0;
     }
 };
 
@@ -60,14 +78,20 @@ inline void VertexBufferLayout::push<float>(size_t count) {
 
 template <>
 inline void VertexBufferLayout::push<Vec2>(size_t count) {
-    attributes.push_back({ .type = AttributeType::Float, .count = count * 2 });
+    attributes.push_back({ .type = AttributeType::Vec2, .count = count });
     stride += sizeof(float) * 2 * count;
 }
 
 template <>
 inline void VertexBufferLayout::push<Vec3>(size_t count) {
-    attributes.push_back({ .type = AttributeType::Float, .count = count * 3 });
+    attributes.push_back({ .type = AttributeType::Vec3, .count = count });
     stride += sizeof(float) * 3 * count;
+}
+
+template <>
+inline void VertexBufferLayout::push<Mat4>(size_t count) {
+    attributes.push_back({ .type = AttributeType::Mat4, .count = count });
+    stride += sizeof(float) * 16 * count;
 }
 
 } // namespace Engine
