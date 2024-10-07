@@ -15,6 +15,7 @@ using SpriteId = size_t;
 class SpriteManager;
 
 GAME_PACKED_STRUCT(SpriteVertexData, {
+    int index;
     Vec2 position = Vec2(0.f, 0.f);
     float scale = 1.f;
 });
@@ -31,10 +32,11 @@ public:
     void setPosition(Vec2 position);
     Vec2 getPosition() const;
     void setScale(float scale);
-    Vec2 getScale() const;
+    float getScale() const;
 
 private:
-    SpriteVertexData vert_data;
+    Vec2 position = Vec2(0.f, 0.f);
+    float scale = 1.f;
     SpriteManager* manager;
     SpriteId id = 0;
 

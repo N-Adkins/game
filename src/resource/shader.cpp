@@ -2,6 +2,7 @@
 
 #include "shader.hpp"
 #include "../gfx/render_backend.hpp"
+#include "../gfx/opengl.hpp"
 #include "gfx/buffer.hpp"
 #include <fstream>
 #include <sstream>
@@ -37,49 +38,49 @@ Shader::Shader(const std::filesystem::path& path)
     Log::debug("Vert for \"{}\" -> \n{}", path.string(), vert_cstr);
     Log::debug("Frag for \"{}\" -> \n{}", path.string(), frag_cstr);
 
-    const GLuint vert = glCreateShader(GL_VERTEX_SHADER);
-    const GLuint frag = glCreateShader(GL_FRAGMENT_SHADER);
+    const GLuint vert = OPENGL_CALL(glCreateShader(GL_VERTEX_SHADER));
+    const GLuint frag = OPENGL_CALL(glCreateShader(GL_FRAGMENT_SHADER));
 
-    glShaderSource(vert, 1, &vert_cstr, nullptr);
-    glShaderSource(frag, 1, &frag_cstr, nullptr);
+    OPENGL_CALL(glShaderSource(vert, 1, &vert_cstr, nullptr));
+    OPENGL_CALL(glShaderSource(frag, 1, &frag_cstr, nullptr));
 
-    glCompileShader(vert);
-    glCompileShader(frag);
+    OPENGL_CALL(glCompileShader(vert));
+    OPENGL_CALL(glCompileShader(frag));
 
     int compiled = 0;
     char log[512];
-    glGetShaderiv(vert, GL_COMPILE_STATUS, &compiled);
+    OPENGL_CALL(glGetShaderiv(vert, GL_COMPILE_STATUS, &compiled));
     if (!compiled) {
-        glGetShaderInfoLog(vert, 512, nullptr, log);
+        OPENGL_CALL(glGetShaderInfoLog(vert, 512, nullptr, log));
         std::string_view safe_log = log;
         Log::error("Failed to compile vertex shader for \"{}\" -> \"{}\"", path.string(), safe_log);
         return;
     }
     
-    glGetShaderiv(frag, GL_COMPILE_STATUS, &compiled);
+    OPENGL_CALL(glGetShaderiv(frag, GL_COMPILE_STATUS, &compiled));
     if (!compiled) {
-        glGetShaderInfoLog(frag, 512, nullptr, log);
+        OPENGL_CALL(glGetShaderInfoLog(frag, 512, nullptr, log));
         std::string_view safe_log = log;
         Log::error("Failed to compile fragment shader for \"{}\" -> \"{}\"", path.string(), safe_log);
-        glDeleteShader(vert);
+        OPENGL_CALL(glDeleteShader(vert));
         return;
     }
     
-    const GLuint program = glCreateProgram();
-    glAttachShader(program, vert);
-    glAttachShader(program, frag);
-    glLinkProgram(program);
+    program = OPENGL_CALL(glCreateProgram());
+    OPENGL_CALL(glAttachShader(program, vert));
+    OPENGL_CALL(glAttachShader(program, frag));
+    OPENGL_CALL(glLinkProgram(program));
 
-    glGetProgramiv(program, GL_LINK_STATUS, &compiled);
+    OPENGL_CALL(glGetProgramiv(program, GL_LINK_STATUS, &compiled));
     if (!compiled) {
-        glGetProgramInfoLog(program, 512, nullptr, log);
+        OPENGL_CALL(glGetProgramInfoLog(program, 512, nullptr, log));
         std::string_view safe_log = log;
         Log::error("Failed to link shader program for \"{}\" -> \"{}\"", path.string(), safe_log);
         return;
     }
 
-    glDeleteShader(vert);
-    glDeleteShader(frag);
+    OPENGL_CALL(glDeleteShader(vert));
+    OPENGL_CALL(glDeleteShader(frag));
 
     Log::info("Successfully loaded shader \"{}\"", path.string());
 }
@@ -87,7 +88,7 @@ Shader::Shader(const std::filesystem::path& path)
 Shader::~Shader()
 {
     if (program != 0) {
-        glDeleteProgram(program);
+        OPENGL_CALL(glDeleteProgram(program));
     }
 }
 
@@ -118,7 +119,8 @@ std::optional<Shader::ShaderData> Shader::preProcessShader(const std::string& fi
         .frag = *frag,
     };
 
-    std::string header = "#version " + std::to_string(OPENGL_MAJOR_VERSION) + std::to_string(OPENGL_MINOR_VERSION) + "0\n\n";
+    //std::string header = "#version " + std::to_string(OPENGL_MAJOR_VERSION) + std::to_string(OPENGL_MINOR_VERSION) + "0\n\n";
+    std::string header = "#version 330 core\n\n";
     data.vert = data.vert.insert(0, header);
     data.frag = data.frag.insert(0, header);
 
@@ -127,47 +129,57 @@ std::optional<Shader::ShaderData> Shader::preProcessShader(const std::string& fi
 
 void Shader::use() const
 {
-    glUseProgram(program);
+    OPENGL_CALL(glUseProgram(program));
 }
 
 void Shader::setUniform(const std::string& name, float value) const
 {
-    glUniform1f(glGetUniformLocation(program, name.c_str()), value); 
+    GLint location = OPENGL_CALL(glGetUniformLocation(program, name.c_str()));
+    OPENGL_CALL(glUniform1f(location, value)); 
 }
 
 void Shader::setUniform(const std::string& name, Vec2 value) const
 {
-    glUniform2f(glGetUniformLocation(program, name.c_str()), value.getX(), value.getY()); 
+    GLint location = OPENGL_CALL(glGetUniformLocation(program, name.c_str()));
+    OPENGL_CALL(glUniform2f(location, value.getX(), value.getY())); 
+
 }
 
 void Shader::setUniform(const std::string& name, const Vec3& value) const
 {
-    glUniform3f(glGetUniformLocation(program, name.c_str()), value.getX(), value.getY(), value.getZ()); 
+    GLint location = OPENGL_CALL(glGetUniformLocation(program, name.c_str()));
+    OPENGL_CALL(glUniform3f(location, value.getX(), value.getY(), value.getZ())); 
 }
 
 void Shader::setUniform(const std::string& name, const Mat4& value) const
 {
-    glUniformMatrix4fv(glGetUniformLocation(program, name.c_str()), 1, GL_FALSE, value.getValues()); 
+    GLint location = OPENGL_CALL(glGetUniformLocation(program, name.c_str()));
+    OPENGL_CALL(glUniformMatrix4fv(location, 1, GL_FALSE, value.getValues())); 
 }
 
 VertexBufferLayout Shader::getUniformLayout() const
 {
     VertexBufferLayout layout;
 
-    int max_length;
-    glGetProgramiv(program, GL_ACTIVE_ATTRIBUTE_MAX_LENGTH, &max_length);
+    int attrib_count;
+    OPENGL_CALL(glGetProgramiv(program, GL_ACTIVE_ATTRIBUTES, &attrib_count));
+    Log::debug("Attrib count {}", attrib_count);
 
-    int uniform_count;
-    glGetProgramiv(program, GL_ACTIVE_UNIFORMS, &uniform_count);
-
-    for (int i = 0; i < uniform_count; i++) {
+    for (int i = 0; i < attrib_count; i++) {
+        char name[256];
+        GLsizei length;
         int size;
         unsigned int type;
-        glGetActiveUniform(program, i, max_length, nullptr, &size, &type, nullptr);
+        OPENGL_CALL(glGetActiveAttrib(program, i, sizeof(name), &length, &size, &type, name));
+        Log::debug("Attrib {} of size {}", name, size);
 
         auto attrib_type = static_cast<AttributeType>(type);
         switch (attrib_type) {
+        case AttributeType::Int: layout.push<int>(static_cast<size_t>(size)); break;
         case AttributeType::Float: layout.push<float>(static_cast<size_t>(size)); break;
+        case AttributeType::Vec2: layout.push<Vec2>(static_cast<size_t>(size)); break;
+        case AttributeType::Vec3: layout.push<Vec3>(static_cast<size_t>(size)); break;
+        case AttributeType::Mat4: layout.push<Mat4>(static_cast<size_t>(size)); break;
         default: Log::error("Unhandled OpenGL attribute type {}", type); break;
         }
     }

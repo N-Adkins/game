@@ -1,47 +1,50 @@
 #include <pch.hpp>
 
 #include "array.hpp"
+#include "opengl.hpp"
 #include "gfx/buffer.hpp"
 
 namespace Engine {
 
 VertexArray::VertexArray()
 {
-    glGenVertexArrays(1, &vao);
+    OPENGL_CALL(glGenVertexArrays(1, &vao));
 }
 
 VertexArray::~VertexArray()
 {
-    glDeleteVertexArrays(1, &vao);
+    OPENGL_CALL(glDeleteVertexArrays(1, &vao));
 }
 
 void VertexArray::addBuffer(const VertexBuffer& buffer, const VertexBufferLayout& layout)
 {
+    bind();
     buffer.bind();
     const auto& attribs = layout.getAttributes();
     size_t offset = 0;
     for (size_t i = 0; i < attribs.size(); i++) {
         const auto& attrib = attribs[i];
-        glEnableVertexAttribArray(static_cast<GLuint>(i));
-        glVertexAttribPointer(
+        OPENGL_CALL(glVertexAttribPointer(
                 static_cast<GLuint>(i), 
-                static_cast<GLint>(attrib.count), 
-                AttributeDescriptor::getTypeGLValue(attrib.type), GL_FALSE, 
+                static_cast<GLint>(attrib.getCount()),
+                static_cast<GLenum>(attrib.getType()), 
+                GL_FALSE, 
                 static_cast<GLsizei>(layout.getStride()),
                 reinterpret_cast<const void*>(static_cast<uintptr_t>(offset))
-        );
-        offset += attrib.count * AttributeDescriptor::getTypeSize(attrib.type);
+        ));
+        offset += attrib.getCount() * AttributeDescriptor::getTypeSize(attrib.getType());
     }
+    OPENGL_CALL(glEnableVertexAttribArray(0));
 }
 
 void VertexArray::bind() const
 {
-    glBindVertexArray(vao);
+    OPENGL_CALL(glBindVertexArray(vao));
 }
 
 void VertexArray::unbind() const
 {
-    glBindVertexArray(0);
+    OPENGL_CALL(glBindVertexArray(0));
 }
 
 } // namespace Engine

@@ -1,6 +1,7 @@
 #include <pch.hpp>
 
 #include "renderer.hpp"
+#include "opengl.hpp"
 
 namespace Engine {
 
@@ -29,13 +30,13 @@ Renderer::Renderer()
         }
     };
 
-    glEnable(GL_DEBUG_OUTPUT);
-    glDebugMessageCallback(callback, 0);
+    OPENGL_CALL(glEnable(GL_DEBUG_OUTPUT));
+    OPENGL_CALL(glDebugMessageCallback(callback, 0));
 }
 
 void Renderer::setViewport(size_t width, size_t height)
 {
-    glViewport(0, 0, static_cast<GLint>(width), static_cast<GLint>(height));
+    OPENGL_CALL(glViewport(0, 0, static_cast<GLint>(width), static_cast<GLint>(height)));
 }
 
 void Renderer::setBackgroundColor(const Vec3& color)
@@ -45,8 +46,8 @@ void Renderer::setBackgroundColor(const Vec3& color)
 
 void Renderer::clearBackground()
 {
-    glClearColor(background_color.getX(), background_color.getY(), background_color.getZ(), 1.f);
-    glClear(GL_COLOR_BUFFER_BIT);
+    OPENGL_CALL(glClearColor(background_color.getX(), background_color.getY(), background_color.getZ(), 1.f));
+    OPENGL_CALL(glClear(GL_COLOR_BUFFER_BIT));
 }
 
 } // namespace Engine

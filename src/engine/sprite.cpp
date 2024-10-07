@@ -1,7 +1,8 @@
 #include <pch.hpp>
 
 #include "sprite.hpp"
-#include "gfx/buffer.hpp"
+#include "../gfx/buffer.hpp"
+#include "../gfx/opengl.hpp"
 
 namespace Engine {
 
@@ -20,24 +21,24 @@ void Sprite::destroy()
 
 void Sprite::setPosition(Vec2 position)
 {
-    this->vert_data.position = position;
+    this->position = position;
     manager->updated_sprites.insert(id);
 }
 
 Vec2 Sprite::getPosition() const
 {
-    return vert_data.position;
+    return position;
 }
 
 void Sprite::setScale(float scale)
 {
-    this->vert_data.scale = scale;
+    this->scale = scale;
     manager->updated_sprites.insert(id);
 }
 
-Vec2 Sprite::getScale() const
+float Sprite::getScale() const
 {
-    return vert_data.scale;
+    return scale;
 }
 
 SpriteManager::SpriteManager(const Shader& shader)
@@ -70,7 +71,15 @@ void SpriteManager::render()
             continue;
         }
         const auto& sprite = sprites[i];
-        vert_data.push_back(sprite.vert_data);
+        auto data = SpriteVertexData{
+            .index = 0,
+            .position = sprite.getPosition(),
+            .scale = sprite.getScale(),
+        };
+        for (int j = 0; j < 3; j++) {
+            data.index = j;
+            vert_data.push_back(data);
+        }
     }
     
     if (!updated_sprites.empty()) {
@@ -82,13 +91,15 @@ void SpriteManager::render()
     
     shader.use();
     vert_array.bind();
-    glDrawElements(
-        GL_TRIANGLES, 
-        static_cast<GLsizei>(vert_data.size() * 6), 
-        GL_UNSIGNED_INT, 
-        0
-    );
-
+        
+    if (!vert_buffer.isEmpty()) {
+        OPENGL_CALL(glDrawArrays(
+            GL_TRIANGLES,
+            0,
+            static_cast<GLsizei>(vert_data.size())
+        ));
+    }
+        
     updated_sprites.clear();
 }
 
