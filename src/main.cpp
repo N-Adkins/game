@@ -3,6 +3,7 @@
 #define SOL_ALL_SAFETIES_ON 1
 #include <sol/sol.hpp>
 
+#include "engine/sprite.hpp"
 #include "gfx/window.hpp"
 #include "gfx/renderer.hpp"
 #include "resource/resource_manager.hpp"
@@ -16,6 +17,7 @@
 int main()
 {
     sol::state lua;
+    lua.create_table("Engine");
     lua.open_libraries(sol::lib::base, sol::lib::io, sol::lib::string);
     Engine::Vec2::registerLua(lua);
     Engine::Vec3::registerLua(lua);
@@ -29,8 +31,14 @@ int main()
     window.setRenderer(&renderer);
 
     Engine::ResourceManager resource_manager;
-
     const auto& shader = resource_manager.load<Engine::Shader>("test.shader");
+
+    Engine::SpriteManager sprite_manager(shader);
+    sprite_manager.createSprite();
+    auto& sprite = sprite_manager.createSprite();
+    sprite_manager.createSprite();
+    sprite.destroy();
+    sprite_manager.createSprite();
     
     bool loop = true;
     while (loop) {
@@ -47,14 +55,11 @@ int main()
         const Engine::Vec3 eye(0.f, 0.f, -5.f);
         const Engine::Mat4 view = Engine::Mat4::lookAt(eye, at);
         const Engine::Mat4 projection = Engine::Mat4::projection(60.f, window_size.getX() / window_size.getY(), 0.1f, 100.f, 0);
-        */ 
-
-        renderer.startFrame();
-        {
-
-        }
-        renderer.endFrame();
-        window.endFrame();
+        */
+ 
+        renderer.clearBackground();
+        sprite_manager.render();
+        window.swapBuffers();
     }
     
     return 0;

@@ -1,12 +1,14 @@
 #pragma once
 
+#include "../platform.hpp"
+
 namespace sol {
     class state;
 }
 
 namespace Engine {
     
-class Vec2 {
+GAME_PACKED_CLASS(Vec2, {
 public:
     Vec2(float x, float y = 0)
         : x(x), y(y) {}
@@ -41,6 +43,6 @@ private:
         };
         float raw[2];
     };
-};
+});
 
 } // namespace Engine

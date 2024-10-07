@@ -101,9 +101,9 @@ void Vec2::registerLua(sol::state &lua)
     auto vec2 = lua.new_usertype<Vec2>("Vec2", sol::constructors<Vec2(float, float)>());
     vec2["x"] = sol::property(&Vec2::getX, &Vec2::setX);
     vec2["y"] = sol::property(&Vec2::getY, &Vec2::setY);
-    vec2["magnitude"] = &Vec2::magnitude;
-    vec2["unit"] = &Vec2::unit;
-    vec2["dot"] = &Vec2::dot;
+    vec2["Magnitude"] = &Vec2::magnitude;
+    vec2["Unit"] = &Vec2::unit;
+    vec2["Dot"] = &Vec2::dot;
     vec2["__add"] = &Vec2::operator+; 
     vec2["__mul"] = &Vec2::operator*;
     vec2["__div"] = &Vec2::operator/;

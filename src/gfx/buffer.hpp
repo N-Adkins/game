@@ -11,11 +11,12 @@ namespace Engine {
 
 class VertexBuffer {
 public:
-    VertexBuffer(const void* data, size_t size);
+    VertexBuffer();
     ~VertexBuffer();
     DELETE_COPY(VertexBuffer);
     DEFAULT_MOVE(VertexBuffer);
-
+    
+    void buffer(const void* data, size_t size);
     void bind() const;
     void unbind() const;
 

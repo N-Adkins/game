@@ -128,9 +128,9 @@ void Vec3::registerLua(sol::state &lua)
     vec3["x"] = sol::property(&Vec3::getX, &Vec3::setX);
     vec3["y"] = sol::property(&Vec3::getY, &Vec3::setY);
     vec3["z"] = sol::property(&Vec3::getZ, &Vec3::setZ);
-    vec3["magnitude"] = &Vec3::magnitude;
-    vec3["unit"] = &Vec3::unit;
-    vec3["dot"] = &Vec3::dot;
+    vec3["Magnitude"] = &Vec3::magnitude;
+    vec3["Unit"] = &Vec3::unit;
+    vec3["Dot"] = &Vec3::dot;
     vec3["__add"] = &Vec3::operator+; 
     vec3["__mul"] = &Vec3::operator*;
     vec3["__div"] = &Vec3::operator/;

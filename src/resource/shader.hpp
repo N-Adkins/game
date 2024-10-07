@@ -3,8 +3,15 @@
 #include "resource.hpp"
 #include "../constructors.hpp"
 #include "../gfx/buffer.hpp"
+#include "../math/vec2.hpp"
+#include "../math/vec3.hpp"
+#include "../math/mat4.hpp"
 #include <filesystem>
 #include <string_view>
+
+namespace sol {
+    class state;
+}
 
 namespace Engine {
 
@@ -17,6 +24,12 @@ public:
     DEFAULT_MOVE(Shader);
 
     constexpr static std::string_view RESOURCE_NAME = "Shader";
+    
+    void use() const;
+    void setUniform(const std::string& name, float value) const;
+    void setUniform(const std::string& name, Vec2 value) const;
+    void setUniform(const std::string& name, const Vec3& value) const;
+    void setUniform(const std::string& name, const Mat4& value) const;
 
     VertexBufferLayout getUniformLayout() const;
 

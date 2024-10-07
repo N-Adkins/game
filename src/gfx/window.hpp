@@ -24,7 +24,7 @@ public:
     Vec2 getSize() const;
     void setRenderer(Renderer* renderer);
     PlatformDisplayData getPlatformData() const;
-    void endFrame() const;
+    void swapBuffers() const;
     
 private:
     friend int eventHandler(void *user_data, SDL_Event *event);

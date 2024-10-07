@@ -125,6 +125,31 @@ std::optional<Shader::ShaderData> Shader::preProcessShader(const std::string& fi
     return data;
 }
 
+void Shader::use() const
+{
+    glUseProgram(program);
+}
+
+void Shader::setUniform(const std::string& name, float value) const
+{
+    glUniform1f(glGetUniformLocation(program, name.c_str()), value); 
+}
+
+void Shader::setUniform(const std::string& name, Vec2 value) const
+{
+    glUniform2f(glGetUniformLocation(program, name.c_str()), value.getX(), value.getY()); 
+}
+
+void Shader::setUniform(const std::string& name, const Vec3& value) const
+{
+    glUniform3f(glGetUniformLocation(program, name.c_str()), value.getX(), value.getY(), value.getZ()); 
+}
+
+void Shader::setUniform(const std::string& name, const Mat4& value) const
+{
+    glUniformMatrix4fv(glGetUniformLocation(program, name.c_str()), 1, GL_FALSE, value.getValues()); 
+}
+
 VertexBufferLayout Shader::getUniformLayout() const
 {
     VertexBufferLayout layout;

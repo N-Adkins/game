@@ -43,12 +43,7 @@ void Renderer::setBackgroundColor(const Vec3& color)
     background_color = color;
 }
 
-void Renderer::startFrame()
-{
-
-}
-
-void Renderer::endFrame()
+void Renderer::clearBackground()
 {
     glClearColor(background_color.getX(), background_color.getY(), background_color.getZ(), 1.f);
     glClear(GL_COLOR_BUFFER_BIT);

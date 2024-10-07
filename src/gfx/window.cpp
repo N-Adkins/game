@@ -97,7 +97,7 @@ PlatformDisplayData Window::getPlatformData() const
     return data;
 }
 
-void Window::endFrame() const
+void Window::swapBuffers() const
 {
     SDL_GL_SwapWindow(handle);
 }
