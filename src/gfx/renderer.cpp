@@ -2,6 +2,7 @@
 
 #include "renderer.hpp"
 #include "opengl.hpp"
+#include <backends/imgui_impl_opengl3.h>
 
 namespace Engine {
 
@@ -10,6 +11,12 @@ Renderer::Renderer()
     OPENGL_CALL(glEnable(GL_DEBUG_OUTPUT));
     OPENGL_CALL(glDebugMessageCallback(debugCallback, nullptr));
     OPENGL_CALL(glDisable(GL_DEPTH_TEST));
+    ImGui_ImplOpenGL3_Init("#version 410");
+}
+
+Renderer::~Renderer()
+{
+    ImGui_ImplOpenGL3_Shutdown();
 }
 
 void Renderer::setViewport(size_t width, size_t height)

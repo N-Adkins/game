@@ -8,3 +8,6 @@
 [submodule "lib/ctre"]
 	path = lib/ctre
 	url = https://github.com/hanickadot/compile-time-regular-expressions
+[submodule "lib/imgui"]
+	path = lib/imgui
+	url = https://github.com/ocornut/imgui

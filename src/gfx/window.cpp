@@ -3,6 +3,7 @@
 
 #include "window.hpp"
 #include "renderer.hpp"
+#include <backends/imgui_impl_sdl2.h>
 
 constexpr int DEFAULT_WIDTH = 1280;
 constexpr int DEFAULT_HEIGHT = 720;
@@ -23,9 +24,9 @@ Window::Window()
     SDL_GL_SetAttribute(SDL_GL_ACCELERATED_VISUAL, 1);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
-    //SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-    //SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
+    SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
 
     handle = SDL_CreateWindow(
         "Window", 
@@ -52,6 +53,8 @@ Window::Window()
         std::exit(EXIT_FAILURE);
     }
 
+    ImGui_ImplSDL2_InitForOpenGL(handle, gl_context);
+
     Log::info("Loaded OpenGL");
     Log::info("Vendor: {}", std::string_view{reinterpret_cast<const char *>(glGetString(GL_VENDOR))});
     Log::info("Renderer: {}", std::string_view{reinterpret_cast<const char *>(glGetString(GL_RENDERER))});
@@ -66,6 +69,8 @@ Window::Window()
 Window::~Window()
 {
     Log::debug("Destroying SDL window");
+    ImGui_ImplSDL2_Shutdown();
+    SDL_GL_DeleteContext(gl_context);
     SDL_DestroyWindow(handle);
     SDL_Quit();
 }

@@ -81,13 +81,12 @@ void SpriteManager::render()
                 .scale = sprite.getScale(),
             };
 
-            for (unsigned int j = 0; j < 3; j++) {
+            for (unsigned int j = 0; j < 6; j++) {
                 data.index = j;
                 vert_data.push_back(data);
             }
         }
 
-        Log::debug("Buffering {} verts for sprites", vert_data.size());
         vert_array.bind();
         vert_buffer.buffer(
             static_cast<const void*>(&vert_data[0]),
@@ -103,7 +102,7 @@ void SpriteManager::render()
         OPENGL_CALL(glDrawArrays(
             GL_TRIANGLES,
             0,
-            static_cast<GLsizei>((sprites.size() - free_ids.size()) * 3)
+            static_cast<GLsizei>((sprites.size() - free_ids.size()) * 6)
         ));
     }
         

@@ -8,6 +8,7 @@ namespace Engine {
 class Renderer {
 public:
     Renderer();
+    ~Renderer();
     void setViewport(size_t width, size_t height);
     void setBackgroundColor(const Vec3& color);
     void clearBackground();
