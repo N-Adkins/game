@@ -10,6 +10,7 @@ struct SpriteWrapper {
     SpriteWrapper(Sprite& ref)
         : ref(ref) {}
     Sprite& ref;
+    bool destroyed = false;
 };
 
 Lua::Lua(SpriteManager& sprite_manager)
@@ -30,15 +31,21 @@ Lua::Lua(SpriteManager& sprite_manager)
 
 void Lua::pushSource(const LuaSource& source)
 {
-    sol::table env = lua.script(source.getSource()); 
-    scripts.push_back(std::move(env));
+    sol::table env = lua.safe_script(source.getSource()); 
+    scripts.push_back(Script{
+        .table = env,
+        .name = source.getName(),
+    });
 }
 
 void Lua::runOnStart()
 {
     for (auto& script : scripts) {
-        if (sol::function func = script["OnStart"]) {
-            func(script);
+        if (sol::protected_function func = script.table["OnStart"]) {
+            if (auto result = func(script); !result.valid()) {
+                sol::error err = result;
+                Log::error("Lua script error at {}: {}", script.name, err.what());
+            };
         }
     }
 }
@@ -46,8 +53,11 @@ void Lua::runOnStart()
 void Lua::runOnFrame()
 {
     for (auto& script : scripts) {
-        if (sol::function func = script["OnFrame"]) {
-            func(script);
+        if (sol::protected_function func = script.table["OnFrame"]) {
+            if (auto result = func(script); !result.valid()) {
+                sol::error err = result;
+                Log::error("Lua script error at {}: {}", script.name, err.what());
+            };
         }
     }
 }
@@ -129,8 +139,14 @@ void Lua::registerType<Sprite>()
             return sprite.ref.setScale(scale);
         }
     );
-    sprite[sol::meta_method::garbage_collect] = [](SpriteWrapper& self) {
+    sprite["Destroy"] = [](SpriteWrapper& self) {
+        self.destroyed = true;
         self.ref.destroy();
+    };
+    sprite[sol::meta_method::garbage_collect] = [](SpriteWrapper& self) {
+        if (!self.destroyed) {
+            self.ref.destroy();
+        }
     };
     sprite[sol::meta_method::equal_to] = [](const SpriteWrapper& lhs, const SpriteWrapper& rhs) {
         return lhs.ref.getId() == rhs.ref.getId();

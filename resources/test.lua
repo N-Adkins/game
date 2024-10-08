@@ -2,7 +2,8 @@ local script = {}
 
 local Engine = require("Engine")
 
-local sprite = Engine.CreateSprite()
+--local sprite = Engine.CreateSprite()
+local sprite = nil
 
 local direction = 1
 local value = 0

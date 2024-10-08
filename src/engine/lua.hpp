@@ -30,8 +30,13 @@ public:
     void gc();
 
 private:
+    struct Script {
+        sol::table table;
+        std::string name;
+    };
+
     sol::state lua;
-    std::vector<sol::table> scripts;
+    std::vector<Script> scripts;
 };
 
 template <typename T>

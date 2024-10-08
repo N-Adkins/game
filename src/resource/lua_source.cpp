@@ -21,11 +21,17 @@ LuaSource::LuaSource(const std::filesystem::path& path)
     Log::info("Succesfully loaded lua source \"{}\"", path.string());
 
     source = buf.str();
+    name = path.filename();
 }
 
 const std::string& LuaSource::getSource() const
 {
     return source;
+}
+
+const std::string& LuaSource::getName() const
+{
+    return name;
 }
 
 }
