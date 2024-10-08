@@ -17,6 +17,7 @@
 #include "math/vec2.hpp"
 #include "math/vec3.hpp"
 #include "math/mat4.hpp"
+#include "math/floats.hpp"
 
 #include <cassert>
 
@@ -45,12 +46,10 @@ void renderLoop(
         ImGui::NewFrame();
         
         /*
-        const Engine::Vec2 window_size = window.getSize();
-        const Engine::Vec3 at(0.f, 0.f, 0.f);
-        const Engine::Vec3 eye(0.f, 0.f, -5.f);
-        const Engine::Mat4 view = Engine::Mat4::lookAt(eye, at);
-        const Engine::Mat4 projection = Engine::Mat4::projection(60.f, window_size.getX() / window_size.getY(), 0.1f, 100.f, 0);
-        */
+        if (ImGui::Begin("Editor")) {
+            ImGui::End();
+        }
+        */  
 
         renderer.clearBackground();
         sprite_manager.render();
@@ -83,6 +82,25 @@ int main()
         Engine::ResourceManager resource_manager;
         const auto& shader = resource_manager.load<Engine::Shader>("test.shader");
         const auto& script = resource_manager.load<Engine::LuaSource>("test.lua");
+
+        const Engine::Vec2 window_size = window.getSize();
+        const Engine::Vec3 camera_pos = Engine::Vec3(0.f, 0.f, 3.f);
+        const Engine::Vec3 camera_front = Engine::Vec3(0.f, 0.f, -1.f);
+        const Engine::Vec3 camera_up = Engine::Vec3(0.f, 1.f, 0.f);
+        const Engine::Mat4 view = Engine::Mat4::lookAt(
+            camera_pos,
+            camera_pos + camera_front,
+            camera_up
+        );
+        const Engine::Mat4 projection = Engine::Mat4::projection(
+            Engine::asRadians(45.f), 
+            window_size.getX() / window_size.getY(), 
+            0.1f, 
+            100.f,
+            false
+        );
+        //shader.setUniform("view", view);
+        //shader.setUniform("projection", projection);
         
         Engine::SpriteManager sprite_manager(shader);
 

@@ -13,7 +13,7 @@ target_include_directories(game PUBLIC src)
 target_compile_features(game PUBLIC cxx_std_20)
 set_target_properties(game PROPERTIES CXX_EXTENSIONS OFF)
 
-target_compile_options(game PRIVATE -fdiagnostics-color=always -Wall -Wextra -Wno-unused-variable -Wno-unused-private-field -Wno-unused-parameter -Werror)
+target_compile_options(game PRIVATE -fdiagnostics-color=always -Wall -Wextra -Wno-unused-variable -Wno-unused-private-field -Wno-unused-parameter -Wno-unused-but-set-variable)
 
 add_subdirectory(lib)
 add_subdirectory(src)

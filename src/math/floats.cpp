@@ -14,4 +14,9 @@ bool approxEqual(float a, float b)
     );
 }
 
+float asRadians(float deg)
+{
+    return deg * M_PIf * 180.f;
+}
+
 } // namespace Engine

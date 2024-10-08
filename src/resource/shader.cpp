@@ -136,25 +136,28 @@ void Shader::use() const
 
 void Shader::setUniform(const std::string& name, float value) const
 {
+    use();
     GLint location = OPENGL_CALL(glGetUniformLocation(program, name.c_str()));
     OPENGL_CALL(glUniform1f(location, value)); 
 }
 
 void Shader::setUniform(const std::string& name, Vec2 value) const
 {
+    use();
     GLint location = OPENGL_CALL(glGetUniformLocation(program, name.c_str()));
     OPENGL_CALL(glUniform2f(location, value.getX(), value.getY())); 
-
 }
 
 void Shader::setUniform(const std::string& name, const Vec3& value) const
 {
+    use();
     GLint location = OPENGL_CALL(glGetUniformLocation(program, name.c_str()));
     OPENGL_CALL(glUniform3f(location, value.getX(), value.getY(), value.getZ())); 
 }
 
 void Shader::setUniform(const std::string& name, const Mat4& value) const
 {
+    use();
     GLint location = OPENGL_CALL(glGetUniformLocation(program, name.c_str()));
     OPENGL_CALL(glUniformMatrix4fv(location, 1, GL_FALSE, value.getValues())); 
 }
