@@ -66,7 +66,6 @@ void SpriteManager::render()
 {
     std::vector<SpriteVertexData> vert_data;
     
-    shader.use();
     vert_array.bind();
     
     if (!updated_sprites.empty()) {
@@ -77,28 +76,28 @@ void SpriteManager::render()
             }
 
             auto data = SpriteVertexData {
-                .position = Vec2(0.f, 0.f), // sprite.getPosition(),
-                .scale = 1.f // sprite.getScale(),
+                .index = 0,
+                .position = sprite.getPosition(),
+                .scale = sprite.getScale(),
             };
 
-            for (int j = 0; j < 3; j++) {
-                const Vec2 positions[3] = { Vec2(-0.5f, -0.5f), Vec2(0.5f, -0.5f), Vec2(0.5f, 0.5f) };
-                data.position = positions[j];
-                Log::debug(
-                    "Pushing sprite vert, position ({}, {}) scale {}",
-                    float(data.position.getX()),
-                    float(data.position.getY()),
-                    float(data.scale)
-                );
+            for (unsigned int j = 0; j < 3; j++) {
+                data.index = j;
                 vert_data.push_back(data);
             }
         }
+
         Log::debug("Buffering {} verts for sprites", vert_data.size());
+        vert_array.bind();
         vert_buffer.buffer(
             static_cast<const void*>(&vert_data[0]),
             vert_data.size() * sizeof(SpriteVertexData)
         );
     }
+    
+    vert_array.unbind();
+    shader.use();
+    vert_array.bind();
 
     if (!vert_buffer.isEmpty()) {
         OPENGL_CALL(glDrawArrays(

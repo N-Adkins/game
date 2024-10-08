@@ -14,7 +14,7 @@ using SpriteId = size_t;
 class SpriteManager;
 
 GAME_PACKED_STRUCT(SpriteVertexData, {
-    //Vec2 real_position = Vec2(0.f, 0.f);
+    GLuint index = 0;
     Vec2 position = Vec2(0.f, 0.f);
     float scale = 1.f;
 });

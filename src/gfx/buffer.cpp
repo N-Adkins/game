@@ -19,7 +19,7 @@ void VertexBuffer::buffer(const void* data, size_t size)
 {
     empty = false;
     bind();
-    OPENGL_CALL(glBufferData(GL_ARRAY_BUFFER, size, data, GL_STATIC_DRAW));
+    OPENGL_CALL(glBufferData(GL_ARRAY_BUFFER, size, data, GL_DYNAMIC_DRAW));
 }
 
 void VertexBuffer::bind() const

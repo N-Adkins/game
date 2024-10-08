@@ -79,6 +79,9 @@ Shader::Shader(const std::filesystem::path& path)
         return;
     }
 
+    OPENGL_CALL(glDetachShader(program, vert));
+    OPENGL_CALL(glDetachShader(program, frag));
+
     OPENGL_CALL(glDeleteShader(vert));
     OPENGL_CALL(glDeleteShader(frag));
 
@@ -119,8 +122,7 @@ std::optional<Shader::ShaderData> Shader::preProcessShader(const std::string& fi
         .frag = *frag,
     };
 
-    std::string header = "#version " + std::to_string(OPENGL_MAJOR_VERSION) + std::to_string(OPENGL_MINOR_VERSION) + "0\n\n";
-    //std::string header = "#version 330 core\n\n";
+    std::string header = "#version " + std::to_string(OPENGL_MAJOR_VERSION) + std::to_string(OPENGL_MINOR_VERSION) + "0 core\n\n";
     data.vert = data.vert.insert(0, header);
     data.frag = data.frag.insert(0, header);
 
@@ -175,8 +177,9 @@ VertexBufferLayout Shader::getUniformLayout() const
 
         auto attrib_type = static_cast<AttributeType>(type);
         switch (attrib_type) {
-        case AttributeType::Int: layout.push<int>(static_cast<size_t>(size)); break;
-        case AttributeType::Float: layout.push<float>(static_cast<size_t>(size)); break;
+        case AttributeType::UInt: layout.push<GLuint>(static_cast<size_t>(size)); break;
+        case AttributeType::Int: layout.push<GLint>(static_cast<size_t>(size)); break;
+        case AttributeType::Float: layout.push<GLfloat>(static_cast<size_t>(size)); break;
         case AttributeType::Vec2: layout.push<Vec2>(static_cast<size_t>(size)); break;
         case AttributeType::Vec3: layout.push<Vec3>(static_cast<size_t>(size)); break;
         case AttributeType::Mat4: layout.push<Mat4>(static_cast<size_t>(size)); break;

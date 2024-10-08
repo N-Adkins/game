@@ -27,6 +27,7 @@ private:
 };
 
 enum class AttributeType : GLenum {
+    UInt = GL_UNSIGNED_INT,
     Int = GL_INT,
     Float = GL_FLOAT,
     Vec2 = GL_FLOAT_VEC2,
@@ -41,6 +42,7 @@ struct AttributeDescriptor {
     inline AttributeType getType() const 
     { 
         switch (type) {
+        case AttributeType::UInt: return AttributeType::UInt;
         case AttributeType::Int: return AttributeType::Int;
         case AttributeType::Float:
         case AttributeType::Vec2: 
@@ -53,7 +55,8 @@ struct AttributeDescriptor {
     inline size_t getCount() const 
     {
         switch (type) {
-        case Engine::AttributeType::Int: return count;
+        case AttributeType::UInt: return count;
+        case AttributeType::Int: return count;
         case AttributeType::Float: return count;
         case AttributeType::Vec2: return count * 2;
         case AttributeType::Vec3: return count * 3;
@@ -65,6 +68,7 @@ struct AttributeDescriptor {
     inline static size_t getTypeSize(AttributeType type)
     {
         switch (type) {
+        case AttributeType::UInt: return sizeof(GLuint);
         case AttributeType::Int: return sizeof(GLint);
         case AttributeType::Float: return sizeof(GLfloat);
         case AttributeType::Vec2: return sizeof(GLfloat) * 2;
@@ -93,13 +97,19 @@ private:
 };
 
 template<>
-inline void VertexBufferLayout::push<int>(size_t count) {
+inline void VertexBufferLayout::push<GLuint>(size_t count) {
+    attributes.push_back(AttributeDescriptor(AttributeType::UInt, count));
+    stride += sizeof(GLuint) * count;
+}
+
+template<>
+inline void VertexBufferLayout::push<GLint>(size_t count) {
     attributes.push_back(AttributeDescriptor(AttributeType::Int, count));
     stride += sizeof(GLint) * count;
 }
 
 template <>
-inline void VertexBufferLayout::push<float>(size_t count) {
+inline void VertexBufferLayout::push<GLfloat>(size_t count) {
     attributes.push_back(AttributeDescriptor(AttributeType::Float, count));
     stride += sizeof(GLfloat) * count;
 }

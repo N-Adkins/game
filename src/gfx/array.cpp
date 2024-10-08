@@ -29,14 +29,24 @@ void VertexArray::addBuffer(const VertexBuffer& buffer, const VertexBufferLayout
         Log::debug("Attrib pointer call, index {} count {} type {} stride {} offset {}",
             i, attrib.getCount(), static_cast<GLenum>(attrib.getType()), layout.getStride(), offset
         );
-        OPENGL_CALL(glVertexAttribPointer(
+        if (attrib.getType() == AttributeType::UInt || attrib.getType() == AttributeType::Int) {
+            OPENGL_CALL(glVertexAttribIPointer(
+                static_cast<GLuint>(i), 
+                static_cast<GLint>(attrib.getCount()),
+                static_cast<GLenum>(attrib.getType()), 
+                static_cast<GLsizei>(layout.getStride()),
+                reinterpret_cast<const void*>(static_cast<uintptr_t>(offset))
+            ));
+        } else {
+            OPENGL_CALL(glVertexAttribPointer(
                 static_cast<GLuint>(i), 
                 static_cast<GLint>(attrib.getCount()),
                 static_cast<GLenum>(attrib.getType()), 
                 GL_FALSE, 
                 static_cast<GLsizei>(layout.getStride()),
                 reinterpret_cast<const void*>(static_cast<uintptr_t>(offset))
-        ));
+            ));
+        }
         OPENGL_CALL(glEnableVertexAttribArray(static_cast<GLuint>(i)));
         offset += attrib.getCount() * AttributeDescriptor::getTypeSize(attrib.getType());
     }
