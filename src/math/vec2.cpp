@@ -96,25 +96,4 @@ bool Vec2::operator==(const Vec2& rhs) const
     return approxEqual(x, rhs.getX()) && approxEqual(y, rhs.getY());
 }
 
-void Vec2::registerLua(sol::state &lua)
-{
-    auto vec2 = lua.new_usertype<Vec2>("Vec2", sol::constructors<Vec2(float, float)>());
-    vec2["x"] = sol::property(&Vec2::getX, &Vec2::setX);
-    vec2["y"] = sol::property(&Vec2::getY, &Vec2::setY);
-    vec2["Magnitude"] = &Vec2::magnitude;
-    vec2["Unit"] = &Vec2::unit;
-    vec2["Dot"] = &Vec2::dot;
-    vec2["__add"] = &Vec2::operator+; 
-    vec2["__mul"] = &Vec2::operator*;
-    vec2["__div"] = &Vec2::operator/;
-    vec2["__eq"] = &Vec2::operator==;
-    vec2["__tostring"] = [](const Vec2& self) {
-        return std::format("Vec2 {{ x: {}, y: {} }}", self.getX(), self.getY()); 
-    };
-
-    // Ambiguous operators so we have to do casts
-    vec2["__sub"] = static_cast<Vec2(Vec2::*)(const Vec2&) const>(&Vec2::operator-);
-    vec2["__unm"] = static_cast<Vec2(Vec2::*)() const>(&Vec2::operator-);
-}
-
 } // namespace Engine

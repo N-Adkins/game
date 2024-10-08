@@ -1,3 +1,4 @@
+#include "resource/lua_source.hpp"
 #include <pch.hpp>
 
 #define SOL_ALL_SAFETIES_ON 1
@@ -8,6 +9,7 @@
 #include <backends/imgui_impl_opengl3.h>
 
 #include "engine/sprite.hpp"
+#include "engine/lua.hpp"
 #include "gfx/window.hpp"
 #include "gfx/renderer.hpp"
 #include "resource/resource_manager.hpp"
@@ -15,26 +17,17 @@
 #include "math/vec2.hpp"
 #include "math/vec3.hpp"
 #include "math/mat4.hpp"
-#include "logging.hpp"
 
 #include <cassert>
 
-void renderLoop()
+void renderLoop(
+    Engine::Lua& lua,
+    Engine::Window& window,
+    Engine::Renderer& renderer,
+    Engine::ResourceManager& resource_manager,
+    Engine::SpriteManager& sprite_manager
+)
 {
-    Engine::Window window;
-    Engine::Renderer renderer;
-    renderer.setViewport(
-        static_cast<size_t>(window.getSize().getX()), 
-        static_cast<size_t>(window.getSize().getY())
-    );
-    window.setRenderer(&renderer);
-
-    Engine::ResourceManager resource_manager;
-    const auto& shader = resource_manager.load<Engine::Shader>("test.shader");
-
-    Engine::SpriteManager sprite_manager(shader);
-    auto& sprite = sprite_manager.createSprite();
-
     bool loop = true;
     while (loop) {
         SDL_Event e;
@@ -45,10 +38,11 @@ void renderLoop()
             }
         }
 
+        lua.runOnFrame();
+
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplSDL2_NewFrame();
         ImGui::NewFrame();
-        ImGui::ShowDemoWindow();
         
         /*
         const Engine::Vec2 window_size = window.getSize();
@@ -58,24 +52,18 @@ void renderLoop()
         const Engine::Mat4 projection = Engine::Mat4::projection(60.f, window_size.getX() / window_size.getY(), 0.1f, 100.f, 0);
         */
 
-        sprite.setScale(sprite.getScale() - 0.01f);
-        
         renderer.clearBackground();
         sprite_manager.render();
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
         window.swapBuffers();
+
+        lua.gc();
     }
 }
 
 int main()
-{
-    sol::state lua;
-    lua.create_table("Engine");
-    lua.open_libraries(sol::lib::base, sol::lib::io, sol::lib::string);
-    Engine::Vec2::registerLua(lua);
-    Engine::Vec3::registerLua(lua);
-
+{ 
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO();
@@ -83,7 +71,40 @@ int main()
     io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
     ImGui::StyleColorsDark();
 
-    renderLoop();
+    {
+        Engine::Window window;
+        Engine::Renderer renderer;
+        renderer.setViewport(
+            static_cast<size_t>(window.getSize().getX()), 
+            static_cast<size_t>(window.getSize().getY())
+        );
+        window.setRenderer(&renderer);
+
+        Engine::ResourceManager resource_manager;
+        const auto& shader = resource_manager.load<Engine::Shader>("test.shader");
+        const auto& script = resource_manager.load<Engine::LuaSource>("test.lua");
+        
+        Engine::SpriteManager sprite_manager(shader);
+
+        Engine::Lua lua(sprite_manager);
+        lua.registerTypes<
+            Engine::Vec2,
+            Engine::Vec3,
+            Engine::Sprite
+        >();
+        lua.pushSource(script);
+
+        lua.runOnStart();
+        //auto& sprite = sprite_manager.createSprite();
+
+        renderLoop(
+            lua,
+            window,
+            renderer,
+            resource_manager,
+            sprite_manager
+        );
+    }
 
     ImGui::DestroyContext();
     

@@ -36,8 +36,6 @@ public:
     Vec3 operator-() const; // unary negation
     bool operator==(const Vec3& rhs) const;
 
-    static void registerLua(sol::state& lua);
-
 private:
     union {
         struct {

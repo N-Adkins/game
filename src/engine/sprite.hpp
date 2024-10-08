@@ -7,6 +7,10 @@
 #include "../platform.hpp"
 #include <unordered_set>
 
+namespace sol {
+    class state;
+}
+
 namespace Engine {
 
 using SpriteId = size_t;
@@ -32,6 +36,7 @@ public:
     Vec2 getPosition() const;
     void setScale(float scale);
     float getScale() const;
+    SpriteId getId() const;
 
 private:
     Vec2 position = Vec2(0.f, 0.f);

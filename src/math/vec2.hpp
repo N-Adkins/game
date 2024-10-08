@@ -33,8 +33,6 @@ public:
     Vec2 operator-() const; // unary negation
     bool operator==(const Vec2& rhs) const;
 
-    static void registerLua(sol::state& lua);
-
 private:
     union {
         struct {

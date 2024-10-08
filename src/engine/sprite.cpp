@@ -41,6 +41,11 @@ float Sprite::getScale() const
     return scale;
 }
 
+SpriteId Sprite::getId() const
+{
+    return id;
+}
+
 SpriteManager::SpriteManager(const Shader& shader)
     : shader(shader)
 {
@@ -58,7 +63,7 @@ Sprite& SpriteManager::createSprite()
         id = sprites.size();
         sprites.push_back(Sprite(this, id));
     }
-
+    
     return sprites[id];
 }
 
@@ -71,7 +76,7 @@ void SpriteManager::render()
     if (!updated_sprites.empty()) {
         for (size_t i = 0; i < sprites.size(); i++) {
             const auto& sprite = sprites[i];
-            if (free_ids.contains(sprite.id)) {
+            if (free_ids.contains(sprite.getId())) {
                 continue;
             }
 

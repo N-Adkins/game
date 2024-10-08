@@ -122,26 +122,4 @@ bool Vec3::operator==(const Vec3& rhs) const
         && approxEqual(z, rhs.getZ());
 }
 
-void Vec3::registerLua(sol::state &lua)
-{
-    auto vec3 = lua.new_usertype<Vec3>("Vec3", sol::constructors<Vec3(float, float, float)>());
-    vec3["x"] = sol::property(&Vec3::getX, &Vec3::setX);
-    vec3["y"] = sol::property(&Vec3::getY, &Vec3::setY);
-    vec3["z"] = sol::property(&Vec3::getZ, &Vec3::setZ);
-    vec3["Magnitude"] = &Vec3::magnitude;
-    vec3["Unit"] = &Vec3::unit;
-    vec3["Dot"] = &Vec3::dot;
-    vec3["__add"] = &Vec3::operator+; 
-    vec3["__mul"] = &Vec3::operator*;
-    vec3["__div"] = &Vec3::operator/;
-    vec3["__eq"] = &Vec3::operator==;
-    vec3["__tostring"] = [](const Vec3& self) {
-        return std::format("Vec3 {{ x: {}, y: {}, z: {} }}", self.getX(), self.getY(), self.getZ()); 
-    };
-
-    // Ambiguous operators so we have to do casts
-    vec3["__sub"] = static_cast<Vec3(Vec3::*)(const Vec3&) const>(&Vec3::operator-);
-    vec3["__unm"] = static_cast<Vec3(Vec3::*)() const>(&Vec3::operator-);
-}
-
 } // namespace Engine
