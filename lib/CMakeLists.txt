@@ -39,10 +39,10 @@ target_include_directories(game PRIVATE
     glad/include
     ctre/include
     imgui
+    oof
     glm
+    stb
 )
-
-target_include_directories(game PRIVATE SYSTEM oof)
 
 target_link_libraries(game PRIVATE 
     sol2 
