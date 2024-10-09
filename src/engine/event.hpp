@@ -54,7 +54,6 @@ private:
 template <typename... Args>
 void Event::fire(Args&&... args)
 {
-    Log::debug("{}", connections.size());
     for (auto& connection : connections) {
         connection.fire(std::forward<Args>(args)...);
     }

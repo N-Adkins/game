@@ -16,6 +16,7 @@ void Sprite::destroy()
 {
     if (manager != nullptr) {
         manager->free_ids.insert(id);
+        manager = nullptr;
     }
 }
 
@@ -59,11 +60,12 @@ Sprite& SpriteManager::createSprite()
     if (!free_ids.empty()) {
         id = *free_ids.begin();
         free_ids.erase(id);
+        sprites[id] = Sprite(this, id);
     } else {
         id = sprites.size();
         sprites.push_back(Sprite(this, id));
     }
-    
+
     return sprites[id];
 }
 

@@ -76,13 +76,6 @@ void Lua::runOnFrame()
     }
 }
 
-void Lua::initSpriteManager(SpriteManager& sprite_manager)
-{
-    lua.globals()["Engine"]["CreateSprite"] = [&sprite_manager]() -> Sprite& {
-        return sprite_manager.createSprite();
-    };
-}
-
 void Lua::gc()
 {
     lua.collect_garbage();
@@ -159,6 +152,7 @@ void Lua::registerType<Sprite>()
     };
     sprite[sol::meta_method::garbage_collect] = [](SpriteWrapper& self) {
         if (!self.destroyed) {
+            Log::debug("GC");
             self.ref.destroy();
         }
     };

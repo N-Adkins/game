@@ -21,8 +21,6 @@ public:
     template <typename... Args>
     void registerTypes();
 
-    void initSpriteManager(SpriteManager& sprite_manager);
-
     void pushSource(const LuaSource& source);
     void runOnStart();
     void runOnFrame();

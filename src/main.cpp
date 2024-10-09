@@ -1,4 +1,3 @@
-#include "resource/lua_source.hpp"
 #include <pch.hpp>
 
 #define SOL_ALL_SAFETIES_ON 1
@@ -14,6 +13,7 @@
 #include "gfx/window.hpp"
 #include "gfx/renderer.hpp"
 #include "resource/resource_manager.hpp"
+#include "resource/lua_source.hpp"
 #include "resource/shader.hpp"
 #include "math/vec2.hpp"
 #include "math/vec3.hpp"
