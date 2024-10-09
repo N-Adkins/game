@@ -5,9 +5,6 @@ local Engine = require("Engine")
 local sprite = Engine.CreateSprite()
 local other = Engine.CreateSprite()
 local next = Engine.CreateSprite()
-print(sprite)
-print(other)
-print(next)
 
 local velocity = Vec2.new(0, 0)
 local just_moved = false

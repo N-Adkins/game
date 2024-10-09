@@ -22,24 +22,24 @@ void Sprite::destroy()
 
 void Sprite::setPosition(Vec2 position)
 {
-    this->position = position;
+    manager->sprite_data[getId()].position = position;
     manager->updated_sprites.insert(id);
 }
 
 Vec2 Sprite::getPosition() const
 {
-    return position;
+    return manager->sprite_data[getId()].position;
 }
 
 void Sprite::setScale(float scale)
 {
-    this->scale = scale;
+    manager->sprite_data[getId()].scale = scale;
     manager->updated_sprites.insert(id);
 }
 
 float Sprite::getScale() const
 {
-    return scale;
+    return manager->sprite_data[getId()].scale;
 }
 
 SpriteId Sprite::getId() const
@@ -54,19 +54,19 @@ SpriteManager::SpriteManager(const Shader& shader)
     vert_array.addBuffer(vert_buffer, layout);
 }
 
-Sprite& SpriteManager::createSprite()
+Sprite SpriteManager::createSprite()
 {
     SpriteId id;
     if (!free_ids.empty()) {
         id = *free_ids.begin();
         free_ids.erase(id);
-        sprites[id] = Sprite(this, id);
+        sprite_data[id] = SpriteData(id);
     } else {
-        id = sprites.size();
-        sprites.push_back(Sprite(this, id));
+        id = sprite_data.size();
+        sprite_data.push_back(SpriteData(id));
     }
 
-    return sprites[id];
+    return Sprite { this, id };
 }
 
 void SpriteManager::render()
@@ -76,16 +76,16 @@ void SpriteManager::render()
     vert_array.bind();
     
     if (!updated_sprites.empty()) {
-        for (size_t i = 0; i < sprites.size(); i++) {
-            const auto& sprite = sprites[i];
-            if (free_ids.contains(sprite.getId())) {
+        for (size_t i = 0; i < sprite_data.size(); i++) {
+            const auto& sprite = sprite_data[i];
+            if (free_ids.contains(sprite.id)) {
                 continue;
             }
 
             auto data = SpriteVertexData {
                 .index = 0,
-                .position = sprite.getPosition(),
-                .scale = sprite.getScale(),
+                .position = sprite.position,
+                .scale = sprite.scale,
             };
 
             for (unsigned int j = 0; j < 6; j++) {
@@ -109,7 +109,7 @@ void SpriteManager::render()
         OPENGL_CALL(glDrawArrays(
             GL_TRIANGLES,
             0,
-            static_cast<GLsizei>((sprites.size() - free_ids.size()) * 6)
+            static_cast<GLsizei>((sprite_data.size() - free_ids.size()) * 6)
         ));
     }
         

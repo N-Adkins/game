@@ -1,19 +1,9 @@
 #include <pch.hpp>
-#include <sol/raii.hpp>
-#include <sol/types.hpp>
 
 #include "lua.hpp"
 #include "keycodes.hpp"
 
 namespace Engine {
-
-// We have to do this because we use references. Might rework in the future.
-struct SpriteWrapper {
-    SpriteWrapper(Sprite& ref)
-        : ref(ref) {}
-    Sprite& ref;
-    bool destroyed = false;
-};
 
 Lua::Lua(SpriteManager& sprite_manager)
 {
@@ -23,8 +13,8 @@ Lua::Lua(SpriteManager& sprite_manager)
         sol::state_view lua(state);
         sol::table engine = lua.create_table();
 
-        engine["CreateSprite"] = [&sprite_manager]() -> SpriteWrapper {
-            return SpriteWrapper(sprite_manager.createSprite());
+        engine["CreateSprite"] = [&sprite_manager]() -> Sprite { 
+            return sprite_manager.createSprite();
         };
 
         engine["Events"] = lua.create_table();
@@ -129,38 +119,15 @@ void Lua::registerType<Vec3>()
 template <>
 void Lua::registerType<Sprite>()
 {
-    auto sprite = lua.new_usertype<SpriteWrapper>("Sprite");
-    sprite["position"] = sol::property(
-        [](const SpriteWrapper& sprite) {
-            return sprite.ref.getPosition();
-        },
-        [](const SpriteWrapper& sprite, Vec2 position) {
-            return sprite.ref.setPosition(position);
-        }
-    );
-    sprite["scale"] = sol::property(
-        [](const SpriteWrapper& sprite) {
-            return sprite.ref.getScale();
-        },
-        [](const SpriteWrapper& sprite, float scale) {
-            return sprite.ref.setScale(scale);
-        }
-    );
-    sprite["Destroy"] = [](SpriteWrapper& self) {
-        self.destroyed = true;
-        self.ref.destroy();
+    auto sprite = lua.new_usertype<Sprite>("Sprite");
+    sprite["position"] = sol::property(&Sprite::getPosition, &Sprite::setPosition);
+    sprite["scale"] = sol::property(&Sprite::getScale, &Sprite::setScale);
+    sprite["Destroy"] = &Sprite::destroy;
+    sprite[sol::meta_method::equal_to] = [](const Sprite& lhs, const Sprite& rhs) {
+        return lhs.getId() == rhs.getId();
     };
-    sprite[sol::meta_method::garbage_collect] = [](SpriteWrapper& self) {
-        if (!self.destroyed) {
-            Log::debug("GC");
-            self.ref.destroy();
-        }
-    };
-    sprite[sol::meta_method::equal_to] = [](const SpriteWrapper& lhs, const SpriteWrapper& rhs) {
-        return lhs.ref.getId() == rhs.ref.getId();
-    };
-    sprite[sol::meta_method::to_string] = [](const SpriteWrapper& self) {
-        return std::format("Sprite {{ id: {} }}", self.ref.getId()); 
+    sprite[sol::meta_method::to_string] = [](const Sprite& self) {
+        return std::format("Sprite {{ id: {} }}", self.getId()); 
     };
 }
 

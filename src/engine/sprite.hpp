@@ -39,23 +39,29 @@ public:
     SpriteId getId() const;
 
 private:
-    Vec2 position = Vec2(0.f, 0.f);
-    float scale = 1.f;
     SpriteManager* manager;
     SpriteId id = 0;
 
     friend SpriteManager;
 };
 
+struct SpriteData {
+    SpriteData(SpriteId id) 
+        : id(id) {}
+    Vec2 position = Vec2(0.f, 0.f);
+    float scale = 1.f;
+    SpriteId id;
+};
+
 class SpriteManager {
 public:
     SpriteManager(const Shader& shader);
 
-    Sprite& createSprite();
+    Sprite createSprite();
     void render();
 
 private:
-    std::vector<Sprite> sprites;
+    std::vector<SpriteData> sprite_data;
     std::unordered_set<SpriteId> free_ids;
     std::unordered_set<SpriteId> updated_sprites;
 
