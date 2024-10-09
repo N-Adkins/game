@@ -1,7 +1,7 @@
 #pragma once
 
-#include "../math/vec3.hpp"
 #include <cstddef>
+#include <glm/fwd.hpp>
 
 namespace Engine {
 
@@ -10,7 +10,7 @@ public:
     Renderer();
     ~Renderer();
     void setViewport(size_t width, size_t height);
-    void setBackgroundColor(const Vec3& color);
+    void setBackgroundColor(const glm::vec3& color);
     void clearBackground();
 
 private:
@@ -23,7 +23,7 @@ private:
         const void* userParam
     );
 
-    Vec3 background_color = Vec3(0.2f, 0.3f, 0.3f);
+    glm::vec3 background_color = { 0.2f, 0.3f, 0.3f };
 };
 
 } // namespace Engine

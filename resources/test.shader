@@ -16,7 +16,7 @@ void main()
         vec2(-0.5, 0.5), 
         vec2(0.5, 0.5)
     );
-    vec4 scaled_pos = vec4((quad_verts[index] * scale) + position, 0.0, 1.0);
+    vec4 scaled_pos = vec4((quad_verts[index] * scale * 100) + position, 0.0, 1.0);
     gl_Position = projection * scaled_pos;
 }
 

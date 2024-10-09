@@ -27,6 +27,8 @@
 
 #include <sol/sol.hpp>
 
+#include <glm/glm.hpp>
+
 #include <ctre.hpp>
 
 #include "logging.hpp"

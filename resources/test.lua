@@ -7,8 +7,8 @@ local sprite = Engine.CreateSprite()
 -- Variables for velocity and acceleration
 local velocity = Vec2.new(0, 0)
 local acceleration = Vec2.new(0, 0)
-local maxSpeed = 0.3
-local accelRate = 0.005 -- Rate at which acceleration increases
+local maxSpeed = 10
+local accelRate = 0.5 -- Rate at which acceleration increases
 local friction = 0.95   -- Friction for slowing down the sprite
 
 function script:OnFrame()
@@ -30,16 +30,16 @@ function script:OnFrame()
     end
 
     -- Normalize acceleration vector to prevent diagonal speed boost
-    if acceleration:Magnitude() > 0 then
-        acceleration = acceleration:Unit() * accelRate
+    if acceleration:Length() > 0 then
+        acceleration = acceleration / acceleration:Length() * accelRate
     end
 
     -- Update velocity based on acceleration
     velocity = velocity + acceleration
 
     -- Clamp velocity to maxSpeed
-    if velocity:Magnitude() > maxSpeed then
-        velocity = velocity:Unit() * maxSpeed
+    if velocity:Length() > maxSpeed then
+        velocity = velocity:Normalize() * maxSpeed
     end
 
     -- Apply friction to slow down the sprite

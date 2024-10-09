@@ -1,10 +1,8 @@
 #pragma once
 
-#include <SDL.h>
-#include "render_backend.hpp"
-#include "../math/vec2.hpp"
-#include "../engine/keycodes.hpp"
 #include "../constructors.hpp"
+#include <SDL.h>
+#include <glm/fwd.hpp>
 
 namespace Engine {
 
@@ -22,7 +20,7 @@ public:
     DELETE_COPY(Window);
     DEFAULT_MOVE(Window);
 
-    Vec2 getSize() const;
+    glm::vec2 getSize() const;
     void setRenderer(Renderer* renderer);
     PlatformDisplayData getPlatformData() const;
     void swapBuffers() const;
@@ -32,7 +30,7 @@ private:
     
     Renderer* renderer = nullptr;
     SDL_Window* handle = nullptr;
-    Vec2 size = Vec2(0.f, 0.f);
+    glm::vec2 size = { 0.f, 0.f };
 
     SDL_GLContext gl_context;
 };

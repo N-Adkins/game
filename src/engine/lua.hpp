@@ -1,7 +1,5 @@
 #pragma once
 
-#include "../math/vec2.hpp"
-#include "../math/vec3.hpp"
 #include "../resource/lua_source.hpp"
 #include "event.hpp"
 #include "sprite.hpp"
@@ -9,6 +7,7 @@
 #include <vector>
 #include <unordered_map>
 #include <sol/forward.hpp>
+#include <glm/fwd.hpp>
 
 namespace Engine {
 
@@ -73,8 +72,8 @@ void Lua::fireBuiltinEvent(const std::string& name, Args&&... args)
     }
 }
 
-template <> void Lua::registerType<Vec2>();
-template <> void Lua::registerType<Vec3>();
+template <> void Lua::registerType<glm::vec2>();
+template <> void Lua::registerType<glm::vec3>();
 template <> void Lua::registerType<Sprite>();
 template <> void Lua::registerType<Event>();
 template <> void Lua::registerType<EventConnection>();

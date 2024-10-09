@@ -8,6 +8,5 @@ target_sources(game PRIVATE
 target_precompile_headers(game PRIVATE pch.hpp)
 
 add_subdirectory(gfx)
-add_subdirectory(math)
 add_subdirectory(resource)
 add_subdirectory(engine)

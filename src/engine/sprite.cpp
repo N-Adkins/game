@@ -20,13 +20,13 @@ void Sprite::destroy()
     }
 }
 
-void Sprite::setPosition(Vec2 position)
+void Sprite::setPosition(glm::vec2 position)
 {
     manager->sprite_data[getId()].position = position;
     manager->updated_sprites.insert(id);
 }
 
-Vec2 Sprite::getPosition() const
+glm::vec2 Sprite::getPosition() const
 {
     return manager->sprite_data[getId()].position;
 }
@@ -84,7 +84,8 @@ void SpriteManager::render()
 
             auto data = SpriteVertexData {
                 .index = 0,
-                .position = sprite.position,
+                .x = sprite.position.x,
+                .y = sprite.position.y,
                 .scale = sprite.scale,
             };
 

@@ -141,25 +141,25 @@ void Shader::setUniform(const std::string& name, float value) const
     OPENGL_CALL(glUniform1f(location, value)); 
 }
 
-void Shader::setUniform(const std::string& name, Vec2 value) const
+void Shader::setUniform(const std::string& name, glm::vec2 value) const
 {
     use();
     GLint location = OPENGL_CALL(glGetUniformLocation(program, name.c_str()));
-    OPENGL_CALL(glUniform2f(location, value.getX(), value.getY())); 
+    OPENGL_CALL(glUniform2f(location, value.x, value.y)); 
 }
 
-void Shader::setUniform(const std::string& name, const Vec3& value) const
+void Shader::setUniform(const std::string& name, const glm::vec3& value) const
 {
     use();
     GLint location = OPENGL_CALL(glGetUniformLocation(program, name.c_str()));
-    OPENGL_CALL(glUniform3f(location, value.getX(), value.getY(), value.getZ())); 
+    OPENGL_CALL(glUniform3f(location, value.x, value.y, value.z)); 
 }
 
-void Shader::setUniform(const std::string& name, const Mat4& value) const
+void Shader::setUniform(const std::string& name, const glm::mat4& value) const
 {
     use();
     GLint location = OPENGL_CALL(glGetUniformLocation(program, name.c_str()));
-    OPENGL_CALL(glUniformMatrix4fv(location, 1, GL_FALSE, value.getValues())); 
+    OPENGL_CALL(glUniformMatrix4fv(location, 1, GL_FALSE, &value[0][0]));
 }
 
 VertexBufferLayout Shader::getUniformLayout() const
@@ -183,14 +183,13 @@ VertexBufferLayout Shader::getUniformLayout() const
         case AttributeType::UInt: layout.push<GLuint>(static_cast<size_t>(size)); break;
         case AttributeType::Int: layout.push<GLint>(static_cast<size_t>(size)); break;
         case AttributeType::Float: layout.push<GLfloat>(static_cast<size_t>(size)); break;
-        case AttributeType::Vec2: layout.push<Vec2>(static_cast<size_t>(size)); break;
-        case AttributeType::Vec3: layout.push<Vec3>(static_cast<size_t>(size)); break;
-        case AttributeType::Mat4: layout.push<Mat4>(static_cast<size_t>(size)); break;
+        case AttributeType::Vec2: layout.push<glm::vec2>(static_cast<size_t>(size)); break;
+        case AttributeType::Vec3: layout.push<glm::vec3>(static_cast<size_t>(size)); break;
+        case AttributeType::Mat4: layout.push<glm::mat4>(static_cast<size_t>(size)); break;
         default: Log::error("Unhandled OpenGL attribute type {}", type); break;
         }
     }
 
     return layout;
 }
-
 } // namespace Engine

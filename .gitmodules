@@ -14,3 +14,6 @@
 [submodule "lib/oof"]
 	path = lib/oof
 	url = https://github.com/s9w/oof
+[submodule "lib/glm"]
+	path = lib/glm
+	url = https://github.com/g-truc/glm

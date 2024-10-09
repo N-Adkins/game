@@ -15,10 +15,8 @@
 #include "resource/resource_manager.hpp"
 #include "resource/lua_source.hpp"
 #include "resource/shader.hpp"
-#include "math/vec2.hpp"
-#include "math/vec3.hpp"
-#include "math/mat4.hpp"
-#include "math/floats.hpp"
+
+#include <glm/ext.hpp>
 
 #include <cassert>
 
@@ -56,7 +54,8 @@ void renderLoop(
     Engine::Window& window,
     Engine::Renderer& renderer,
     Engine::ResourceManager& resource_manager,
-    Engine::SpriteManager& sprite_manager
+    Engine::SpriteManager& sprite_manager,
+    const Engine::Shader& shader
 )
 {
     bool loop = true;
@@ -69,6 +68,16 @@ void renderLoop(
             }
             handleEvent(e, lua);
         }
+
+        const glm::vec2 window_size = window.getSize();
+        const glm::mat4 projection = glm::ortho(
+            -(window_size.x / 2),
+            window_size.x / 2,
+            -(window_size.y / 2),
+            window_size.y / 2,
+            -1.f, 1.f
+        );
+        shader.setUniform("projection", projection);
 
         lua.runOnFrame();
 
@@ -105,46 +114,21 @@ int main()
         Engine::Window window;
         Engine::Renderer renderer;
         renderer.setViewport(
-            static_cast<size_t>(window.getSize().getX()), 
-            static_cast<size_t>(window.getSize().getY())
+            static_cast<size_t>(window.getSize().x), 
+            static_cast<size_t>(window.getSize().y)
         );
         window.setRenderer(&renderer);
 
         Engine::ResourceManager resource_manager;
         const auto& shader = resource_manager.load<Engine::Shader>("test.shader");
         const auto& script = resource_manager.load<Engine::LuaSource>("test.lua");
-        
-        const Engine::Vec2 window_size = window.getSize();
 
-        /*
-        const Engine::Vec3 camera_pos = Engine::Vec3(0.f, 0.f, 3.f);
-        const Engine::Vec3 camera_front = Engine::Vec3(0.f, 0.f, -1.f);
-        const Engine::Vec3 camera_up = Engine::Vec3(0.f, 1.f, 0.f);
-        const Engine::Mat4 view = Engine::Mat4::lookAt(
-            camera_pos,
-            camera_pos + camera_front,
-            camera_up
-        );
-        */
-
-        const Engine::Mat4 projection = Engine::Mat4::ortho(
-            -(window_size.getX() / 2),
-            window_size.getX() / 2,
-            -(window_size.getY() / 2),
-            window_size.getY() / 2,
-            -1.f, 
-            1.f
-        );
-
-        shader.setUniform("projection", projection);
-        //shader.setUniform("view", view);
-        
         Engine::SpriteManager sprite_manager(shader);
 
         Engine::Lua lua(sprite_manager);
         lua.registerTypes<
-            Engine::Vec2,
-            Engine::Vec3,
+            glm::vec2,
+            glm::vec3,
             Engine::Sprite,
             Engine::Event,
             Engine::EventConnection
@@ -158,7 +142,8 @@ int main()
             window,
             renderer,
             resource_manager,
-            sprite_manager
+            sprite_manager,
+            shader
         );
     }
 

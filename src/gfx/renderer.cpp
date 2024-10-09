@@ -24,14 +24,14 @@ void Renderer::setViewport(size_t width, size_t height)
     OPENGL_CALL(glViewport(0, 0, static_cast<GLint>(width), static_cast<GLint>(height)));
 }
 
-void Renderer::setBackgroundColor(const Vec3& color)
+void Renderer::setBackgroundColor(const glm::vec3& color)
 {
     background_color = color;
 }
 
 void Renderer::clearBackground()
 {
-    OPENGL_CALL(glClearColor(background_color.getX(), background_color.getY(), background_color.getZ(), 1.f));
+    OPENGL_CALL(glClearColor(background_color.x, background_color.y, background_color.z, 1.f));
     OPENGL_CALL(glClear(GL_COLOR_BUFFER_BIT));
 }
 

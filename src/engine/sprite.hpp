@@ -2,7 +2,6 @@
 
 #include "../gfx/array.hpp"
 #include "../resource/shader.hpp"
-#include "../math/vec2.hpp"
 #include "../constructors.hpp"
 #include "../platform.hpp"
 #include <unordered_set>
@@ -19,7 +18,8 @@ class SpriteManager;
 
 GAME_PACKED_STRUCT(SpriteVertexData, {
     GLuint index = 0;
-    Vec2 position = Vec2(0.f, 0.f);
+    float x = 0.f;
+    float y = 0.f;
     float scale = 1.f;
 });
 
@@ -32,8 +32,8 @@ public:
     DEFAULT_MOVE(Sprite);
 
     void destroy();
-    void setPosition(Vec2 position);
-    Vec2 getPosition() const;
+    void setPosition(glm::vec2 position);
+    glm::vec2 getPosition() const;
     void setScale(float scale);
     float getScale() const;
     SpriteId getId() const;
@@ -48,7 +48,7 @@ private:
 struct SpriteData {
     SpriteData(SpriteId id) 
         : id(id) {}
-    Vec2 position = Vec2(0.f, 0.f);
+    glm::vec2 position = glm::vec2(0.f, 0.f);
     float scale = 1.f;
     SpriteId id;
 };

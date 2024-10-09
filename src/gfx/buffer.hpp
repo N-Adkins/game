@@ -1,11 +1,9 @@
 #pragma once
 
 #include "../constructors.hpp"
-#include "../math/vec2.hpp"
-#include "../math/vec3.hpp"
-#include "../math/mat4.hpp"
 #include <vector>
 #include <glad/glad.h>
+#include <glm/fwd.hpp>
 
 namespace Engine {
 
@@ -115,19 +113,19 @@ inline void VertexBufferLayout::push<GLfloat>(size_t count) {
 }
 
 template <>
-inline void VertexBufferLayout::push<Vec2>(size_t count) {
+inline void VertexBufferLayout::push<glm::vec2>(size_t count) {
     attributes.push_back(AttributeDescriptor(AttributeType::Vec2, count));
     stride += sizeof(GLfloat) * 2 * count;
 }
 
 template <>
-inline void VertexBufferLayout::push<Vec3>(size_t count) {
+inline void VertexBufferLayout::push<glm::vec3>(size_t count) {
     attributes.push_back(AttributeDescriptor(AttributeType::Vec3, count));
     stride += sizeof(GLfloat) * 3 * count;
 }
 
 template <>
-inline void VertexBufferLayout::push<Mat4>(size_t count) {
+inline void VertexBufferLayout::push<glm::mat4>(size_t count) {
     attributes.push_back(AttributeDescriptor(AttributeType::Mat4, count));
     stride += sizeof(GLfloat) * 16 * count;
 }

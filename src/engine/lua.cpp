@@ -1,6 +1,7 @@
 #include <pch.hpp>
 
 #include "lua.hpp"
+#include "glm/gtc/constants.hpp"
 #include "keycodes.hpp"
 
 namespace Engine {
@@ -81,48 +82,70 @@ void Lua::setKeyState(KeyCode keycode, bool state)
 }
 
 template <>
-void Lua::registerType<Vec2>()
+void Lua::registerType<glm::vec2>()
 {
-    auto vec2 = lua.new_usertype<Vec2>("Vec2", sol::constructors<Vec2(float, float)>());
-    vec2["x"] = sol::property(&Vec2::getX, &Vec2::setX);
-    vec2["y"] = sol::property(&Vec2::getY, &Vec2::setY);
-    vec2["Magnitude"] = &Vec2::magnitude;
-    vec2["Unit"] = &Vec2::unit;
-    vec2["Dot"] = &Vec2::dot;
-    vec2[sol::meta_method::addition] = &Vec2::operator+; 
-    vec2[sol::meta_method::multiplication] = &Vec2::operator*;
-    vec2[sol::meta_method::division] = &Vec2::operator/;
-    vec2[sol::meta_method::equal_to] = &Vec2::operator==;
-    vec2[sol::meta_method::to_string] = [](const Vec2& self) {
-        return std::format("Vec2 {{ x: {}, y: {} }}", self.getX(), self.getY()); 
+    auto vec2 = lua.new_usertype<glm::vec2>("Vec2", sol::constructors<glm::vec3(float, float)>());
+    vec2["x"] = &glm::vec2::x;
+    vec2["y"] = &glm::vec2::y;
+    vec2["Length"] = &glm::vec2::length;
+    vec2["Normalize"] = [](const glm::vec2& self) -> glm::vec2 {
+        return glm::normalize(self);
     };
-
-    // Ambiguous operators so we have to do casts
-    vec2[sol::meta_method::subtraction] = static_cast<Vec2(Vec2::*)(const Vec2&) const>(&Vec2::operator-);
-    vec2[sol::meta_method::unary_minus] = static_cast<Vec2(Vec2::*)() const>(&Vec2::operator-);
+    vec2["Dot"] = [](const glm::vec2& lhs, const glm::vec2& rhs) {
+        return glm::dot(lhs, rhs); 
+    };
+    vec2[sol::meta_method::addition] = [](const glm::vec2& lhs, const glm::vec2& rhs) {
+        return lhs + rhs;
+    };
+    vec2[sol::meta_method::subtraction] = [](const glm::vec2& lhs, const glm::vec2& rhs) {
+        return lhs - rhs;
+    };
+    vec2[sol::meta_method::multiplication] = [](const glm::vec2& lhs, float rhs) {
+        return lhs * rhs;
+    };
+    vec2[sol::meta_method::division] = [](const glm::vec2& lhs, float rhs) {
+        return lhs / rhs;
+    };
+    vec2[sol::meta_method::unary_minus] = [](const glm::vec2& self) {
+        return -self;
+    };
+    vec2[sol::meta_method::to_string] = [](const glm::vec2& self) {
+        return std::format("Vec2 {{ x: {}, y: {} }}", self.x, self.y); 
+    };
 }
 
 template <>
-void Lua::registerType<Vec3>()
+void Lua::registerType<glm::vec3>()
 {
-    auto vec3 = lua.new_usertype<Vec3>("Vec3", sol::constructors<Vec3(float, float, float)>());
-    vec3["x"] = sol::property(&Vec3::getX, &Vec3::setX);
-    vec3["y"] = sol::property(&Vec3::getY, &Vec3::setY);
-    vec3["z"] = sol::property(&Vec3::getZ, &Vec3::setZ);
-    vec3["Magnitude"] = &Vec3::magnitude;
-    vec3["Unit"] = &Vec3::unit;
-    vec3["Dot"] = &Vec3::dot;
-    vec3[sol::meta_method::addition] = &Vec3::operator+; 
-    vec3[sol::meta_method::multiplication] = &Vec3::operator*;
-    vec3[sol::meta_method::division] = &Vec3::operator/;
-    vec3[sol::meta_method::equal_to] = &Vec3::operator==;
-    vec3[sol::meta_method::to_string] = [](const Vec3& self) {
-        return std::format("Vec3 {{ x: {}, y: {}, z: {} }}", self.getX(), self.getY(), self.getZ()); 
+    auto vec3 = lua.new_usertype<glm::vec3>("Vec3", sol::constructors<glm::vec3(float, float, float)>());
+    vec3["x"] = &glm::vec3::x;
+    vec3["y"] = &glm::vec3::y;
+    vec3["z"] = &glm::vec3::z;
+    vec3["Length"] = &glm::vec3::length;
+    vec3["Normalize"] = [](const glm::vec3& self) -> glm::vec3 {
+        return glm::normalize(self);
     };
-
-    // Ambiguous operators so we have to do casts
-    vec3[sol::meta_method::subtraction] = static_cast<Vec3(Vec3::*)(const Vec3&) const>(&Vec3::operator-);
-    vec3[sol::meta_method::unary_minus] = static_cast<Vec3(Vec3::*)() const>(&Vec3::operator-);
+    vec3["Dot"] = [](const glm::vec3& lhs, const glm::vec3& rhs) {
+        return glm::dot(lhs, rhs); 
+    };
+    vec3[sol::meta_method::addition] = [](const glm::vec3& lhs, const glm::vec3& rhs) {
+        return lhs + rhs;
+    };
+    vec3[sol::meta_method::subtraction] = [](const glm::vec3& lhs, const glm::vec3& rhs) {
+        return lhs - rhs;
+    };
+    vec3[sol::meta_method::multiplication] = [](const glm::vec3& lhs, float rhs) {
+        return lhs * rhs;
+    };
+    vec3[sol::meta_method::division] = [](const glm::vec3& lhs, float rhs) {
+        return lhs / rhs;
+    };
+    vec3[sol::meta_method::unary_minus] = [](const glm::vec3& self) {
+        return -self;
+    };
+    vec3[sol::meta_method::to_string] = [](const glm::vec3& self) {
+        return std::format("Vec3 {{ x: {}, y: {}, z: {} }}", self.x, self.y, self.z); 
+    };
 }
 
 template <>

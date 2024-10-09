@@ -60,8 +60,8 @@ Window::Window()
     Log::info("Renderer: {}", std::string_view{reinterpret_cast<const char *>(glGetString(GL_RENDERER))});
     Log::info("Version: {}", std::string_view{reinterpret_cast<const char *>(glGetString(GL_VERSION))});
 
-    size.setX(DEFAULT_WIDTH);
-    size.setY(DEFAULT_HEIGHT);
+    size.x = DEFAULT_WIDTH;
+    size.y = DEFAULT_HEIGHT;
     
     SDL_AddEventWatch(eventHandler, this);
 }
@@ -75,7 +75,7 @@ Window::~Window()
     SDL_Quit();
 }
 
-Vec2 Window::getSize() const
+glm::vec2 Window::getSize() const
 {
     return size;
 }
@@ -119,8 +119,8 @@ int eventHandler(void* user_data, SDL_Event* event)
         if (event->window.event == SDL_WINDOWEVENT_RESIZED) {
             int width, height;
             SDL_GetWindowSize(window->handle, &width, &height);
-            window->size.setX(static_cast<float>(width));
-            window->size.setY(static_cast<float>(height));
+            window->size.x = static_cast<float>(width);
+            window->size.y = static_cast<float>(height);
             window->renderer->setViewport(static_cast<size_t>(width), static_cast<size_t>(height));
             Log::debug("Window size changed: ({}, {})", width, height);
         }

@@ -3,11 +3,9 @@
 #include "resource.hpp"
 #include "../constructors.hpp"
 #include "../gfx/buffer.hpp"
-#include "../math/vec2.hpp"
-#include "../math/vec3.hpp"
-#include "../math/mat4.hpp"
 #include <filesystem>
 #include <string_view>
+#include <glm/fwd.hpp>
 
 namespace sol {
     class state;
@@ -27,9 +25,9 @@ public:
     
     void use() const;
     void setUniform(const std::string& name, float value) const;
-    void setUniform(const std::string& name, Vec2 value) const;
-    void setUniform(const std::string& name, const Vec3& value) const;
-    void setUniform(const std::string& name, const Mat4& value) const;
+    void setUniform(const std::string& name, glm::vec2 value) const;
+    void setUniform(const std::string& name, const glm::vec3& value) const;
+    void setUniform(const std::string& name, const glm::mat4& value) const;
 
     VertexBufferLayout getUniformLayout() const;
 

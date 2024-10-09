@@ -1,6 +1,7 @@
 add_subdirectory(sol2)
 add_subdirectory(sdl2)
 add_subdirectory(ctre)
+add_subdirectory(glm)
 
 find_package(Lua 5.1 REQUIRED)
 find_package(OpenGL REQUIRED)
@@ -38,6 +39,7 @@ target_include_directories(game PRIVATE
     glad/include
     ctre/include
     imgui
+    glm
 )
 
 target_include_directories(game PRIVATE SYSTEM oof)
@@ -50,4 +52,5 @@ target_link_libraries(game PRIVATE
     glad
     ctre
     imgui
+    glm::glm
 )
