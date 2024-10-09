@@ -22,6 +22,35 @@
 
 #include <cassert>
 
+void handleEvent(SDL_Event& e, Engine::Lua& lua) {
+    if (e.key.repeat != 0) { // ignore repeat signals, OS dependent
+        return;
+    }
+    if (e.type == SDL_KEYDOWN) {
+        switch (e.key.keysym.sym) {
+        case SDLK_UP:
+        case SDLK_DOWN: 
+        case SDLK_LEFT: 
+        case SDLK_RIGHT: 
+            lua.fireBuiltinEvent("OnKeyPressed", static_cast<Engine::KeyCode>(e.key.keysym.sym));
+            lua.setKeyState(static_cast<Engine::KeyCode>(e.key.keysym.sym), true);
+            break;
+        default: break;
+        }
+    } else if (e.type == SDL_KEYUP) {
+        switch (e.key.keysym.sym) {
+        case SDLK_UP:
+        case SDLK_DOWN: 
+        case SDLK_LEFT: 
+        case SDLK_RIGHT: 
+            lua.fireBuiltinEvent("OnKeyReleased", static_cast<Engine::KeyCode>(e.key.keysym.sym));
+            lua.setKeyState(static_cast<Engine::KeyCode>(e.key.keysym.sym), false);
+            break;
+        default: break;
+        }
+    }
+}
+
 void renderLoop(
     Engine::Lua& lua,
     Engine::Window& window,
@@ -37,15 +66,8 @@ void renderLoop(
             ImGui_ImplSDL2_ProcessEvent(&e);
             if (e.type == SDL_QUIT) {
                 loop = false;
-            } else if (e.type == SDL_KEYDOWN) {
-                switch (e.key.keysym.sym) {
-                case SDLK_UP: lua.fireBuiltinEvent("OnKeyPressed", Engine::KeyCode::Up); break;
-                case SDLK_DOWN: lua.fireBuiltinEvent("OnKeyPressed", Engine::KeyCode::Down); break;
-                case SDLK_LEFT: lua.fireBuiltinEvent("OnKeyPressed", Engine::KeyCode::Left); break;
-                case SDLK_RIGHT: lua.fireBuiltinEvent("OnKeyPressed", Engine::KeyCode::Right); break;
-                default: break;
-                }
             }
+            handleEvent(e, lua);
         }
 
         lua.runOnFrame();

@@ -5,6 +5,7 @@
 #include "../resource/lua_source.hpp"
 #include "event.hpp"
 #include "sprite.hpp"
+#include "keycodes.hpp"
 #include <vector>
 #include <unordered_map>
 #include <sol/forward.hpp>
@@ -26,10 +27,12 @@ public:
     void runOnFrame();
     
     void gc();
+
+    void setKeyState(KeyCode keycode, bool state);
     
     template <typename... Args>
     void fireBuiltinEvent(const std::string& name, Args&&... args);
-
+ 
 private:
     struct Script {
         sol::table table;
@@ -40,6 +43,13 @@ private:
     std::vector<Script> scripts;
     std::unordered_map<std::string, Event> builtin_events = {
         { "OnKeyPressed", Event() },
+        { "OnKeyReleased", Event() },
+    };
+    std::unordered_map<KeyCode, bool> key_state = {
+        { KeyCode::Up, false },
+        { KeyCode::Down, false },
+        { KeyCode::Left, false },
+        { KeyCode::Right, false },
     };
 };
 

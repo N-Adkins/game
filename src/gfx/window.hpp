@@ -3,6 +3,7 @@
 #include <SDL.h>
 #include "render_backend.hpp"
 #include "../math/vec2.hpp"
+#include "../engine/keycodes.hpp"
 #include "../constructors.hpp"
 
 namespace Engine {

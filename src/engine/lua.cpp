@@ -29,6 +29,10 @@ Lua::Lua(SpriteManager& sprite_manager)
             "Right", KeyCode::Right
         );
 
+        engine["IsKeyPressed"] = [this](KeyCode keycode) -> bool {
+            return key_state[keycode];
+        };
+
         return engine;
     };
 }
@@ -69,6 +73,11 @@ void Lua::runOnFrame()
 void Lua::gc()
 {
     lua.collect_garbage();
+}
+
+void Lua::setKeyState(KeyCode keycode, bool state)
+{
+    key_state[keycode] = state;
 }
 
 template <>

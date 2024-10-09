@@ -62,7 +62,7 @@ Window::Window()
 
     size.setX(DEFAULT_WIDTH);
     size.setY(DEFAULT_HEIGHT);
-
+    
     SDL_AddEventWatch(eventHandler, this);
 }
 

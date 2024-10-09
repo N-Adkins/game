@@ -4,25 +4,49 @@ local Engine = require("Engine")
 
 local sprite = Engine.CreateSprite()
 
+-- Variables for velocity and acceleration
 local velocity = Vec2.new(0, 0)
-local just_moved = false
-
-local connection = Engine.Events.OnKeyPressed:Connect(function (key)
-    velocity = Vec2.new(0, 0)
-    if key == Engine.KeyCode.Up then
-        velocity = velocity + Vec2.new(0, 0.01)
-    elseif key == Engine.KeyCode.Down then
-        velocity = velocity + Vec2.new(0, -0.01)
-    elseif key == Engine.KeyCode.Left then
-        velocity = velocity + Vec2.new(-0.01, 0)
-    elseif key == Engine.KeyCode.Right then
-        velocity = velocity + Vec2.new(0.01, 0)
-    end
-end)
+local acceleration = Vec2.new(0, 0)
+local maxSpeed = 0.3
+local accelRate = 0.005 -- Rate at which acceleration increases
+local friction = 0.95   -- Friction for slowing down the sprite
 
 function script:OnFrame()
+    -- Reset acceleration each frame
+    acceleration = Vec2.new(0, 0)
+
+    -- Apply acceleration based on input
+    if Engine.IsKeyPressed(Engine.KeyCode.Up) then
+        acceleration = acceleration + Vec2.new(0, 1)
+    end
+    if Engine.IsKeyPressed(Engine.KeyCode.Down) then
+        acceleration = acceleration + Vec2.new(0, -1)
+    end
+    if Engine.IsKeyPressed(Engine.KeyCode.Left) then
+        acceleration = acceleration + Vec2.new(-1, 0)
+    end
+    if Engine.IsKeyPressed(Engine.KeyCode.Right) then
+        acceleration = acceleration + Vec2.new(1, 0)
+    end
+
+    -- Normalize acceleration vector to prevent diagonal speed boost
+    if acceleration:Magnitude() > 0 then
+        acceleration = acceleration:Unit() * accelRate
+    end
+
+    -- Update velocity based on acceleration
+    velocity = velocity + acceleration
+
+    -- Clamp velocity to maxSpeed
+    if velocity:Magnitude() > maxSpeed then
+        velocity = velocity:Unit() * maxSpeed
+    end
+
+    -- Apply friction to slow down the sprite
+    velocity = velocity * friction
+
+    -- Update sprite position based on velocity
     sprite.position = sprite.position + velocity
-    velocity = Vec2.new(0, 0)
 end
 
 return script
