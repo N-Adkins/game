@@ -34,6 +34,10 @@ Lua::Lua(SpriteManager& sprite_manager)
             return key_state[keycode];
         };
 
+        engine["SetVSync"] = [](bool enable) {
+            SDL_GL_SetSwapInterval(enable ? 1 : 0);
+        };
+
         return engine;
     };
 }
@@ -59,11 +63,11 @@ void Lua::runOnStart()
     }
 }
 
-void Lua::runOnFrame()
+void Lua::runOnFrame(float delta_time)
 {
     for (auto& script : scripts) {
         if (sol::protected_function func = script.table["OnFrame"]) {
-            if (auto result = func(script); !result.valid()) {
+            if (auto result = func(script, delta_time); !result.valid()) {
                 sol::error err = result;
                 Log::error("Lua script error at {}: {}", script.name, err.what());
             };

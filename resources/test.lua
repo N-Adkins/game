@@ -2,16 +2,18 @@ local script = {}
 
 local Engine = require("Engine")
 
+Engine.SetVSync(false)
+
 local sprite = Engine.CreateSprite()
 
 -- Variables for velocity and acceleration
 local velocity = Vec2.new(0, 0)
 local acceleration = Vec2.new(0, 0)
 local maxSpeed = 10
-local accelRate = 4 -- Rate at which acceleration increases
-local friction = 0.93   -- Friction for slowing down the sprite
+local accelRate = 1 -- Rate at which acceleration increases
+local friction = 0.999   -- Friction for slowing down the sprite
 
-function script:OnFrame()
+function script:OnFrame(delta_time)
     -- Reset acceleration each frame
     acceleration = Vec2.new(0, 0)
 
@@ -43,10 +45,8 @@ function script:OnFrame()
     end
 
     -- Update sprite position based on velocity
-    sprite.position = sprite.position + velocity
+    sprite.position = sprite.position + velocity * delta_time * 100
 
-    print(sprite.position)
-    
     --sprite.scale = 1 - (math.abs(velocity.x) + math.abs(velocity.y)) / 2;
 
     -- Apply friction to slow down the sprite

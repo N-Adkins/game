@@ -1,3 +1,4 @@
+#include "SDL_timer.h"
 #include <pch.hpp>
 
 #define SOL_ALL_SAFETIES_ON 1
@@ -58,8 +59,17 @@ void renderLoop(
     const Engine::Shader& shader
 )
 {
+    float delta_time = 0;
+
+    uint64_t delta_time_now = SDL_GetPerformanceCounter();
+    uint64_t delta_time_last = 0;
+
     bool loop = true;
     while (loop) {
+        delta_time_last = delta_time_now;
+        delta_time_now = SDL_GetPerformanceCounter();
+        delta_time = ((delta_time_now - delta_time_last) * 1000) / static_cast<float>(SDL_GetPerformanceCounter());
+
         SDL_Event e;
         while (SDL_PollEvent(&e)) {
             ImGui_ImplSDL2_ProcessEvent(&e);
@@ -79,7 +89,7 @@ void renderLoop(
         );
         shader.setUniform("projection", projection);
 
-        lua.runOnFrame();
+        lua.runOnFrame(delta_time);
 
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplSDL2_NewFrame();

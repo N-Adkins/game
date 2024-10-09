@@ -23,7 +23,7 @@ public:
 
     void pushSource(const LuaSource& source);
     void runOnStart();
-    void runOnFrame();
+    void runOnFrame(float delta_time);
     
     void gc();
 
