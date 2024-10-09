@@ -3,8 +3,6 @@ local script = {}
 local Engine = require("Engine")
 
 local sprite = Engine.CreateSprite()
-local other = Engine.CreateSprite()
-local next = Engine.CreateSprite()
 
 local velocity = Vec2.new(0, 0)
 local just_moved = false
