@@ -3,6 +3,7 @@
 #include "lua.hpp"
 #include "glm/gtc/constants.hpp"
 #include "keycodes.hpp"
+#include <sstream>
 
 namespace Engine {
 
@@ -39,6 +40,19 @@ Lua::Lua(SpriteManager& sprite_manager)
         };
 
         return engine;
+    };
+
+    // Overriding the builtin print function to use the engine logging
+    lua["print"] = [](sol::variadic_args va, sol::this_state ts) {
+        std::stringstream buffer;
+        sol::state_view lua(ts);
+
+        for (auto arg : va) {
+            buffer << lua["tostring"](arg).get<std::string>();
+            buffer << "\t";
+        }
+
+        Log::info("{}", buffer.str());
     };
 }
 
