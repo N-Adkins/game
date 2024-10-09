@@ -113,8 +113,10 @@ int main()
         Engine::ResourceManager resource_manager;
         const auto& shader = resource_manager.load<Engine::Shader>("test.shader");
         const auto& script = resource_manager.load<Engine::LuaSource>("test.lua");
-
+        
         const Engine::Vec2 window_size = window.getSize();
+
+        /*
         const Engine::Vec3 camera_pos = Engine::Vec3(0.f, 0.f, 3.f);
         const Engine::Vec3 camera_front = Engine::Vec3(0.f, 0.f, -1.f);
         const Engine::Vec3 camera_up = Engine::Vec3(0.f, 1.f, 0.f);
@@ -123,15 +125,19 @@ int main()
             camera_pos + camera_front,
             camera_up
         );
-        const Engine::Mat4 projection = Engine::Mat4::projection(
-            Engine::asRadians(45.f), 
-            window_size.getX() / window_size.getY(), 
-            0.1f, 
-            100.f,
-            false
+        */
+
+        const Engine::Mat4 projection = Engine::Mat4::ortho(
+            -(window_size.getX() / 2),
+            window_size.getX() / 2,
+            -(window_size.getY() / 2),
+            window_size.getY() / 2,
+            -1.f, 
+            1.f
         );
+
+        shader.setUniform("projection", projection);
         //shader.setUniform("view", view);
-        //shader.setUniform("projection", projection);
         
         Engine::SpriteManager sprite_manager(shader);
 
