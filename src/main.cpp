@@ -10,6 +10,7 @@
 
 #include "engine/sprite.hpp"
 #include "engine/lua.hpp"
+#include "engine/keycodes.hpp"
 #include "gfx/window.hpp"
 #include "gfx/renderer.hpp"
 #include "resource/resource_manager.hpp"
@@ -36,6 +37,14 @@ void renderLoop(
             ImGui_ImplSDL2_ProcessEvent(&e);
             if (e.type == SDL_QUIT) {
                 loop = false;
+            } else if (e.type == SDL_KEYDOWN) {
+                switch (e.key.keysym.sym) {
+                case SDLK_UP: lua.fireBuiltinEvent("OnKeyPressed", Engine::KeyCode::Up); break;
+                case SDLK_DOWN: lua.fireBuiltinEvent("OnKeyPressed", Engine::KeyCode::Down); break;
+                case SDLK_LEFT: lua.fireBuiltinEvent("OnKeyPressed", Engine::KeyCode::Left); break;
+                case SDLK_RIGHT: lua.fireBuiltinEvent("OnKeyPressed", Engine::KeyCode::Right); break;
+                default: break;
+                }
             }
         }
 
@@ -108,12 +117,13 @@ int main()
         lua.registerTypes<
             Engine::Vec2,
             Engine::Vec3,
-            Engine::Sprite
+            Engine::Sprite,
+            Engine::Event,
+            Engine::EventConnection
         >();
         lua.pushSource(script);
 
         lua.runOnStart();
-        //auto& sprite = sprite_manager.createSprite();
 
         renderLoop(
             lua,

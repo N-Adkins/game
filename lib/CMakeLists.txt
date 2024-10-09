@@ -40,6 +40,8 @@ target_include_directories(game PRIVATE
     imgui
 )
 
+target_include_directories(game PRIVATE SYSTEM oof)
+
 target_link_libraries(game PRIVATE 
     sol2 
     ${LUA_LIBRARIES} 

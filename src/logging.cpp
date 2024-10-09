@@ -2,6 +2,21 @@
 
 #include <cstring>
 #include <iostream>
+#include "platform.hpp"
+
+#if defined (GAME_COMPILER_GCC)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmisleading-indentation"
+#pragma GCC diagnostic ignored "-Wreorder"
+#pragma GCC diagnostic ignored "-Wtype-limits"
+#endif
+
+#define OOF_IMPL
+#include <oof.h>
+
+#if defined (GAME_COMPILER_CLANG)
+#pragma GCC diagnostic pop
+#endif
 
 namespace Engine::Log {
 
@@ -21,23 +36,33 @@ std::string_view truncate_path(const std::source_location& source)
 
 void Logger::log(Severity severity, const std::string& message, const std::source_location& source)
 {
-    std::string severity_str = [severity]() {
-        switch (severity) {
-            case Severity::Debug: return "Debug";
-            case Severity::Info: return "Info";
-            case Severity::Warning: return "Warning";
-            case Severity::Error: return "Error";
+    std::string severity_str;
+    oof::color color;
+    switch (severity) {
+        case Severity::Debug: {
+            severity_str = "Debug";
+            color = { 200, 200, 200 };
+            break;
         }
-        return "N/A";
-    }();
-    std::string complete_message = std::format(
-        "[{}:{}] {}: {}",
-        truncate_path(source),
-        source.line(),
-        severity_str,
-        message
-    );
-    std::cout << complete_message << "\n";
+        case Severity::Info: {
+            severity_str = "Info";
+            color = { 79, 255, 40 };
+            break;
+        }
+        case Severity::Warning: {
+            severity_str = "Warning";
+            color = { 255, 243, 0 };
+            break;
+        }
+        case Severity::Error: {
+            severity_str = "Error";
+            color = { 255, 70, 70 };
+            break;
+        }
+    }
+
+    std::string message_prefix = std::format("[{}:{}] {}: ", truncate_path(source), source.line(), severity_str);
+    std::cout << oof::fg_color(color) << message_prefix << oof::reset_formatting() << message << "\n";
 }
 
 }

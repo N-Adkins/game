@@ -1,7 +1,9 @@
 #include <pch.hpp>
+#include <sol/raii.hpp>
 #include <sol/types.hpp>
 
 #include "lua.hpp"
+#include "keycodes.hpp"
 
 namespace Engine {
 
@@ -24,6 +26,18 @@ Lua::Lua(SpriteManager& sprite_manager)
         engine["CreateSprite"] = [&sprite_manager]() -> SpriteWrapper {
             return SpriteWrapper(sprite_manager.createSprite());
         };
+
+        engine["Events"] = lua.create_table();
+        for (auto& [name, event] : builtin_events) {
+            engine["Events"][name] = &event;
+        }
+
+        engine["KeyCode"] = lua.create_table_with(
+            "Up", KeyCode::Up,
+            "Down", KeyCode::Down,
+            "Left", KeyCode::Left,
+            "Right", KeyCode::Right
+        );
 
         return engine;
     };
@@ -154,6 +168,21 @@ void Lua::registerType<Sprite>()
     sprite[sol::meta_method::to_string] = [](const SpriteWrapper& self) {
         return std::format("Sprite {{ id: {} }}", self.ref.getId()); 
     };
+}
+
+template <> 
+void Lua::registerType<Event>()
+{
+    auto event = lua.new_usertype<Event>("Event", sol::constructors<Event()>());
+    event["Connect"] = &Event::connect;
+    event["Fire"] = &Event::fireVariadic;
+}
+
+template <> 
+void Lua::registerType<EventConnection>()
+{
+    auto event_conn = lua.new_usertype<EventConnection>("EventConnection");
+    event_conn["Disconnect"] = &EventConnection::disconnect;
 }
 
 } // namespace Engine
