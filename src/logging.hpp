@@ -15,6 +15,7 @@ public:
         Error,
     };
     void log(Severity severity, const std::string& message, const std::source_location& source);
+    void logCustomPrefix(Severity severity, const std::string& message, const std::string& prefix);
 };
 
 extern Logger GLOBAL_LOGGER;

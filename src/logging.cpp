@@ -36,6 +36,12 @@ std::string_view truncate_path(const std::source_location& source)
 
 void Logger::log(Severity severity, const std::string& message, const std::source_location& source)
 {
+    std::string message_prefix = std::format("[{}:{}]", truncate_path(source), source.line());
+    logCustomPrefix(severity, message, message_prefix);
+}
+
+void Logger::logCustomPrefix(Severity severity, const std::string& message, const std::string& prefix) 
+{
     std::string severity_str;
     oof::color color;
     switch (severity) {
@@ -61,8 +67,8 @@ void Logger::log(Severity severity, const std::string& message, const std::sourc
         }
     }
 
-    std::string message_prefix = std::format("[{}:{}] {}: ", truncate_path(source), source.line(), severity_str);
-    std::cout << oof::fg_color(color) << message_prefix << oof::reset_formatting() << message << "\n";
+    std::cout << oof::fg_color(color) << prefix << " " << severity_str << ": "
+        << oof::reset_formatting() << message << "\n";
 }
 
 }

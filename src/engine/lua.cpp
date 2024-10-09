@@ -1,15 +1,22 @@
 #include <pch.hpp>
 
 #include "lua.hpp"
-#include "glm/gtc/constants.hpp"
 #include "keycodes.hpp"
+#include "logging.hpp"
 #include <sstream>
 
 namespace Engine {
 
 Lua::Lua(SpriteManager& sprite_manager)
 {
-    lua.open_libraries(sol::lib::base, sol::lib::io, sol::lib::string, sol::lib::package, sol::lib::math);
+    lua.open_libraries(
+        sol::lib::base, 
+        sol::lib::io, 
+        sol::lib::string, 
+        sol::lib::package, 
+        sol::lib::math,
+        sol::lib::debug
+    );
 
     lua["package"]["preload"]["Engine"] = [&](sol::this_state state) {
         sol::state_view lua(state);
@@ -47,17 +54,32 @@ Lua::Lua(SpriteManager& sprite_manager)
         std::stringstream buffer;
         sol::state_view lua(ts);
 
+        std::optional<sol::table> debug_info_maybe = lua["debug"]["getinfo"](2, "l");
+        std::string prefix = "[unknown]";
+        
+        if (debug_info_maybe) {
+            auto debug_info = *debug_info_maybe;
+            int line_num = debug_info["currentline"].get_or(-1);
+            std::string script_name = lua["SCRIPT_NAME"].get_or<std::string>("unknown");
+            prefix = std::format(
+                "[{}:{}]", 
+                script_name,
+                line_num
+            );
+        }
+
         for (auto arg : va) {
             buffer << lua["tostring"](arg).get<std::string>();
             buffer << "\t";
         }
 
-        Log::info("{}", buffer.str());
+        Log::GLOBAL_LOGGER.logCustomPrefix(Log::Logger::Severity::Info, buffer.str(), prefix);
     };
 }
 
 void Lua::pushSource(const LuaSource& source)
 {
+    lua["SCRIPT_NAME"] = source.getName();
     sol::table env = lua.safe_script(source.getSource()); 
     scripts.push_back(Script{
         .table = env,
