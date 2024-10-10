@@ -6,9 +6,9 @@ local sprite = Engine.CreateSprite()
 -- Variables for velocity and acceleration
 local velocity = Vec2.new(0, 0)
 local acceleration = Vec2.new(0, 0)
-local maxSpeed = 5000
-local accelRate = 40000000 -- Increased to compensate for delta time
-local friction = 100 -- Adjusted for more appropriate friction
+local maxSpeed = 100
+local accelRate = 30 -- Increased to compensate for delta time
+local friction = 10 -- Adjusted for more appropriate friction
 
 function script:OnFrame(delta_time)
     -- Reset acceleration each frame
@@ -30,7 +30,7 @@ function script:OnFrame(delta_time)
 
     -- Normalize acceleration vector to prevent diagonal speed boost
     if acceleration:Length() > 0 then
-        acceleration = acceleration / acceleration:Length() * accelRate
+        acceleration = acceleration / acceleration:Length() * accelRate * 1000
     end
 
     -- Apply friction
@@ -49,9 +49,9 @@ function script:OnFrame(delta_time)
     sprite.position = sprite.position + velocity * delta_time
 
     -- Debug output
-    print("Delta time: " .. delta_time)
+    --[[print("Delta time: " .. delta_time)
     print("Acceleration: " .. tostring(acceleration))
-    print("Velocity: " .. velocity:Length() .. ", Position: " .. tostring(sprite.position))
+    print("Velocity: " .. velocity:Length() .. ", Position: " .. tostring(sprite.position))]]--
 end
 
 return script

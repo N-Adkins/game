@@ -68,7 +68,7 @@ void renderLoop(
     while (loop) {
         delta_time_last = delta_time_now;
         delta_time_now = SDL_GetPerformanceCounter();
-        delta_time = ((delta_time_now - delta_time_last) * 1000) / static_cast<float>(SDL_GetPerformanceCounter());
+        delta_time = ((delta_time_now - delta_time_last) * 1000) / static_cast<float>(SDL_GetPerformanceFrequency()) / 1000.f;
 
         SDL_Event e;
         while (SDL_PollEvent(&e)) {
@@ -90,6 +90,8 @@ void renderLoop(
         shader.setUniform("projection", projection);
 
         lua.runOnFrame(delta_time);
+
+        Engine::Log::info("{}", static_cast<int>(1.f / delta_time));
 
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplSDL2_NewFrame();
