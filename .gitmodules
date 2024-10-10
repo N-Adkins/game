@@ -1,0 +1,22 @@
+[submodule "lib/sol2"]
+	path = lib/sol2
+	url = https://github.com/ThePhD/sol2
+[submodule "lib/sdl2"]
+	path = lib/sdl2
+	url = https://github.com/libsdl-org/SDL
+	branch = SDL2
+[submodule "lib/ctre"]
+	path = lib/ctre
+	url = https://github.com/hanickadot/compile-time-regular-expressions
+[submodule "lib/imgui"]
+	path = lib/imgui
+	url = https://github.com/ocornut/imgui
+[submodule "lib/oof"]
+	path = lib/oof
+	url = https://github.com/s9w/oof
+[submodule "lib/glm"]
+	path = lib/glm
+	url = https://github.com/g-truc/glm
+[submodule "lib/stb"]
+	path = lib/stb
+	url = https://github.com/nothings/stb
