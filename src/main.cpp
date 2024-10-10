@@ -91,7 +91,7 @@ void renderLoop(
 
         lua.runOnFrame(delta_time);
 
-        Engine::Log::info("{}", static_cast<int>(1.f / delta_time));
+        //Engine::Log::info("{}", static_cast<int>(1.f / delta_time));
 
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplSDL2_NewFrame();
