@@ -1,5 +1,5 @@
 local script = {}
 
-print("other");
+print("other thing")
 
 return script

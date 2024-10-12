@@ -25,10 +25,12 @@
 #include <SDL_syswm.h>
 #include <SDL_video.h>
 
+#define SOL_ALL_SAFETIES_ON 1
+#define SOL_PRINT_ERRORS 0
 #include <sol/sol.hpp>
 
 #include <glm/glm.hpp>
-
+#include <imgui.h>
 #include <ctre.hpp>
 
 #include "logging.hpp"

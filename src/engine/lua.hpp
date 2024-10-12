@@ -21,9 +21,7 @@ public:
     template <typename... Args>
     void registerTypes();
 
-    void pushSource(const LuaSource& source);
-    void runOnStart();
-    void runOnFrame(float delta_time);
+    void runEntryPoint(const LuaSource& source);
     
     void gc();
 
@@ -33,14 +31,11 @@ public:
     void fireBuiltinEvent(const std::string& name, Args&&... args);
  
 private:
-    struct Script {
-        sol::table table;
-        std::string name;
-    };
+    static void panic(std::optional<std::string> maybe_message);
 
     sol::state lua;
-    std::vector<Script> scripts;
     std::unordered_map<std::string, Event> builtin_events = {
+        { "OnFrameStep", Event() },
         { "OnKeyPressed", Event() },
         { "OnKeyReleased", Event() },
     };

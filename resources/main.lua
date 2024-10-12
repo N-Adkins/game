@@ -1,5 +1,3 @@
-local script = {}
-
 local Engine = require("Engine")
 local Test = require("other")
 
@@ -13,7 +11,9 @@ local maxSpeed = 100
 local accelRate = 30
 local friction = 10
 
-function script:OnFrame(delta_time)
+print("Test");
+
+local frame_step = Engine.Events.OnFrameStep:Connect(function (delta_time)
     acceleration = Vec2.new(0, 0)
 
     if Engine.IsKeyPressed(Engine.KeyCode.Up) then
@@ -43,6 +43,4 @@ function script:OnFrame(delta_time)
     end
 
     sprite.position = sprite.position + velocity * delta_time
-end
-
-return script
+end)

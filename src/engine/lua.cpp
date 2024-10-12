@@ -4,12 +4,39 @@
 #include "keycodes.hpp"
 #include "logging.hpp"
 #include "../platform.hpp"
+#include <sol/forward.hpp>
+#include <sol/protected_function_result.hpp>
+#include <sol/trampoline.hpp>
 #include <sstream>
 
 namespace Engine {
 
+void Lua::panic(std::optional<std::string> maybe_message)
+{
+    if (maybe_message.has_value()) {
+        Log::error("Lua panic: {}", *maybe_message);
+    } else {
+        Log::error("Lua has panicked without a message. :-)");
+    }
+}
+
 Lua::Lua(SpriteManager& sprite_manager)
 {
+    lua.set_panic(sol::c_call<decltype(&Lua::panic), &Lua::panic>);
+
+    lua.set_exception_handler([](
+        lua_State* state, 
+        sol::optional<const std::exception&> maybe_exception,
+        std::string_view description) -> int
+    {
+        if (maybe_exception.has_value()) {
+            Log::error("Lua exception: {}", (*maybe_exception).what());
+        } else {
+            Log::error("Lua error description: {}", description);
+        }
+        return 0;
+    });
+
     lua.open_libraries(
         sol::lib::base, 
         sol::lib::io, 
@@ -92,36 +119,12 @@ Lua::Lua(SpriteManager& sprite_manager)
     };
 }
 
-void Lua::pushSource(const LuaSource& source)
+void Lua::runEntryPoint(const LuaSource& source)
 {
-    sol::table env = lua.safe_script_file(source.getSource()); 
-    scripts.push_back(Script{
-        .table = env,
-        .name = source.getName(),
-    });
-}
-
-void Lua::runOnStart()
-{
-    for (auto& script : scripts) {
-        if (sol::protected_function func = script.table["OnStart"]) {
-            if (auto result = func(script); !result.valid()) {
-                sol::error err = result;
-                Log::error("Lua script error at {}: {}", script.name, err.what());
-            };
-        }
-    }
-}
-
-void Lua::runOnFrame(float delta_time)
-{
-    for (auto& script : scripts) {
-        if (sol::protected_function func = script.table["OnFrame"]) {
-            if (auto result = func(script, delta_time); !result.valid()) {
-                sol::error err = result;
-                Log::error("Lua script error at {}: {}", script.name, err.what());
-            };
-        }
+    try {
+        lua.script_file(source.getSource()); 
+    } catch (const sol::error& e) {
+        Log::error("Lua compilation error: {}", e.what());
     }
 }
 

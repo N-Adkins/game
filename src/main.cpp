@@ -1,9 +1,6 @@
 #include "SDL_timer.h"
 #include <pch.hpp>
 
-#define SOL_ALL_SAFETIES_ON 1
-#include <sol/sol.hpp>
-
 #include <imgui.h>
 #include <backends/imgui_impl_sdl2.h>
 #include <backends/imgui_impl_opengl3.h>
@@ -11,6 +8,7 @@
 #include "engine/sprite.hpp"
 #include "engine/lua.hpp"
 #include "engine/keycodes.hpp"
+#include "engine/debug.hpp"
 #include "gfx/window.hpp"
 #include "gfx/renderer.hpp"
 #include "resource/resource_manager.hpp"
@@ -21,7 +19,7 @@
 
 #include <cassert>
 
-void handleEvent(SDL_Event& e, Engine::Lua& lua) {
+void handleEvent(SDL_Event& e, Engine::Lua& lua, Engine::DebugContext& debug) {
     if (e.key.repeat != 0) { // ignore repeat signals, OS dependent
         return;
     }
@@ -34,6 +32,7 @@ void handleEvent(SDL_Event& e, Engine::Lua& lua) {
             lua.fireBuiltinEvent("OnKeyPressed", static_cast<Engine::KeyCode>(e.key.keysym.sym));
             lua.setKeyState(static_cast<Engine::KeyCode>(e.key.keysym.sym), true);
             break;
+        case SDLK_F1: debug.toggle();
         default: break;
         }
     } else if (e.type == SDL_KEYUP) {
@@ -56,6 +55,7 @@ void renderLoop(
     Engine::Renderer& renderer,
     Engine::ResourceManager& resource_manager,
     Engine::SpriteManager& sprite_manager,
+    Engine::DebugContext& debug,
     const Engine::Shader& shader
 )
 {
@@ -76,7 +76,7 @@ void renderLoop(
             if (e.type == SDL_QUIT) {
                 loop = false;
             }
-            handleEvent(e, lua);
+            handleEvent(e, lua, debug);
         }
 
         const glm::vec2 window_size = window.getSize();
@@ -89,19 +89,13 @@ void renderLoop(
         );
         shader.setUniform("projection", projection);
 
-        lua.runOnFrame(delta_time);
-
-        //Engine::Log::info("{}", static_cast<int>(1.f / delta_time));
+        lua.fireBuiltinEvent("OnFrameStep", delta_time);
 
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplSDL2_NewFrame();
         ImGui::NewFrame();
         
-        /*
-        if (ImGui::Begin("Editor")) {
-            ImGui::End();
-        }
-        */  
+        debug.tryRender(delta_time);
 
         renderer.clearBackground();
         sprite_manager.render();
@@ -133,7 +127,7 @@ int main()
 
         Engine::ResourceManager resource_manager;
         const auto& shader = resource_manager.load<Engine::Shader>("test.shader");
-        const auto& script = resource_manager.load<Engine::LuaSource>("test.lua");
+        const auto& entry_script = resource_manager.load<Engine::LuaSource>("main.lua");
 
         Engine::SpriteManager sprite_manager(shader);
 
@@ -145,9 +139,9 @@ int main()
             Engine::Event,
             Engine::EventConnection
         >();
-        lua.pushSource(script);
+        lua.runEntryPoint(entry_script);
 
-        lua.runOnStart();
+        Engine::DebugContext debug;
 
         renderLoop(
             lua,
@@ -155,6 +149,7 @@ int main()
             renderer,
             resource_manager,
             sprite_manager,
+            debug,
             shader
         );
     }
