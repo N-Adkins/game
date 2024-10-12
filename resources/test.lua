@@ -1,6 +1,8 @@
 local script = {}
 
 local Engine = require("Engine")
+local Test = require("other")
+
 Engine.SetVSync(false)
 
 local sprite = Engine.CreateSprite()

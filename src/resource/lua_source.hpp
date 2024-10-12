@@ -2,7 +2,6 @@
 
 #include "resource.hpp"
 #include <filesystem>
-#include <string>
 
 namespace Engine {
 
@@ -12,12 +11,12 @@ public:
 
     constexpr static std::string_view RESOURCE_NAME = "LuaScript";
     
-    const std::string& getSource() const;
+    const std::filesystem::path& getSource() const;
     const std::string& getName() const;
     
 private:
+    std::filesystem::path source;
     std::string name;
-    std::string source;
 };
 
 } // namespace Engine

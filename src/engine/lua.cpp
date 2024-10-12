@@ -3,6 +3,7 @@
 #include "lua.hpp"
 #include "keycodes.hpp"
 #include "logging.hpp"
+#include "../platform.hpp"
 #include <sstream>
 
 namespace Engine {
@@ -17,6 +18,8 @@ Lua::Lua(SpriteManager& sprite_manager)
         sol::lib::math,
         sol::lib::debug
     );
+
+    lua["package"]["path"] = lua["package"]["path"].get<std::string>() + ";" + (getExecutablePath() / "resources" / "?.lua").string();
 
     lua["package"]["preload"]["Engine"] = [&](sol::this_state state) {
         sol::state_view lua(state);
@@ -54,13 +57,25 @@ Lua::Lua(SpriteManager& sprite_manager)
         std::stringstream buffer;
         sol::state_view lua(ts);
 
-        std::optional<sol::table> debug_info_maybe = lua["debug"]["getinfo"](2, "l");
+        std::optional<sol::table> debug_info_maybe = lua["debug"]["getinfo"](2, "Sl");
         std::string prefix = "[unknown]";
         
         if (debug_info_maybe) {
             auto debug_info = *debug_info_maybe;
             int line_num = debug_info["currentline"].get_or(-1);
-            std::string script_name = lua["SCRIPT_NAME"].get_or<std::string>("unknown");
+            std::string script_name;
+            if (std::optional<std::string> name = debug_info["source"]) {
+                // Attempt to remove everything before the resources folder to keep logs
+                // cleaner
+                size_t folder_pos = (*name).find("resources/");
+                if (folder_pos != std::string::npos) {
+                    script_name = (*name).substr(folder_pos);
+                } else {
+                    script_name = *name;
+                }
+            } else {
+                script_name = "[unknown_script]";
+            }
             prefix = std::format(
                 "[{}:{}]", 
                 script_name,
@@ -79,8 +94,7 @@ Lua::Lua(SpriteManager& sprite_manager)
 
 void Lua::pushSource(const LuaSource& source)
 {
-    lua["SCRIPT_NAME"] = source.getName();
-    sol::table env = lua.safe_script(source.getSource()); 
+    sol::table env = lua.safe_script_file(source.getSource()); 
     scripts.push_back(Script{
         .table = env,
         .name = source.getName(),
