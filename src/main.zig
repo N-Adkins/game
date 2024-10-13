@@ -1,6 +1,6 @@
 const std = @import("std");
-const log = @import("log.zig");
 const glfw = @import("zglfw");
+const log = @import("log.zig");
 const GraphicsContext = @import("graphics/context.zig").GraphicsContext;
 
 pub fn main() !void {
@@ -10,6 +10,11 @@ pub fn main() !void {
 
     try glfw.init();
     defer glfw.terminate();
+    
+    if (!glfw.isVulkanSupported()) {
+        log.err("Failed to find libvulkan", .{});
+        return error.VulkanNotSupported;
+    }
     
     glfw.windowHint(.client_api, 0);
     const window = try glfw.Window.create(1280, 720, "Window", null);

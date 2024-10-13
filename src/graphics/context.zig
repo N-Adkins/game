@@ -1,9 +1,12 @@
 const std = @import("std");
 const glfw = @import("zglfw");
 const vk = @import("vulkan");
+const log = @import("../log.zig");
 const Allocator = std.mem.Allocator;
 
 const required_device_extensions = [_][*:0]const u8{vk.extensions.khr_swapchain.name};
+const validation_layers = [_][*:0] const u8{"VK_LAYER_KHRONOS_validation"};
+const enable_validation_layers = true;
 
 const apis: []const vk.ApiInfo = &.{
     vk.features.version_1_0,
@@ -33,6 +36,8 @@ pub const GraphicsContext = struct {
 
     graphics_queue: Queue,
     present_queue: Queue,
+
+    debug_messenger: ?vk.DebugUtilsMessengerEXT,
     
     pub fn init(allocator: Allocator, app_name: [*:0]const u8, window: *glfw.Window) !GraphicsContext {
         var self: GraphicsContext = undefined;
@@ -45,8 +50,6 @@ pub const GraphicsContext = struct {
             )
         );
 
-        const glfw_extensions = try glfw.getRequiredInstanceExtensions();
-
         const app_info: vk.ApplicationInfo = .{
             .p_application_name = app_name,
             .application_version = vk.makeApiVersion(0, 0, 0, 0),
@@ -55,11 +58,25 @@ pub const GraphicsContext = struct {
             .api_version = vk.API_VERSION_1_0,
         };
 
-        const instance = try self.base_dispatch.createInstance(&.{
+        const instance_extensions = try getInstanceExtensions(allocator);
+        defer allocator.free(instance_extensions);
+        
+        var instance_info: vk.InstanceCreateInfo = .{
             .p_application_info = &app_info,
-            .enabled_extension_count = @intCast(glfw_extensions.len),
-            .pp_enabled_extension_names = @ptrCast(glfw_extensions.ptr),
-        }, null);
+            .enabled_extension_count = @intCast(instance_extensions.len),
+            .pp_enabled_extension_names = @ptrCast(instance_extensions.ptr),
+        };
+        if (enable_validation_layers and try checkLayerSupport(self.base_dispatch, allocator)) {
+            // This allows validation checking on the instance creation function
+            var debug_create_info: vk.DebugUtilsMessengerCreateInfoEXT = undefined;
+            populateDebugMessengerInfo(&debug_create_info);
+            instance_info.p_next = &debug_create_info;
+
+            instance_info.enabled_layer_count = @intCast(validation_layers.len);
+            instance_info.pp_enabled_layer_names = @ptrCast(&validation_layers);
+        }
+
+        const instance = try self.base_dispatch.createInstance(&instance_info, null);
 
         const instance_dispatch = try allocator.create(InstanceDispatch);
         errdefer allocator.destroy(instance_dispatch);
@@ -70,6 +87,8 @@ pub const GraphicsContext = struct {
         );
         self.instance = Instance.init(instance, instance_dispatch);
         errdefer self.instance.destroyInstance(null);
+
+        self.debug_messenger = try createDebugMessenger(self.base_dispatch, self.instance);
 
         self.surface = try createSurface(self.instance, window);
         errdefer self.instance.destroySurfaceKHR(self.surface, null);
@@ -96,6 +115,10 @@ pub const GraphicsContext = struct {
     }
 
     pub fn deinit(self: *GraphicsContext) void {
+        if (self.debug_messenger) |debug_messenger| {
+            destroyDebugUtilsMessengerEXT(self.base_dispatch, self.instance, debug_messenger);
+        }
+
         self.logical_device.destroyDevice(null);
         self.instance.destroySurfaceKHR(self.surface, null);
         self.instance.destroyInstance(null);
@@ -132,8 +155,128 @@ const DeviceCandidate = struct {
     queues: QueueIndices,
 };
 
-fn createSurface(instance: Instance, window: *glfw.Window) !vk.SurfaceKHR {
+fn checkLayerSupport(base_dispatch: BaseDispatch, allocator: Allocator) !bool {
+    const available_layers = try base_dispatch.enumerateInstanceLayerPropertiesAlloc(allocator);
+    defer allocator.free(available_layers);
+
+    for (validation_layers) |requested_layer| {
+        var found_layer = false;
+
+        for (available_layers) |property| {
+            if (std.mem.eql(u8, std.mem.span(requested_layer), std.mem.sliceTo(&property.layer_name, 0))) {
+                found_layer = true;
+                break;
+            }
+        }
+
+        if (!found_layer) {
+            return false;
+        }
+    }
     
+    return true;
+}
+
+fn getInstanceExtensions(allocator: Allocator) ![][*:0]const u8 {
+    const glfw_extensions = try glfw.getRequiredInstanceExtensions();
+
+    var extensions: std.ArrayListUnmanaged([*:0]const u8) = try .initCapacity(allocator, glfw_extensions.len);
+    defer extensions.deinit(allocator);
+
+    for (glfw_extensions) |extension| {
+        // should never fail since we init with capacity
+        extensions.append(allocator, extension) catch unreachable;
+    }
+
+    if (enable_validation_layers) {
+        try extensions.append(allocator, vk.extensions.ext_debug_utils.name);
+    }
+
+    return allocator.dupe([*:0]const u8, extensions.items);
+}
+
+fn createDebugMessenger(base_dispatch: BaseDispatch, instance: Instance) !?vk.DebugUtilsMessengerEXT {
+    if (!enable_validation_layers) {
+        return null;
+    }
+
+    var create_info: vk.DebugUtilsMessengerCreateInfoEXT = undefined;
+    populateDebugMessengerInfo(&create_info);
+    
+    return try createDebugUtilsMessengerEXT(base_dispatch, instance, &create_info);
+}
+
+fn createDebugUtilsMessengerEXT(
+    base_dispatch: BaseDispatch, 
+    instance: Instance,
+    create_info: *const vk.DebugUtilsMessengerCreateInfoEXT,
+) !vk.DebugUtilsMessengerEXT {
+    const maybe_func: ?vk.PfnCreateDebugUtilsMessengerEXT = @ptrCast(base_dispatch.getInstanceProcAddr(instance.handle, "vkCreateDebugUtilsMessengerEXT"));
+    if (maybe_func) |func| {
+        var debug_messenger: vk.DebugUtilsMessengerEXT = undefined;
+        if (func(instance.handle, create_info, null, &debug_messenger) == vk.Result.success) {
+            return debug_messenger;
+        } else {
+            return error.DebugMessengerFailed;
+        }
+    } else {
+        return error.ExtensionNotPresent;
+    }
+}
+
+fn destroyDebugUtilsMessengerEXT(
+    base_dispatch: BaseDispatch, 
+    instance: Instance,
+    debug_messenger: vk.DebugUtilsMessengerEXT,
+) void {
+    const maybe_func: ?vk.PfnDestroyDebugUtilsMessengerEXT = @ptrCast(base_dispatch.getInstanceProcAddr(instance.handle, "vkDestroyDebugUtilsMessengerEXT"));
+    if (maybe_func) |func| {
+        func(instance.handle, debug_messenger, null);
+    }
+}
+
+fn populateDebugMessengerInfo(create_info: *vk.DebugUtilsMessengerCreateInfoEXT) void {
+    create_info.* = .{
+        .message_severity = .{
+            .verbose_bit_ext = true,
+            .info_bit_ext = true,
+            .warning_bit_ext = true,
+            .error_bit_ext = true,
+        },
+        .message_type = .{
+            .general_bit_ext = true,
+            .validation_bit_ext = true,
+            .performance_bit_ext = true,
+        },
+        .pfn_user_callback = &debugCallback,
+    };
+}
+
+fn debugCallback(
+    message_severity: vk.DebugUtilsMessageSeverityFlagsEXT,
+    message_type: vk.DebugUtilsMessageTypeFlagsEXT,
+    callback_data: ?*const vk.DebugUtilsMessengerCallbackDataEXT,
+    user_data: ?*anyopaque,
+) callconv(.C) vk.Bool32 {
+    _ = message_type;
+    _ = user_data;
+
+    if (callback_data.?.p_message) |message| {
+        if (message_severity.error_bit_ext) {
+            log.err("Vulkan: {s}", .{message});        
+        } else if (message_severity.warning_bit_ext) {
+            log.warn("Vulkan: {s}", .{message});        
+        } else if (message_severity.info_bit_ext) {
+            log.info("Vulkan: {s}", .{message});        
+        } else {
+            log.debug("Vulkan: {s}", .{message});        
+        }
+    }
+
+    return vk.FALSE;
+}
+
+fn createSurface(instance: Instance, window: *glfw.Window) !vk.SurfaceKHR {
     var surface: vk.SurfaceKHR = undefined;
     
     // The libraries again were not playing nice so this is kinda cursed
@@ -143,6 +286,7 @@ fn createSurface(instance: Instance, window: *glfw.Window) !vk.SurfaceKHR {
         @ptrCast(&surface)
     );
     if (result != 0) {
+        log.err("Failed to create Vulkan surface", .{});
         return error.SurfaceCreationFailed;
     }
 
@@ -158,7 +302,8 @@ fn pickPhysicalDevice(instance: Instance, surface: vk.SurfaceKHR, allocator: All
             return candidate;
         }
     }
-
+    
+    log.err("Failed to find suitable physical device for Vulkan (no supported GPU)", .{});
     return error.NoSuitableDevice;
 }
 

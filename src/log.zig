@@ -1,6 +1,8 @@
 const std = @import("std");
 
 const Logger = struct {
+    const allocator = std.heap.c_allocator;
+
     mutex: std.Thread.Mutex = .{},
     level: LogLevel = .debug,
 
@@ -30,8 +32,8 @@ const Logger = struct {
             return;
         }
 
-        var buffer: [512]u8 = undefined;
-        const message = std.fmt.bufPrint(&buffer, "[" ++ level_str ++ "]: " ++ fmt ++ "\n", args) catch @panic("OOM while logging");
+        const message = std.fmt.allocPrint(allocator, "[" ++ level_str ++ "]: " ++ fmt ++ "\n", args) catch @panic("OOM while logging");
+        defer allocator.free(message);
         std.io.getStdErr().writeAll(message) catch @panic("OOM while logging");
     }
 };
