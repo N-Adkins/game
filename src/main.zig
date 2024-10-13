@@ -1,7 +1,9 @@
 const std = @import("std");
 const glfw = @import("zglfw");
+const vk = @import("vulkan");
 const log = @import("log.zig");
 const GraphicsContext = @import("graphics/context.zig").GraphicsContext;
+const Swapchain = @import("graphics/swapchain.zig").Swapchain;
 
 pub fn main() !void {
     var gpa_alloc: std.heap.GeneralPurposeAllocator(.{}) = .{};
@@ -22,6 +24,13 @@ pub fn main() !void {
 
     var graphics = try GraphicsContext.init(gpa, "Game", window);
     defer graphics.deinit();
+
+    const extent: vk.Extent2D = .{
+        .width = 1280,
+        .height = 720,
+    };
+    var swapchain = try Swapchain.init(&graphics, gpa, extent);
+    defer swapchain.deinit();
 
     while (!window.shouldClose()) {
         glfw.pollEvents();
