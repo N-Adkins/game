@@ -1,4 +1,5 @@
 const std = @import("std");
+const log = @import("log.zig");
 const glfw = @import("zglfw");
 const GraphicsContext = @import("graphics/context.zig").GraphicsContext;
 

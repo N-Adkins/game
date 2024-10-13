@@ -103,6 +103,10 @@ pub const GraphicsContext = struct {
         self.allocator.destroy(self.logical_device.wrapper);
         self.allocator.destroy(self.instance.wrapper);
     }
+
+    pub fn deviceName(self: *const GraphicsContext) []const u8 {
+        return std.mem.sliceTo(&self.physical_device_properties.device_name);
+    }
 };
 
 const Queue = struct {
@@ -129,6 +133,7 @@ const DeviceCandidate = struct {
 };
 
 fn createSurface(instance: Instance, window: *glfw.Window) !vk.SurfaceKHR {
+    
     var surface: vk.SurfaceKHR = undefined;
     
     // The libraries again were not playing nice so this is kinda cursed
