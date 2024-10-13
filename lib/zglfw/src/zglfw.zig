@@ -1106,3 +1106,8 @@ extern fn glfwGetInstanceProcAddress(instance: VkInstance, procname: [*:0]const 
 pub fn getInstanceProcAddress(instance: VkInstance, procname: [*:0]const u8) callconv(.C) GLFWvkproc {
     return glfwGetInstanceProcAddress(instance, procname);
 }
+
+extern fn glfwCreateWindowSurface(instance: ?*anyopaque, window: ?*Window, allocator: ?*const anyopaque, surface: ?*anyopaque) c_int;
+pub fn createWindowSurface(self: *Window, instance: ?*anyopaque, allocator: ?*const anyopaque, surface: ?*anyopaque) c_int {
+    return glfwCreateWindowSurface(instance, self, allocator, surface);
+}

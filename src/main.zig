@@ -9,11 +9,12 @@ pub fn main() !void {
 
     try glfw.init();
     defer glfw.terminate();
-
+    
+    glfw.windowHint(.client_api, 0);
     const window = try glfw.Window.create(1280, 720, "Window", null);
     defer window.destroy();
 
-    var graphics = try GraphicsContext.init(gpa, "Game");
+    var graphics = try GraphicsContext.init(gpa, "Game", window);
     defer graphics.deinit();
 
     while (!window.shouldClose()) {
