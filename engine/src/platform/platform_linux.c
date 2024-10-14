@@ -1,14 +1,15 @@
 #include "platform.h"
-#include <stdio.h>
 
 #ifdef LPLATFORM_LINUX
 
 #include <core/assert.h>
 #include <core/logger.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include <X11/Xlib.h>
+#include <signal.h>
 
 /**
  * Linux-specific platform state, contains X11 handles.
@@ -181,6 +182,11 @@ void platform_print_color(
     fputs(color_code, file);
     fputs(string, file);
     fputs(reset_code, file);
+}
+
+void platform_debug_break(void)
+{
+    raise(SIGTRAP);
 }
 
 #endif

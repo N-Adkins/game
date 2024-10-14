@@ -79,6 +79,10 @@ b8 platform_poll_events(struct platform_state *state);
  * to a file. This is mostly intended for use with logging,
  * avoid using this in most contexts.
  *
+ * One important note is that this function may **NOT** call
+ * any logging functions or assertions because an error could
+ * result in an infinite loop.
+ *
  * @param file Output file, can be an actual opened file
  * or stderr / stdout.
  */
@@ -87,3 +91,11 @@ void platform_print_color(
     const char *string,
     enum terminal_color color
 );
+
+/**
+ * @brief Calls a breakpoint
+ *
+ * Attempts to use a platform-specific instruction or syscall to
+ * break for a debugger. Otherwise, aborts.
+ */
+void platform_debug_break(void);

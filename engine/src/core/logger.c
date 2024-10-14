@@ -33,7 +33,7 @@ LAPI void logger_message(struct logger *logger, enum log_level level, const char
         break;
     }
 
-    char buffer[32000]; // please for the love of god dont use all of this
+    char buffer[32000]; // please dont use all of this
     va_list args;
     va_start(args, fmt);
     vsprintf(buffer, fmt, args);

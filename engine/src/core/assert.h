@@ -1,16 +1,13 @@
 #pragma once
 
+#include <platform/platform.h>
 #include "logger.h"
-
-// TODO: Windows version
-#include <signal.h>
-#define debug_break() raise(SIGTRAP)
 
 #define LASSERT(expr)                                                   \
     do {                                                                \
         if (!(expr)) {                                                  \
             LERROR("Assertion Failure: " #expr);                        \
-            debug_break();                                              \
+            platform_debug_break();                                     \
         }                                                               \
     } while(0)
 
@@ -18,6 +15,6 @@
     do {                                                                \
         if (!(expr)) {                                                  \
             LERROR("Assertion Failure: " #expr ", message " msg);       \
-            debug_break();                                              \
+            platform_debug_break();                                     \
         }                                                               \
     } while(0)
