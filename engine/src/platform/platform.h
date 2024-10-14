@@ -5,7 +5,10 @@
  * @brief Platform layer
  *
  * Handles platform-specifics through a type-erased layer,
- * this includes windowing and event handling.
+ * this includes windowing and event handling. Nothing in this
+ * program is symbol-exported (for dynamic linking) because this
+ * layer should be completely abstracted away by the application
+ * layer.
  */
 
 #include <defines.h>
