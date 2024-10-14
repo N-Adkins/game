@@ -23,22 +23,15 @@
     // Once all dependencies are fetched, `zig build` no longer requires
     // internet connectivity.
     .dependencies = .{
-        .editor = .{
-            .path = "editor",
+        .vulkan = .{
+            .url = "https://github.com/Snektron/vulkan-zig/archive/06dae6c9201863837a92064e2e7814aa71064067.tar.gz",
+            .hash = "1220edeb3fc7dfc40e6fde705a108edce0a3cc76d165a7c9919d1fb037eccec43372",
         },
-        .engine = .{
-            .path = "engine",
-        }
+        .@"vulkan-headers" = .{
+            .url = "https://github.com/KhronosGroup/Vulkan-Headers/archive/master.tar.gz",
+            .hash = "1220478111c3ae93a8e1f61a22d1301531dee56e836dc2dd97af560389a9b621fd20",
+        },
     },
-
-    // Specifies the set of files and directories that are included in this package.
-    // Only files and directories listed here are included in the `hash` that
-    // is computed for this package. Only files listed here will remain on disk
-    // when using the zig package manager. As a rule of thumb, one should list
-    // files required for compilation plus any license(s).
-    // Paths are relative to the build root. Use the empty string (`""`) to refer to
-    // the build root itself.
-    // A directory listed here means that all files within, recursively, are included.
     .paths = .{
         "build.zig",
         "build.zig.zon",
