@@ -17,6 +17,6 @@ b8 platform_startup(
     i32 start_width,
     i32 start_height
 );
-
 void platform_shutdown(struct platform_state *state);
-void platform_poll_events(struct platform_state *state);
+
+b8 platform_poll_events(struct platform_state *state); // True if stay open, false if should close

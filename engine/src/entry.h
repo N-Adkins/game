@@ -10,9 +10,7 @@ int main(void)
         LFATAL("Failed to initialize platform");
     }
     
-    while (true) {
-        platform_poll_events(&platform);
-    }
+    while (platform_poll_events(&platform)) {}
 
     platform_shutdown(&platform);
 

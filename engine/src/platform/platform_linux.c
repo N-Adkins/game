@@ -1,17 +1,18 @@
 #include "platform.h"
-#include <X11/X.h>
 
 #ifdef LPLATFORM_LINUX
 
 #include <core/assert.h>
 #include <core/logger.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include <X11/Xlib.h>
 
 struct linux_platform_state {
     Display *display;
     Window window;
+    Atom wm_delete;
 };
 
 b8 platform_startup(
@@ -23,8 +24,6 @@ b8 platform_startup(
     i32 start_height
 )
 {
-    (void)app_name;
-
     LINFO("Initializing the Linux platform state");
 
     struct linux_platform_state *linux_state = malloc(sizeof(struct linux_platform_state));
@@ -68,11 +67,41 @@ b8 platform_startup(
         KeyReleaseMask |
         ButtonPressMask |
         ButtonReleaseMask |
-        PointerMotionMask |
-        SubstructureRedirectMask;
+        PointerMotionMask;
 
     if (!XSelectInput(linux_state->display, linux_state->window, event_mask)) {
         LFATAL("Failed to enable X11 event mask");
+        return false;
+    }
+
+    linux_state->wm_delete = XInternAtom(
+        linux_state->display,
+        "WM_DELETE_WINDOW",
+        false
+    );
+
+    if (!XSetWMProtocols(
+        linux_state->display,
+        linux_state->window,
+        &linux_state->wm_delete,
+        1
+    )) {
+        LFATAL("Failed to set X11 WM protocols");
+        return false;
+    }
+    
+    // Set window name to app_name
+    if (!XChangeProperty(
+        linux_state->display,
+        linux_state->window,
+        XInternAtom(linux_state->display, "_NET_WM_NAME", False),
+        XInternAtom(linux_state->display, "UTF8_STRING", False),
+        8, 
+        PropModeReplace, 
+        (unsigned char *) app_name,
+        strlen(app_name)
+    )) {
+        LFATAL("Failed to change X11 window name");
         return false;
     }
 
@@ -97,14 +126,27 @@ void platform_shutdown(struct platform_state *state)
 }
 
 
-void platform_poll_events(struct platform_state *state)
-{
+b8 platform_poll_events(struct platform_state *state)
+{ 
     struct linux_platform_state *linux_state = state->inner_state;
+
+    b8 stay_open = true;
     XEvent event;
 
     while (XPending(linux_state->display)) {
         XNextEvent(linux_state->display, &event);
+        switch (event.type) {
+        case ClientMessage:
+            if (event.xclient.data.l[0] == (long)linux_state->wm_delete) {
+                stay_open = false;
+            }
+            break;
+        default:
+            break;
+        }
     }
+
+    return stay_open;
 }
 
 #endif
