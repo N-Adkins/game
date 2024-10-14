@@ -1,4 +1,5 @@
 #include "platform.h"
+#include <X11/X.h>
 
 #ifdef LPLATFORM_LINUX
 
@@ -49,11 +50,34 @@ b8 platform_startup(
         start_width,
         start_height,
         0, // no border
-        BlackPixel(linux_state->display, root_window),
-        BlackPixel(linux_state->display, root_window)
+        BlackPixel(linux_state->display, 0),
+        BlackPixel(linux_state->display, 0)
     );
     if (linux_state->window <= 0) {
         LFATAL("Failed to create X11 window");
+        return false;
+    }
+
+    if (!XMapWindow(linux_state->display, linux_state->window)) {
+        LFATAL("Failed to map X11 window to display");
+        return false;
+    }
+
+    const long event_mask = 
+        KeyPressMask | 
+        KeyReleaseMask |
+        ButtonPressMask |
+        ButtonReleaseMask |
+        PointerMotionMask |
+        SubstructureRedirectMask;
+
+    if (!XSelectInput(linux_state->display, linux_state->window, event_mask)) {
+        LFATAL("Failed to enable X11 event mask");
+        return false;
+    }
+
+    if (XFlush(linux_state->display) <= 0) {
+        LFATAL("Failed to flush X11");
         return false;
     }
 
@@ -65,10 +89,22 @@ void platform_shutdown(struct platform_state *state)
     LINFO("Shutting down the Linux platform state");
 
     struct linux_platform_state *linux_state = state->inner_state;
-
+    
+    XDestroyWindow(linux_state->display, linux_state->window);
     XCloseDisplay(linux_state->display);
 
     free(state->inner_state);
+}
+
+
+void platform_poll_events(struct platform_state *state)
+{
+    struct linux_platform_state *linux_state = state->inner_state;
+    XEvent event;
+
+    while (XPending(linux_state->display)) {
+        XNextEvent(linux_state->display, &event);
+    }
 }
 
 #endif

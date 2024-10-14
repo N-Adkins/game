@@ -19,3 +19,4 @@ b8 platform_startup(
 );
 
 void platform_shutdown(struct platform_state *state);
+void platform_poll_events(struct platform_state *state);
