@@ -6,12 +6,9 @@
 int main(void)
 {
     struct platform_state platform;
-    if (!platform_startup(&platform, "App", 640, 360, 1280, 720)) {
-        LFATAL("Failed to initialize platform");
-    }
-    
-    while (platform_poll_events(&platform)) {}
 
+    platform_startup(&platform, "App", 640, 360, 1280, 720);
+    while (platform_poll_events(&platform)) {}
     platform_shutdown(&platform);
 
     return 0; 

@@ -1,4 +1,5 @@
 #include "platform.h"
+#include <stdio.h>
 
 #ifdef LPLATFORM_LINUX
 
@@ -9,13 +10,16 @@
 
 #include <X11/Xlib.h>
 
+/**
+ * Linux-specific platform state, contains X11 handles.
+ */
 struct linux_platform_state {
     Display *display;
     Window window;
     Atom wm_delete;
 };
 
-b8 platform_startup(
+void platform_startup(
     struct platform_state *state,
     const char *app_name,
     i32 start_x,
@@ -32,13 +36,13 @@ b8 platform_startup(
     linux_state->display = XOpenDisplay(NULL); // fetch default display
     if (linux_state->display == NULL) {
         LFATAL("Failed to open X11 display");
-        return false;
+        return;
     }
 
     Window root_window = XDefaultRootWindow(linux_state->display);
     if (root_window <= 0) {
         LFATAL("Failed to fetch default X11 window");
-        return false;
+        return;
     }
 
     linux_state->window = XCreateSimpleWindow(
@@ -54,12 +58,12 @@ b8 platform_startup(
     );
     if (linux_state->window <= 0) {
         LFATAL("Failed to create X11 window");
-        return false;
+        return;
     }
 
     if (!XMapWindow(linux_state->display, linux_state->window)) {
         LFATAL("Failed to map X11 window to display");
-        return false;
+        return;
     }
 
     const long event_mask = 
@@ -71,7 +75,7 @@ b8 platform_startup(
 
     if (!XSelectInput(linux_state->display, linux_state->window, event_mask)) {
         LFATAL("Failed to enable X11 event mask");
-        return false;
+        return;
     }
 
     linux_state->wm_delete = XInternAtom(
@@ -87,7 +91,7 @@ b8 platform_startup(
         1
     )) {
         LFATAL("Failed to set X11 WM protocols");
-        return false;
+        return;
     }
     
     // Set window name to app_name
@@ -102,15 +106,13 @@ b8 platform_startup(
         strlen(app_name)
     )) {
         LFATAL("Failed to change X11 window name");
-        return false;
+        return;
     }
 
     if (XFlush(linux_state->display) <= 0) {
         LFATAL("Failed to flush X11");
-        return false;
+        return;
     }
-
-    return true;
 }
 
 void platform_shutdown(struct platform_state *state)
@@ -147,6 +149,38 @@ b8 platform_poll_events(struct platform_state *state)
     }
 
     return stay_open;
+}
+
+void platform_print_color(
+    FILE *file,
+    const char *string,
+    enum terminal_color color
+)
+{
+    const char *reset_code = "\e[0;0m";
+    const char *color_code = NULL;
+
+    switch (color) {
+    case TERMINAL_COLOR_PURPLE:
+        color_code = "\e[1;35m";
+        break;
+    case TERMINAL_COLOR_RED:
+        color_code = "\e[1;31m";
+        break;
+    case TERMINAL_COLOR_YELLOW:
+        color_code = "\e[1;33m";
+        break;
+    case TERMINAL_COLOR_GREEN:
+        color_code = "\e[0;32m";
+        break;
+    case TERMINAL_COLOR_GRAY:
+        color_code = "\e[0;37m";
+        break;
+    }
+    
+    fputs(color_code, file);
+    fputs(string, file);
+    fputs(reset_code, file);
 }
 
 #endif

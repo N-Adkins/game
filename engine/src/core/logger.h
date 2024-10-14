@@ -15,23 +15,23 @@ struct logger {
     enum log_level level;
 };
 
-LAPI void log_message(struct logger *logger, enum log_level level, const char *fmt, ...);
+LAPI void logger_message(struct logger *logger, enum log_level level, const char *fmt, ...);
 
 #define LDEBUG(fmt, ...) \
-    log_message(&GLOBAL_LOGGER, LOG_LEVEL_DEBUG, "["__FILE__":%d] Debug: " fmt "\n", __LINE__, ##__VA_ARGS__)
+    logger_message(&GLOBAL_LOGGER, LOG_LEVEL_DEBUG, "["__FILE__":%d] Debug: " fmt "\n", __LINE__, ##__VA_ARGS__)
 
 #define LINFO(fmt, ...) \
-    log_message(&GLOBAL_LOGGER, LOG_LEVEL_INFO, "["__FILE__":%d] Info: " fmt "\n", __LINE__, ##__VA_ARGS__)
+    logger_message(&GLOBAL_LOGGER, LOG_LEVEL_INFO, "["__FILE__":%d] Info: " fmt "\n", __LINE__, ##__VA_ARGS__)
 
 #define LWARN(fmt, ...) \
-    log_message(&GLOBAL_LOGGER, LOG_LEVEL_WARNING, "["__FILE__":%d] Warning: " fmt "\n", __LINE__, ##__VA_ARGS__)
+    logger_message(&GLOBAL_LOGGER, LOG_LEVEL_WARNING, "["__FILE__":%d] Warning: " fmt "\n", __LINE__, ##__VA_ARGS__)
 
 #define LERROR(fmt, ...) \
-    log_message(&GLOBAL_LOGGER, LOG_LEVEL_ERROR, "["__FILE__":%d] Error: " fmt "\n", __LINE__, ##__VA_ARGS__)
+    logger_message(&GLOBAL_LOGGER, LOG_LEVEL_ERROR, "["__FILE__":%d] Error: " fmt "\n", __LINE__, ##__VA_ARGS__)
 
 #define LFATAL(fmt, ...) \
     do { \
-        log_message(&GLOBAL_LOGGER, LOG_LEVEL_FATAL, "["__FILE__":%d] Fatal: " fmt "\n", __LINE__, ##__VA_ARGS__); \
+        logger_message(&GLOBAL_LOGGER, LOG_LEVEL_FATAL, "["__FILE__":%d] Fatal: " fmt "\n", __LINE__, ##__VA_ARGS__); \
         abort(); \
     } while(0)
 
