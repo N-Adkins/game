@@ -47,8 +47,23 @@ typedef u8          b8;
  * @param arg_index Arg number that is variable argument indicator
  */
 #ifdef LPLATFORM_LINUX
-#define FORMAT_HINT(fmt_index, arg_index) \
-    __attribute((format(printf, fmt_index, arg_index)));
+#define LHINT_FORMAT(fmt_index, arg_index) \
+    __attribute__((format(printf, fmt_index, arg_index)));
 #else
-#define FORMAT_HINT(fmt_index, arg_index)
+#define LHINT_FORMAT(fmt_index, arg_index)
+#endif
+
+/**
+ * @brief Following function will always be inlined
+ *
+ * This really should not be used unless there is a measurable reason to, you aren't 
+ * smarter than the compiler. An example of a place that it could reasonably
+ * be used is something like a SIMD wrapper where call overhead would completely
+ * invalidate the benefits of using SIMD.
+ */
+#ifdef LPLATFORM_LINUX
+#define LHINT_INLINE \
+    __attribute__((always_inline))
+#else
+#define LHINT_INLINE
 #endif
