@@ -28,8 +28,6 @@ int main(void)
     struct dynarray array = dynarray_create(sizeof(int));
     dynarray_push(&array, 10);
 
-    // LINFO("%s", LSTRINGIFY(LUNIQUE_ID(0)));
-
     while (platform_poll_events(&platform)) {}
 
     memory_shutdown();

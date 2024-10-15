@@ -23,9 +23,9 @@
  * Linux-specific platform state, contains X11 handles.
  */
 struct linux_platform_state {
-    Display *display;
-    Window window;
-    Atom wm_delete;
+    Display *display; // X11 display handle
+    Window window; // X11 window handle
+    Atom wm_delete; // Handle to the window deletion event
 };
 
 void platform_startup(

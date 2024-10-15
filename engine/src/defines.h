@@ -32,6 +32,12 @@ typedef u8          b8;
 #define LARRAY_LENGTH(x) (sizeof(x) / sizeof((x)[0]))
 
 /**
+ * @brief Returns the number of elements in a staticially-sized string, such
+ * as an array.
+ */
+#define LSTRING_LENGTH(x) (LARRAY_LENGTH((x)-1)
+
+/**
  * @brief Commonly used token concat macro, used for making other macros.
  */
 #define LCONCAT(x, y) LCONCAT_HELPER(x, y)
@@ -183,7 +189,10 @@ LCOMPILE_WARN("LHINT_INLINE not supported on this compiler")
  *
  * This should be used sparingly, it's for more complicated macros where you need
  * scoped variables. It relies on __LINE__. Calling this with the same passed number
- * within the same macro body will return the same result so it can be reused.
+ * within the same macro body will return the same result so it can be reused. This will
+ * not have consistent results if you are doing some weird stuff like nested expression
+ * statements as the line would be the same, this is for function-like macros that use 
+ * do {} while(0) and the like.
  */
 #define LUNIQUE_ID(num) \
     LCONCAT(_unique_id_, LCONCAT(__LINE__, LCONCAT(_ver_, num)))

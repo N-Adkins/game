@@ -80,8 +80,8 @@ LAPI void dynarray_push_ptr(struct dynarray *array, const void *value);
   * it can be a pain for literals sometimes. Prefer using
   * the ptr variation when able.
   */
-#define dynarray_push(array, value) \
-    do { \
-        LTYPEOF(value) LUNIQUE_ID(0) = (value); \
-        dynarray_push_ptr((array), &LUNIQUE_ID(0)); \
+#define dynarray_push(array, value)                                 \
+    do {                                                            \
+        LTYPEOF(value) LUNIQUE_ID(0) = (value);                     \
+        dynarray_push_ptr((array), &LUNIQUE_ID(0));                 \
     } while(0)
