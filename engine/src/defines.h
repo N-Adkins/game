@@ -5,16 +5,11 @@
  * @brief Defines
  *
  * Defines some very common macros and types to be used. These include fixed-width
- * integer type definitions as well as symbol exporting.
+ * integer type definitions as well as symbol exporting. This file also handles a lot
+ * of the definitions for the current platform and compiler.
  */
 
 #include <stdint.h>
-
-// TODO: other platforms lol
-#define LPLATFORM_LINUX
-
-// TODO Add windows definition
-#define LAPI
 
 typedef uint8_t     u8;
 typedef uint16_t    u16;
@@ -33,6 +28,42 @@ typedef u8          b8;
 
 #define ARRAY_LENGTH(x) (sizeof(x) / sizeof((x)[0]))
 
+#if defined(__clang__)
+#define LCOMPILER_CLANG
+#elif defined(__GNUC__) || defined(__GNUG__)
+#define LCOMPILER_GCC
+#elif defined(_MSC_VER)
+#define LCOMPILER_MSVC
+#else
+#error Unsupported compiler, expecting GCC, Clang, or MSVC
+#endif
+
+// This just exists since lots of extensions work on both, saves some typing
+#define LCOMPILER_CLANG_OR_GCC \
+    defined(LCOMPILER_CLANG) || defined(LCOMPILER_GCC)
+
+#if defined(__linux__)
+#define LPLATFORM_LINUX
+#elif defined(_WIN32)
+#define LPLATFORM_WINDOWS
+#error Windows currently not supported
+#elif defined (__APPLE__)
+#define LPLATFORM_MACOS
+#error MacOS currently not supported
+#else
+#error Unsupported platform
+#endif
+
+#ifdef LPLATFORM_WINDOWS
+#ifdef LENGINE_BUILD
+#define LAPI __declspec(dllexport)
+#else
+#define LAPI __declspec(dllimport)
+#endif
+#else
+#define LAPI
+#endif
+
 /**
  * @brief Tells the compiler a function is using printf for warnings
  *
@@ -46,10 +77,11 @@ typedef u8          b8;
  * @param fmt_index Arg number that is the format string
  * @param arg_index Arg number that is variable argument indicator
  */
-#ifdef LPLATFORM_LINUX
+#ifdef LCOMPILER_CLANG_OR_GCC
 #define LHINT_FORMAT(fmt_index, arg_index) \
     __attribute__((format(printf, fmt_index, arg_index)));
 #else
+#warn LHINT_FORMAT not supported on this compiler
 #define LHINT_FORMAT(fmt_index, arg_index)
 #endif
 
@@ -61,9 +93,23 @@ typedef u8          b8;
  * be used is something like a SIMD wrapper where call overhead would completely
  * invalidate the benefits of using SIMD.
  */
-#ifdef LPLATFORM_LINUX
+#ifdef LCOMPILER_CLANG_OR_GCC
 #define LHINT_INLINE \
     __attribute__((always_inline))
 #else
+#warn LHINT_INLINE not supported on this compiler
 #define LHINT_INLINE
+#endif
+
+/**
+ * Returns the name of a file on supported compilers, otherwise the path to 
+ * the file of unspecified length (it depends on how the build system is 
+ * configured at the time).
+ */
+#ifdef LCOMPILER_CLANG_OR_GCC
+#define LFILE_NAME \
+    __FILE_NAME__
+#else
+#define LFILE_NAME \
+    __FILE__
 #endif

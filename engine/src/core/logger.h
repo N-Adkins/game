@@ -33,20 +33,20 @@ LAPI void logger_message(
 ) LHINT_FORMAT(3, 4);
 
 #define LDEBUG(fmt, ...) \
-    logger_message(&GLOBAL_LOGGER, LOG_LEVEL_DEBUG, "["__FILE_NAME__":%d] Debug: " fmt "\n", __LINE__, ##__VA_ARGS__)
+    logger_message(&GLOBAL_LOGGER, LOG_LEVEL_DEBUG, "[" LFILE_NAME ":%d] Debug: " fmt "\n", __LINE__, ##__VA_ARGS__)
 
 #define LINFO(fmt, ...) \
-    logger_message(&GLOBAL_LOGGER, LOG_LEVEL_INFO, "["__FILE_NAME__":%d] Info: " fmt "\n", __LINE__, ##__VA_ARGS__)
+    logger_message(&GLOBAL_LOGGER, LOG_LEVEL_INFO, "[" LFILE_NAME ":%d] Info: " fmt "\n", __LINE__, ##__VA_ARGS__)
 
 #define LWARN(fmt, ...) \
-    logger_message(&GLOBAL_LOGGER, LOG_LEVEL_WARNING, "["__FILE_NAME__":%d] Warning: " fmt "\n", __LINE__, ##__VA_ARGS__)
+    logger_message(&GLOBAL_LOGGER, LOG_LEVEL_WARNING, "[" LFILE_NAME ":%d] Warning: " fmt "\n", __LINE__, ##__VA_ARGS__)
 
 #define LERROR(fmt, ...) \
-    logger_message(&GLOBAL_LOGGER, LOG_LEVEL_ERROR, "["__FILE_NAME__":%d] Error: " fmt "\n", __LINE__, ##__VA_ARGS__)
+    logger_message(&GLOBAL_LOGGER, LOG_LEVEL_ERROR, "[" LFILE_NAME ":%d] Error: " fmt "\n", __LINE__, ##__VA_ARGS__)
 
 #define LFATAL(fmt, ...) \
     do { \
-        logger_message(&GLOBAL_LOGGER, LOG_LEVEL_FATAL, "["__FILE_NAME__":%d] Fatal: " fmt "\n", __LINE__, ##__VA_ARGS__); \
+        logger_message(&GLOBAL_LOGGER, LOG_LEVEL_FATAL, "[" LFILE_NAME ":%d] Fatal: " fmt "\n", __LINE__, ##__VA_ARGS__); \
         abort(); \
     } while(0)
 
