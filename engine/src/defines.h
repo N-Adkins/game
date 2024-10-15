@@ -26,14 +26,33 @@ typedef u8          b8;
 #define true    ((b8)1)
 #define false   ((b8)0)
 
+/**
+ * @brief Returns the number of elements in a statically-sized array.
+ */
 #define LARRAY_LENGTH(x) (sizeof(x) / sizeof((x)[0]))
+
+/**
+ * @brief Commonly used token concat macro, used for making other macros.
+ */
+#define LCONCAT(x, y) LCONCAT_HELPER(x, y)
+#define LCONCAT_HELPER(x, y) x##y
+
+/**
+ * @brief Commonly used token stringify macro, turns a token sequence 
+ * into a string litera.
+ */
+#define LSTRINGIFY(x) LSTRINGIFY_HELPER(x)
+#define LSTRINGIFY_HELPER(x) #x
 
 #if defined(__clang__)
 #define LCOMPILER_CLANG
+#define LCOMPILER "Clang"
 #elif defined(__GNUC__) || defined(__GNUG__)
 #define LCOMPILER_GCC
+#define LCOMPILER "GCC"
 #elif defined(_MSC_VER)
 #define LCOMPILER_MSVC
+#define LCOMPILER "MSVC"
 #else
 #error Unsupported compiler, expecting GCC, Clang, or MSVC
 #endif
@@ -44,11 +63,14 @@ typedef u8          b8;
 
 #if defined(__linux__)
 #define LPLATFORM_LINUX
+#define LPLATFORM "Linux"
 #elif defined(_WIN32)
 #define LPLATFORM_WINDOWS
+#define LPLATFORM "Windows"
 #error Windows currently not supported
 #elif defined (__APPLE__)
 #define LPLATFORM_MACOS
+#define LPLATFORM "MacOS"
 #error MacOS currently not supported
 #else
 #error Unsupported platform
@@ -63,19 +85,6 @@ typedef u8          b8;
 #else
 #define LAPI
 #endif
-
-/**
- * @brief Commonly used token concat macro, used for making other macros.
- */
-#define LCONCAT_HELPER(x, y) x##y
-#define LCONCAT(x, y) LCONCAT_HELPER(x, y)
-
-/**
- * @brief Commonly used token stringify macro, turns a token sequence 
- * into a string litera.
- */
-#define LSTRINGIFY_HELPER(x) #x
-#define LSTRINGIFY(x) LSTRINGIFY_HELPER(x)
 
 /**
  * @brief Tells the compiler a function is using printf for warnings
@@ -139,7 +148,7 @@ typedef u8          b8;
 #endif
 
 /**
- * @brief Returns the type of the passed expression
+ * @brief Returns the type of the passed expression as a token
  */
 #ifdef LCOMPILER_CLANG_OR_GCC
 #define LTYPEOF(expr) \

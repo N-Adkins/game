@@ -15,6 +15,8 @@
 
 int main(void)
 {
+    LDEBUG("Compiler: %s, Platform: %s", LCOMPILER, LPLATFORM);
+
     struct platform_state platform;
 
     platform_startup(&platform, "App", 640, 360, 1280, 720);
