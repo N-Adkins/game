@@ -10,6 +10,7 @@
 
 #include <core/memory.h>
 #include <core/logger.h>
+#include <containers/dynarray.h>
 #include <platform/platform.h>
 
 int main(void)
@@ -21,6 +22,11 @@ int main(void)
     
     int *ptr = engine_allocate(sizeof(int), MEMORY_TAG_UNKNOWN);
     engine_free(ptr, sizeof(int), MEMORY_TAG_UNKNOWN);
+
+    struct dynarray array = dynarray_create(sizeof(int));
+    dynarray_push(&array, 10);
+
+    // LINFO("%s", LSTRINGIFY(LUNIQUE_ID(0)));
 
     while (platform_poll_events(&platform)) {}
 

@@ -21,7 +21,7 @@ struct dynarray {
     u64 capacity;
     u64 length;
     u64 stride; // type size in bytes
-    void *values;
+    void *values; // values[0] guaranteed to be first element in array
 };
 
 /**
@@ -82,6 +82,6 @@ LAPI void dynarray_push_ptr(struct dynarray *array, const void *value);
   */
 #define dynarray_push(array, value) \
     do { \
-        LTYPEOF(value) _dynarray_temp = (value); \
-        dynarray_push_ptr((array), &_dynarray_temp); \
+        LTYPEOF(value) LUNIQUE_ID(0) = (value); \
+        dynarray_push_ptr((array), &LUNIQUE_ID(0)); \
     } while(0)

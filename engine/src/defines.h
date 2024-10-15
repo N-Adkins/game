@@ -26,7 +26,7 @@ typedef u8          b8;
 #define true    ((b8)1)
 #define false   ((b8)0)
 
-#define ARRAY_LENGTH(x) (sizeof(x) / sizeof((x)[0]))
+#define LARRAY_LENGTH(x) (sizeof(x) / sizeof((x)[0]))
 
 #if defined(__clang__)
 #define LCOMPILER_CLANG
@@ -63,6 +63,19 @@ typedef u8          b8;
 #else
 #define LAPI
 #endif
+
+/**
+ * @brief Commonly used token concat macro, used for making other macros.
+ */
+#define LCONCAT_HELPER(x, y) x##y
+#define LCONCAT(x, y) LCONCAT_HELPER(x, y)
+
+/**
+ * @brief Commonly used token stringify macro, turns a token sequence 
+ * into a string litera.
+ */
+#define LSTRINGIFY_HELPER(x) #x
+#define LSTRINGIFY(x) LSTRINGIFY_HELPER(x)
 
 /**
  * @brief Tells the compiler a function is using printf for warnings
@@ -115,10 +128,33 @@ typedef u8          b8;
 #endif
 
 /**
+ * @brief Returns the current function name as a string literal
+ */
+#ifdef LCOMPILER_CLANG_OR_GCC
+#define LFUNCTION \
+    __func__
+#else // MSVC
+#define LFUNCTION \
+    __FUNCTION__
+#endif
+
+/**
  * @brief Returns the type of the passed expression
  */
 #ifdef LCOMPILER_CLANG_OR_GCC
-#define LTYPEOF(expr) typeof(expr)
+#define LTYPEOF(expr) \
+    typeof(expr)
 #else // MSVC
-#define LTYPEOF(expr) __typeof__(expr)
+#define LTYPEOF(expr) \
+    __typeof__(expr)
 #endif
+
+/**
+ * @brief Generates a unique identifier for each passed number in a macro context
+ *
+ * This should be used sparingly, it's for more complicated macros where you need
+ * scoped variables. It relies on __LINE__. Calling this with the same passed number
+ * within the same macro body will return the same result so it can be reused.
+ */
+#define LUNIQUE_ID(num) \
+    LCONCAT(_unique_id_, LCONCAT(__LINE__, LCONCAT(_ver_, num)))

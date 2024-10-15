@@ -4,6 +4,7 @@
 #include <core/logger.h>
 #include <stdio.h>
 #include <string.h>
+#include <inttypes.h>
 
 /**
  * @brief Global memory state
@@ -34,13 +35,13 @@ void memory_shutdown(void)
     LINFO("Shutting down memory subsystem");
 
     if (memory_state.total_bytes > 0) {
-        LWARN("Memory has leaked, 0x%04lX bytes in use at shutdown", memory_state.total_bytes);
+        LWARN("Memory has leaked, 0x%04" PRIx64 " bytes in use at shutdown", memory_state.total_bytes);
         dump_memory_usage();
     }
     
     // Consistency check
     u64 tag_total = 0;
-    for (u64 i = 0; i < ARRAY_LENGTH(memory_state.tag_bytes); i++) {
+    for (u64 i = 0; i < LARRAY_LENGTH(memory_state.tag_bytes); i++) {
         tag_total += memory_state.tag_bytes[i];
     }
     LASSERT(memory_state.total_bytes == tag_total);
@@ -51,7 +52,7 @@ LAPI void *engine_allocate(u64 size, enum memory_tag tag)
     LASSERT(initialized);
 
     if (tag == MEMORY_TAG_UNKNOWN) {
-        LWARN("Allocating 0x%04lX bytes using MEMORY_TAG_UNKNOWN, change this tag", size);
+        LWARN("Allocating 0x%04" PRIx64 " bytes using MEMORY_TAG_UNKNOWN, change this tag", size);
     }
 
     memory_state.total_bytes += size;
@@ -67,7 +68,7 @@ LAPI void engine_free(void *ptr, u64 size, enum memory_tag tag)
     LASSERT(initialized);
 
     if (tag == MEMORY_TAG_UNKNOWN) {
-        LWARN("Freeing 0x%04lX bytes using MEMORY_TAG_UNKNOWN, change this tag", size);
+        LWARN("Freeing 0x%04" PRIx64 " bytes using MEMORY_TAG_UNKNOWN, change this tag", size);
     }
 
     memory_state.total_bytes -= size;
@@ -107,10 +108,13 @@ LAPI void dump_memory_usage(void)
     const u64 gib = 1024 * 1024 * 1024;
     const u64 mib = 1024 * 1024;
     const u64 kib = 1024;
+
+    const u64 array_len = LARRAY_LENGTH(memory_state.tag_bytes);
     
     char buffer[30000] = "Memory subsystem usage:\n";
     u64 offset = strlen(buffer);
-    for (u64 i = 0; i < ARRAY_LENGTH(memory_state.tag_bytes); i++) {
+
+    for (u64 i = 0; i < array_len; i++) {
         const char *unit = "GiB";
         float amount = 1.f;
 
@@ -126,11 +130,17 @@ LAPI void dump_memory_usage(void)
             unit = "B";
             amount = (float)memory_state.tag_bytes[i];
         }
+        
+        // This part is just for cleaner printing in the logger.
+        const char *fmt = "  %s: %.2f%s\n";
+        if (i == array_len - 1) {
+            fmt = "  %s: %.2f%s";
+        }
 
         offset += snprintf(
             buffer + offset, 
-            ARRAY_LENGTH(buffer),
-            "  %s: %.2f%s\n", 
+            LARRAY_LENGTH(buffer),
+            fmt,
             tag_strings[i], 
             amount,
             unit
