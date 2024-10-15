@@ -7,9 +7,11 @@ add_executable(editor)
 target_link_libraries(editor PRIVATE engine)
 target_include_directories(editor PRIVATE ../engine/src)
 
-target_compile_options(editor PRIVATE
-    -Wall -Wextra -Werror -fdiagnostics-color=always
-)
+if (NOT WIN32)
+    target_compile_options(editor PRIVATE
+        -Wall -Wextra -Werror -fdiagnostics-color=always
+    )
+endif()
 
 #[[
 add_custom_command(TARGET editor POST_BUILD

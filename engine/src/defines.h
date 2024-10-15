@@ -64,8 +64,9 @@ typedef u8          b8;
 #endif
 
 // This just exists since lots of extensions work on both, saves some typing
-#define LCOMPILER_CLANG_OR_GCC \
-    defined(LCOMPILER_CLANG) || defined(LCOMPILER_GCC)
+#if defined(LCOMPILER_CLANG) || defined(LCOMPILER_GCC)
+#define LCOMPILER_CLANG_OR_GCC
+#endif
 
 #if defined(__linux__)
 #define LPLATFORM_LINUX
