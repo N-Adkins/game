@@ -76,6 +76,15 @@ typedef u8          b8;
 #error Unsupported platform
 #endif
 
+/**
+ * @brief Symbol exporting macro
+ *
+ * This should be used on any function that should be available in the
+ * application executable. Note that forgetting this won't do anything
+ * on any platform except Windows, which is the only one where it is
+ * required. This relies on a macro passed in by the build system
+ * specifiying whether it is an engine build or not.
+ */
 #ifdef LPLATFORM_WINDOWS
 #ifdef LENGINE_BUILD
 #define LAPI __declspec(dllexport)
@@ -86,6 +95,9 @@ typedef u8          b8;
 #define LAPI
 #endif
 
+/**
+ * @brief Generates a compiler warning with the passed message.
+ */
 #ifdef LCOMPILER_CLANG_OR_GCC
 #define LCOMPILE_WARN(msg) \
     _Pragma(LSTRINGIFY(message(msg)))
