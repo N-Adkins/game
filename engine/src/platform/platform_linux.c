@@ -1,5 +1,13 @@
 #include "platform.h"
 
+/**
+ * @file
+ * @brief Linux platform layer
+ *
+ * This layer uses X11 for windowing (for now). The only other thing of note
+ * is that the allocation functions are simply glibc wrappers.
+ */
+
 #ifdef LPLATFORM_LINUX
 
 #include <core/assert.h>
@@ -187,6 +195,36 @@ void platform_print_color(
 void platform_debug_break(void)
 {
     raise(SIGTRAP);
+}
+
+// On linux these are all just going to basically be glibc wrappers.
+
+void *platform_allocate(u64 size, b8 aligned)
+{
+    (void)aligned; // irrelevant, always aligned
+    return malloc(size);
+}
+
+void platform_free(void *ptr, b8 aligned)
+{
+    (void)aligned; // irrelevant, this memory is malloced so always aligned
+    free(ptr);
+}
+
+void *platform_zero_memory(void *ptr, u64 size)
+{
+    return memset(ptr, 0, size);
+}
+
+void *platform_copy_memory(void *restrict dest, const void *restrict source, u64 size)
+{
+    // TODO - assert that the blocks do not overlap
+    return memcpy(dest, source, size);
+}
+
+void *platform_set_memory(void *dest, i32 value, u64 size)
+{
+    return memset(dest, value, size); 
 }
 
 #endif

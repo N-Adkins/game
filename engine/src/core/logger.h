@@ -1,5 +1,15 @@
 #pragma once
 
+/**
+ * @file
+ * @brief Logger implementation
+ *
+ * Almost all forms of text i/o should take place through one of these loggers.
+ * There are some helper macros defined to log with filenames and lines for debugging.
+ * There's also a global logger instance used by these macros and should be preferred
+ * except for exceptional and documented cases.
+ */
+
 #include <defines.h>
 #include <stdlib.h>
 

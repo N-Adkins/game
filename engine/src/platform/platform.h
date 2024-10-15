@@ -102,3 +102,43 @@ void platform_print_color(
  * break for a debugger. Otherwise, aborts.
  */
 void platform_debug_break(void);
+
+/*
+The main justification for these memory functions is the case of a console / strange platform.
+On platforms like MacOS, Windows, or Linux, these are going to be the expected libc functions.
+
+These really should only be used by the memory subsystem under the hood. If used otherwise, document
+extensively why.
+*/
+
+/**
+ * @brief Platform-agnostic equivalent to malloc
+ */
+void *platform_allocate(u64 size, b8 aligned);
+
+/**
+ * @brief Platform-agnostic equivalent to free
+ */
+void platform_free(void *ptr, b8 aligned);
+
+/**
+ * @brief Platform-agnostic equivalent to memset(ptr, 0, size)
+ *
+ * The justfication for this function is that on some platforms there might
+ * be significantly more efficient ways to zero memory than set it to
+ * other values.
+ */
+void *platform_zero_memory(void *ptr, u64 size);
+
+/**
+ * @brief Platform-agnostic equivalent to memcpy
+ *
+ * The parameters are "restrict" because the memory cannot overlap between the two
+ * pointers.
+ */
+void *platform_copy_memory(void *restrict dest, const void *restrict source, u64 size);
+
+/**
+ * @brief Platform-agnostic equivalent to memset
+ */
+void *platform_set_memory(void *dest, i32 value, u64 size);

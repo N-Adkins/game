@@ -1,5 +1,13 @@
 #pragma once
 
+/**
+ * @file
+ * @brief Defines
+ *
+ * Defines some very common macros and types to be used. These include fixed-width
+ * integer type definitions as well as symbol exporting.
+ */
+
 #include <stdint.h>
 
 // TODO Add windows definition
