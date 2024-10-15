@@ -86,6 +86,14 @@ typedef u8          b8;
 #define LAPI
 #endif
 
+#ifdef LCOMPILER_CLANG_OR_GCC
+#define LCOMPILE_WARN(msg) \
+    _Pragma(LSTRINGIFY(message(msg)))
+#else // MSVC
+#define LCOMPILE_WARN(msg) \
+    __pragma(message(msg))
+#endif
+
 /**
  * @brief Tells the compiler a function is using printf for warnings
  *
@@ -103,7 +111,7 @@ typedef u8          b8;
 #define LHINT_FORMAT(fmt_index, arg_index) \
     __attribute__((format(printf, fmt_index, arg_index)));
 #else // MSVC
-#warn LHINT_FORMAT not supported on this compiler
+LCOMPILE_WARN("LHINT_FORMAT not supported on this compiler")
 #define LHINT_FORMAT(fmt_index, arg_index)
 #endif
 
@@ -119,7 +127,7 @@ typedef u8          b8;
 #define LHINT_INLINE \
     __attribute__((always_inline))
 #else // MSVC
-#warn LHINT_INLINE not supported on this compiler
+LCOMPILE_WARN("LHINT_INLINE not supported on this compiler")
 #define LHINT_INLINE
 #endif
 
