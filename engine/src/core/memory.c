@@ -34,7 +34,7 @@ void memory_shutdown(void)
     LINFO("Shutting down memory subsystem");
 
     if (memory_state.total_bytes > 0) {
-        LWARN("Memory has leaked, 0x%04X bytes in use at shutdown", memory_state.total_bytes);
+        LWARN("Memory has leaked, 0x%04lX bytes in use at shutdown", memory_state.total_bytes);
         dump_memory_usage();
     }
     
@@ -51,7 +51,7 @@ LAPI void *engine_allocate(u64 size, enum memory_tag tag)
     LASSERT(initialized);
 
     if (tag == MEMORY_TAG_UNKNOWN) {
-        LWARN("Allocating 0x%04X bytes using MEMORY_TAG_UNKNOWN, change this tag", size);
+        LWARN("Allocating 0x%04lX bytes using MEMORY_TAG_UNKNOWN, change this tag", size);
     }
 
     memory_state.total_bytes += size;
@@ -67,7 +67,7 @@ LAPI void engine_free(void *ptr, u64 size, enum memory_tag tag)
     LASSERT(initialized);
 
     if (tag == MEMORY_TAG_UNKNOWN) {
-        LWARN("Freeing 0x%04X bytes using MEMORY_TAG_UNKNOWN, change this tag", size);
+        LWARN("Freeing 0x%04lX bytes using MEMORY_TAG_UNKNOWN, change this tag", size);
     }
 
     memory_state.total_bytes -= size;

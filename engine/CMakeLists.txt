@@ -7,7 +7,7 @@ add_library(engine SHARED)
 target_include_directories(engine PRIVATE src)
 
 target_compile_options(engine PRIVATE
-    -Wall -Wextra -Werror -fdiagnostics-color=always
+    -Wall -Wformat -Wextra -Werror -fdiagnostics-color=always
 )
 
 find_package(X11 REQUIRED)

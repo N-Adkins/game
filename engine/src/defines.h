@@ -10,6 +10,9 @@
 
 #include <stdint.h>
 
+// TODO: other platforms lol
+#define LPLATFORM_LINUX
+
 // TODO Add windows definition
 #define LAPI
 
@@ -29,3 +32,23 @@ typedef u8          b8;
 #define false   ((b8)0)
 
 #define ARRAY_LENGTH(x) (sizeof(x) / sizeof((x)[0]))
+
+/**
+ * @brief Tells the compiler a function is using printf for warnings
+ *
+ * This uses compiler-specific extensions to tell some compilers that a function is
+ * passing the arguments to a formatting function so that warnings such as -Wformat
+ * properly warn on them.
+ *
+ * Ex. 
+ * void foo_printf(int bar, const char *fmt, ...) FORMAT_HINT(2, 3)
+ *
+ * @param fmt_index Arg number that is the format string
+ * @param arg_index Arg number that is variable argument indicator
+ */
+#ifdef LPLATFORM_LINUX
+#define FORMAT_HINT(fmt_index, arg_index) \
+    __attribute((format(printf, fmt_index, arg_index)));
+#else
+#define FORMAT_HINT(fmt_index, arg_index)
+#endif

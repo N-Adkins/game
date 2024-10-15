@@ -14,9 +14,6 @@
 #include <defines.h>
 #include <stdio.h>
 
-// TODO: other platforms lol
-#define LPLATFORM_LINUX
-
 /**
  * Colors to be used in platform_print_color
  */

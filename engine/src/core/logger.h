@@ -25,7 +25,12 @@ struct logger {
     enum log_level level;
 };
 
-LAPI void logger_message(struct logger *logger, enum log_level level, const char *fmt, ...);
+LAPI void logger_message(
+    struct logger *logger, 
+    enum log_level level, 
+    const char *fmt, 
+    ...
+) FORMAT_HINT(3, 4);
 
 #define LDEBUG(fmt, ...) \
     logger_message(&GLOBAL_LOGGER, LOG_LEVEL_DEBUG, "["__FILE_NAME__":%d] Debug: " fmt "\n", __LINE__, ##__VA_ARGS__)
