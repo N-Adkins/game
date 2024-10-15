@@ -82,6 +82,6 @@ LAPI void dynarray_push_ptr(struct dynarray *array, const void *value);
   */
 #define dynarray_push(array, value) \
     do { \
-        typeof(value) _dynarray_temp = (value); \
+        LTYPEOF(value) _dynarray_temp = (value); \
         dynarray_push_ptr((array), &_dynarray_temp); \
     } while(0)

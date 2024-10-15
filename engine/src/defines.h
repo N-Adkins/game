@@ -80,7 +80,7 @@ typedef u8          b8;
 #ifdef LCOMPILER_CLANG_OR_GCC
 #define LHINT_FORMAT(fmt_index, arg_index) \
     __attribute__((format(printf, fmt_index, arg_index)));
-#else
+#else // MSVC
 #warn LHINT_FORMAT not supported on this compiler
 #define LHINT_FORMAT(fmt_index, arg_index)
 #endif
@@ -96,7 +96,7 @@ typedef u8          b8;
 #ifdef LCOMPILER_CLANG_OR_GCC
 #define LHINT_INLINE \
     __attribute__((always_inline))
-#else
+#else // MSVC
 #warn LHINT_INLINE not supported on this compiler
 #define LHINT_INLINE
 #endif
@@ -109,7 +109,16 @@ typedef u8          b8;
 #ifdef LCOMPILER_CLANG_OR_GCC
 #define LFILE_NAME \
     __FILE_NAME__
-#else
+#else // MSVC
 #define LFILE_NAME \
     __FILE__
+#endif
+
+/**
+ * @brief Returns the type of the passed expression
+ */
+#ifdef LCOMPILER_CLANG_OR_GCC
+#define LTYPEOF(expr) typeof(expr)
+#else // MSVC
+#define LTYPEOF(expr) __typeof__(expr)
 #endif
