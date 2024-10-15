@@ -27,3 +27,5 @@ typedef u8          b8;
 
 #define true    ((b8)1)
 #define false   ((b8)0)
+
+#define ARRAY_LENGTH(x) (sizeof(x) / sizeof((x)[0]))

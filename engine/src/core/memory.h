@@ -27,9 +27,10 @@ void memory_startup(void);
 void memory_shutdown(void);
 
 LAPI void *engine_allocate(u64 size, enum memory_tag tag);
-
 LAPI void engine_free(void *ptr, u64 size, enum memory_tag tag);
+
 LAPI void *engine_zero_memory(void *ptr, u64 size);
 LAPI void *engine_copy_memory(void *restrict dest, const void *restrict source, u64 size);
 LAPI void *engine_set_memory(void *dest, i32 value, u64 size);
+
 LAPI void dump_memory_usage(void);
