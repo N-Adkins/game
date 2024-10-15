@@ -20,6 +20,9 @@
  */
 enum memory_tag {
     MEMORY_TAG_UNKNOWN,
+    MEMORY_TAG_ARRAY,
+    MEMORY_TAG_STRING,
+
     MEMORY_TAG_MAX_TAGS,
 };
 

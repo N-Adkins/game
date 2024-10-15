@@ -2,6 +2,8 @@
 
 #include <core/assert.h>
 #include <core/logger.h>
+#include <stdio.h>
+#include <string.h>
 
 static struct {
     u64 total_bytes;
@@ -12,10 +14,9 @@ void memory_startup(void)
 {
     LINFO("Starting up memory subsystem");
 
-    memory_state.total_bytes = 0;
     platform_zero_memory(
-        memory_state.tag_bytes, 
-        ARRAY_LENGTH(memory_state.tag_bytes) * sizeof(memory_state.tag_bytes[0])
+        &memory_state,
+        sizeof(memory_state)
     );
 }
 
@@ -44,14 +45,21 @@ LAPI void *engine_allocate(u64 size, enum memory_tag tag)
 
     memory_state.total_bytes += size;
     memory_state.tag_bytes[tag] += size;
-    return platform_allocate(size, true);
+    
+    void *ptr = platform_allocate(size, false);
+    platform_zero_memory(ptr, size);
+    return ptr;
 }
 
 LAPI void engine_free(void *ptr, u64 size, enum memory_tag tag)
 {
+    if (tag == MEMORY_TAG_UNKNOWN) {
+        LWARN("Freeing 0x%04X bytes using MEMORY_TAG_UNKNOWN, change this tag", size);
+    }
+
     memory_state.total_bytes -= size;
     memory_state.tag_bytes[tag] -= size;
-    platform_free(ptr, true);
+    platform_free(ptr, false);
 }
 
 LAPI void *engine_zero_memory(void *ptr, u64 size)
@@ -71,5 +79,44 @@ LAPI void *engine_set_memory(void *dest, i32 value, u64 size)
 
 LAPI void dump_memory_usage(void)
 {
-    LWARN("TODO - Dump memory usage");
+    const char *tag_strings[] = {
+        "UNKNOWN ",
+        "ARRAY   ",
+        "STRING  ",
+    };
+
+    const u64 gib = 1024 * 1024 * 1024;
+    const u64 mib = 1024 * 1024;
+    const u64 kib = 1024;
+    
+    char buffer[30000] = "Memory subsystem usage:\n";
+    u64 offset = strlen(buffer);
+    for (u64 i = 0; i < ARRAY_LENGTH(memory_state.tag_bytes); i++) {
+        const char *unit = "GiB";
+        float amount = 1.f;
+
+        if (memory_state.tag_bytes[i] >= gib) {
+            amount = memory_state.tag_bytes[i] / (float)gib;
+        } else if (memory_state.tag_bytes[i] >= mib) {
+            unit = "MiB";
+            amount = memory_state.tag_bytes[i] / (float)mib;
+        } else if (memory_state.tag_bytes[i] >= kib) {
+            unit = "KiB";
+            amount = memory_state.tag_bytes[i] / (float)kib;
+        } else {
+            unit = "B";
+            amount = (float)memory_state.tag_bytes[i];
+        }
+
+        offset += snprintf(
+            buffer + offset, 
+            ARRAY_LENGTH(buffer),
+            "  %s: %.2f%s\n", 
+            tag_strings[i], 
+            amount,
+            unit
+        );
+    }
+
+    LDEBUG("%s", buffer);
 }

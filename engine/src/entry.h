@@ -19,7 +19,8 @@ int main(void)
     platform_startup(&platform, "App", 640, 360, 1280, 720);
     memory_startup();
     
-    engine_allocate(8, MEMORY_TAG_UNKNOWN);
+    int *ptr = engine_allocate(sizeof(int), MEMORY_TAG_UNKNOWN);
+    engine_free(ptr, sizeof(int), MEMORY_TAG_UNKNOWN);
 
     while (platform_poll_events(&platform)) {}
 
