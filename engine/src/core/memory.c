@@ -5,6 +5,9 @@
 #include <stdio.h>
 #include <string.h>
 
+/**
+ * @brief Global memory state
+ */
 static struct {
     u64 total_bytes;
     u64 tag_bytes[MEMORY_TAG_MAX_TAGS];
@@ -80,9 +83,10 @@ LAPI void *engine_set_memory(void *dest, i32 value, u64 size)
 LAPI void dump_memory_usage(void)
 {
     const char *tag_strings[] = {
-        "UNKNOWN ",
-        "ARRAY   ",
-        "STRING  ",
+        "UNKNOWN  ",
+        "ARRAY    ",
+        "DYNARRAY ",
+        "STRING   ",
     };
 
     const u64 gib = 1024 * 1024 * 1024;
