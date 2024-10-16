@@ -31,12 +31,15 @@ LAPI void logger_message(struct logger *logger, enum log_level level, const char
     case LOG_LEVEL_FATAL:
         color = TERMINAL_COLOR_PURPLE;
         break;
+    default:
+        color = TERMINAL_COLOR_GRAY;
+        break;
     }
 
     char buffer[32000]; // please dont use all of this
     va_list args;
     va_start(args, fmt);
-    vsprintf(buffer, fmt, args);
+    (void)vsprintf(buffer, fmt, args);
     va_end(args);
 
     platform_print_color(stdout, buffer, color);

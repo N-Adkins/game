@@ -203,16 +203,19 @@ void platform_print_color(
     case TERMINAL_COLOR_GRAY:
         color_code = "\e[0;37m";
         break;
+    default:
+        color_code = "";
+        break;
     }
     
-    fputs(color_code, file);
-    fputs(string, file);
-    fputs(reset_code, file);
+    (void)fputs(color_code, file);
+    (void)fputs(string, file);
+    (void)fputs(reset_code, file);
 }
 
 void platform_debug_break(void)
 {
-    raise(SIGTRAP);
+    (void)raise(SIGTRAP);
 }
 
 // On linux these are all just going to basically be glibc wrappers.

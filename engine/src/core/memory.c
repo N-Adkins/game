@@ -115,35 +115,41 @@ LAPI void dump_memory_usage(void)
 
     for (u64 i = 0; i < array_len; i++) {
         const char *unit = "GiB";
-        float amount = 1.f;
+        f64 amount = 1.0;
 
         if (memory_state.tag_bytes[i] >= gib) {
-            amount = memory_state.tag_bytes[i] / (float)gib;
+            amount = (f64)memory_state.tag_bytes[i] / (f64)gib;
         } else if (memory_state.tag_bytes[i] >= mib) {
             unit = "MiB";
-            amount = memory_state.tag_bytes[i] / (float)mib;
+            amount = (f64)memory_state.tag_bytes[i] / (f64)mib;
         } else if (memory_state.tag_bytes[i] >= kib) {
             unit = "KiB";
-            amount = memory_state.tag_bytes[i] / (float)kib;
+            amount = (f64)memory_state.tag_bytes[i] / (f64)kib;
         } else {
             unit = "B";
-            amount = (float)memory_state.tag_bytes[i];
+            amount = (f64)memory_state.tag_bytes[i];
         }
         
         // This part is just for cleaner printing in the logger.
-        const char *fmt = "  %s: %.2f%s\n";
-        if (i == array_len - 1) {
-            fmt = "  %s: %.2f%s";
+        if (i != array_len - 1) {
+            offset += snprintf(
+                buffer + offset, 
+                LARRAY_LENGTH(buffer),
+                "  %s: %.2lf%s\n",
+                tag_strings[i], 
+                amount,
+                unit
+            );
+        } else {
+            offset += snprintf(
+                buffer + offset, 
+                LARRAY_LENGTH(buffer),
+                "  %s: %.2lf%s",
+                tag_strings[i], 
+                amount,
+                unit
+            );
         }
-
-        offset += snprintf(
-            buffer + offset, 
-            LARRAY_LENGTH(buffer),
-            fmt,
-            tag_strings[i], 
-            amount,
-            unit
-        );
     }
 
     LDEBUG("%s", buffer);
