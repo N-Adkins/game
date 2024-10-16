@@ -29,7 +29,7 @@ LAPI int real_main(void)
 	dynarray_destroy(&array);
 
 	// Testing some mutex error stuff
-	struct mutex mutex = mutex_create();
+    struct mutex mutex = mutex_create();
 	mutex_lock(mutex);
 	mutex_lock(mutex);
 	mutex_unlock(mutex);
