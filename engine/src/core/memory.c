@@ -110,7 +110,7 @@ LAPI void dump_memory_usage(void)
 
     const u64 array_len = LARRAY_LENGTH(memory_state.tag_bytes);
     
-    char buffer[30000] = "Memory subsystem usage:\n";
+    char buffer[LOG_MAX_LENGTH] = "Memory subsystem usage:\n";
     u64 offset = strlen(buffer);
 
     for (u64 i = 0; i < array_len; i++) {

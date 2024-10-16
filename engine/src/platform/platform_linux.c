@@ -114,13 +114,14 @@ void platform_startup(
         return;
     }
     
+    const i32 BYTE_SIZE = 8;
     // Set window name to app_name
     if (!XChangeProperty(
         linux_state->display,
         linux_state->window,
         XInternAtom(linux_state->display, "_NET_WM_NAME", False),
         XInternAtom(linux_state->display, "UTF8_STRING", False),
-        8, 
+        BYTE_SIZE, 
         PropModeReplace, 
         (unsigned char *) app_name,
         (i32)strlen(app_name)
@@ -256,7 +257,7 @@ void *platform_set_memory(void *dest, i32 value, u64 size)
 
 struct mutex mutex_create(void)
 {
-    int err;
+    int err = 0;
 
     struct linux_mutex *linux_mutex = platform_allocate(sizeof(struct linux_mutex), true);
     struct mutex mutex;
@@ -297,7 +298,7 @@ void mutex_destroy(struct mutex *mutex)
 {
     LASSERT(mutex != NULL);
 
-    int err;
+    int err = 0;
 
     struct linux_mutex *linux_mutex = mutex->inner_mutex;
     
@@ -313,7 +314,7 @@ void mutex_lock(struct mutex *mutex)
 {
     LASSERT(mutex != NULL);
 
-    int err;
+    int err = 0;
 
     struct linux_mutex *linux_mutex = mutex->inner_mutex;
 
@@ -327,7 +328,7 @@ void mutex_unlock(struct mutex *mutex)
 {
     LASSERT(mutex != NULL);
 
-    int err;
+    int err = 0;
 
     struct linux_mutex *linux_mutex = mutex->inner_mutex;
 

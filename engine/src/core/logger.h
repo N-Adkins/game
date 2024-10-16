@@ -13,6 +13,8 @@
 #include <defines.h>
 #include <stdlib.h>
 
+#define LOG_MAX_LENGTH ((u64)30000)
+
 enum log_level {
     LOG_LEVEL_DEBUG = 0,
     LOG_LEVEL_INFO = 1,

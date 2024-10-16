@@ -14,7 +14,7 @@ LAPI void logger_message(struct logger *logger, enum log_level level, const char
         return;
     }
     
-    enum terminal_color color;
+    enum terminal_color color = TERMINAL_COLOR_GRAY;
     switch (level) {
     case LOG_LEVEL_DEBUG:
         color = TERMINAL_COLOR_GRAY;
@@ -35,8 +35,8 @@ LAPI void logger_message(struct logger *logger, enum log_level level, const char
         color = TERMINAL_COLOR_GRAY;
         break;
     }
-
-    char buffer[32000]; // please dont use all of this
+    
+    char buffer[LOG_MAX_LENGTH]; // please dont use all of this
     va_list args;
     va_start(args, fmt);
     (void)vsprintf(buffer, fmt, args);

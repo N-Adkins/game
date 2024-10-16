@@ -11,6 +11,12 @@ if (NOT WIN32)
     target_compile_options(editor PRIVATE
         -Wall -Wextra -Werror -fdiagnostics-color=always
     )
+
+    if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+        message("Building in debug mode, enabling sanitizer")
+        target_compile_options(editor PRIVATE -fsanitize=address,undefined)
+        target_link_options(editor PRIVATE -fsanitize=address,undefined)
+    endif()
 endif()
 
 add_custom_command(TARGET editor POST_BUILD

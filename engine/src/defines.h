@@ -75,9 +75,8 @@ typedef _Bool                       b8;
 #define LPLATFORM_WINDOWS
 #define LPLATFORM "Windows"
 #elif defined (__APPLE__)
-#define LPLATFORM_MACOS
+/#define LPLATFORM_MACOS
 #define LPLATFORM "MacOS"
-#error MacOS currently not supported
 #else
 #error Unsupported platform
 #endif

@@ -2,7 +2,12 @@ Checks:
   - bugprone-*                        # Enable bugprone checks
   - performance-*                     # Enable performance checks
   - clang-analyzer-*                  # Enable clang-analyzer checks
+  - cppcoreguidelines-*
   - cert-*                            # Enable CERT coding standards checks
+  - readability-*
   
-  # IMO just kind of a dumb check
   - -bugprone-easily-swappable-parameters
+  - -cppcoreguidelines-avoid-non-const-global-variables
+  - -readability-function-cognitive-complexity
+
+HeaderFilterRegex: '^(engine/|editor/).*'
