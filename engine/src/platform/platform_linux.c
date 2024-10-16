@@ -218,7 +218,6 @@ void *platform_zero_memory(void *ptr, u64 size)
 
 void *platform_copy_memory(void *restrict dest, const void *restrict source, u64 size)
 {
-    // TODO - assert that the blocks do not overlap
     return memcpy(dest, source, size);
 }
 

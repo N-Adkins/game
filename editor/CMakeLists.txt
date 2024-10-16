@@ -13,11 +13,9 @@ if (NOT WIN32)
     )
 endif()
 
-#[[
 add_custom_command(TARGET editor POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_if_different
     "$<TARGET_FILE:engine>"
     "$<TARGET_FILE_DIR:editor>")
-]]
 
 add_subdirectory(src)
