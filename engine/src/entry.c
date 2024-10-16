@@ -34,6 +34,6 @@ LAPI int real_main(void)
 
     memory_shutdown();
     platform_shutdown(&platform);
-
+    
     return 0; 
 }

@@ -177,4 +177,26 @@ void *platform_set_memory(void *dest, i32 value, u64 size)
     return memset(dest, value, size); 
 }
 
+struct mutex mutex_create(void)
+{
+    struct mutex mutex;
+    mutex.inner_mutex = NULL;
+    return mutex;
+}
+
+void mutex_destroy(struct mutex *mutex)
+{
+    LASSERT(mutex != NULL);
+}
+
+void mutex_lock(struct mutex *mutex)
+{
+    LASSERT(mutex != NULL);
+}
+
+void mutex_unlock(struct mutex *mutex)
+{
+    LASSERT(mutex != NULL);
+}
+
 #endif

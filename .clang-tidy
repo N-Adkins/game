@@ -5,7 +5,10 @@ Checks:
   - cppcoreguidelines-*
   - cert-*                            # Enable CERT coding standards checks
   - readability-*
-  
+  - misc-const-correctness
+  - misc-redundant-expression
+  - misc-use-internal-linkage
+
   - -bugprone-easily-swappable-parameters
   - -cppcoreguidelines-avoid-non-const-global-variables
   - -readability-function-cognitive-complexity
