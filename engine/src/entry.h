@@ -14,7 +14,7 @@
 // This is pretty much just here for making sure windows builds
 // work fine
 
-LAPI extern int real_main(void);
+LAPI int real_main(void);
 
 int main(void)
 {

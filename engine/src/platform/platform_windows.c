@@ -7,13 +7,15 @@
 
 #include <windows.h>
 
+// Not sure how important this name is honestly.
 const char class_name[] = "AppClass";
 
 struct windows_platform_state {
-    HINSTANCE instance;
-    HWND window;
+    HINSTANCE instance; // Windows process instance
+    HWND window; // Windows window handle
 };
 
+// TODO: Use this properly
 LRESULT CALLBACK window_procedure(HWND window, UINT msg, WPARAM w_param, LPARAM l_param) 
 {
     DefWindowProc(window, msg, w_param, l_param);
@@ -50,7 +52,7 @@ void platform_startup(
     win_info.hIcon = LoadIcon(NULL, IDI_APPLICATION); // Default icon
     win_info.hIconSm = LoadIcon(NULL, IDI_APPLICATION); // Default icon
     win_info.hCursor = LoadCursor(NULL, IDC_ARROW); // Default cursor
-    win_info.hbrBackground = CreateSolidBrush(RGB(0, 0, 0));
+    win_info.hbrBackground = CreateSolidBrush(RGB(0, 0, 0)); // Black background
     win_info.lpszMenuName = NULL;
     win_info.lpszClassName = class_name;
 
