@@ -24,3 +24,20 @@ if (NOT WIN32)
 endif()
 
 add_subdirectory(src)
+
+get_target_property(SOURCES engine SOURCES)
+
+foreach(SOURCE_FILE IN LISTS SOURCES)
+    # Get the relative path from the project root
+    file(RELATIVE_PATH REL_PATH "${CMAKE_CURRENT_SOURCE_DIR}/src" "${SOURCE_FILE}")
+    
+    # Get just the file name
+    get_filename_component(FILE_NAME "${SOURCE_FILE}" NAME)
+    
+    # Set the compile definitions for each source file
+    set_source_files_properties(
+        ${SOURCE_FILE}
+        PROPERTIES
+        COMPILE_DEFINITIONS "LFILE_PATH=\"${REL_PATH}\";LFILE_NAME=\"${FILE_NAME}\""
+    )
+endforeach()

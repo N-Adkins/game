@@ -148,19 +148,6 @@ typedef _Bool                       b8;
 #endif
 
 /**
- * Returns the name of a file on supported compilers, otherwise the path to 
- * the file of unspecified length (it depends on how the build system is 
- * configured at the time).
- */
-#ifdef LCOMPILER_CLANG_OR_GCC
-#define LFILE_NAME \
-    __FILE_NAME__
-#else // MSVC
-#define LFILE_NAME \
-    __FILE__
-#endif
-
-/**
  * @brief Returns the current function name as a string literal
  */
 #ifdef LCOMPILER_CLANG_OR_GCC
