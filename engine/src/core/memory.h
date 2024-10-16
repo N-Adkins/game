@@ -24,20 +24,20 @@
  * it is used
  */
 enum memory_tag {
-    MEMORY_TAG_UNKNOWN,
-    MEMORY_TAG_ARRAY,
-    MEMORY_TAG_DYNARRAY,
-    MEMORY_TAG_STRING,
+	MEMORY_TAG_UNKNOWN,
+	MEMORY_TAG_ARRAY,
+	MEMORY_TAG_DYNARRAY,
+	MEMORY_TAG_STRING,
 
-    MEMORY_TAG_MAX_TAGS,
+	MEMORY_TAG_MAX_TAGS,
 };
 
 /**
  * @brief Allocation metadata state
  */
 struct allocator {
-    u64 total_bytes;
-    u64 tag_bytes[MEMORY_TAG_MAX_TAGS];
+	u64 total_bytes;
+	u64 tag_bytes[MEMORY_TAG_MAX_TAGS];
 };
 
 /**
@@ -59,7 +59,8 @@ void allocator_destroy(struct allocator *allocator);
  *
  * @param tag Allocation type
  */
-LAPI void *allocator_alloc(struct allocator *allocator, u64 size, enum memory_tag tag);
+LAPI void *allocator_alloc(struct allocator *allocator, u64 size,
+			   enum memory_tag tag);
 
 /**
  * @brief General free function
@@ -69,14 +70,16 @@ LAPI void *allocator_alloc(struct allocator *allocator, u64 size, enum memory_ta
  *
  * @param tag Allocation type
  */
-LAPI void allocator_free(struct allocator *allocator, void *ptr, u64 size, enum memory_tag tag);
+LAPI void allocator_free(struct allocator *allocator, void *ptr, u64 size,
+			 enum memory_tag tag);
 
 /**
  * @brief Zeroes memory
  *
  * Sets "size" bytes from ptr to zero
  */
-LAPI void *allocator_free_memory(struct allocator *allocator, void *ptr, u64 size);
+LAPI void *allocator_free_memory(struct allocator *allocator, void *ptr,
+				 u64 size);
 
 /**
  * @brief Copies memory
@@ -84,12 +87,9 @@ LAPI void *allocator_free_memory(struct allocator *allocator, void *ptr, u64 siz
  * Copies "size" bytes from source to dest. Source and dest memory blocks
  * must not overlap.
  */
-LAPI void *allocator_copy_memory(
-    struct allocator *allocator,
-    void *restrict dest, 
-    const void *restrict source, 
-    u64 size
-);
+LAPI void *allocator_copy_memory(struct allocator *allocator,
+				 void *restrict dest,
+				 const void *restrict source, u64 size);
 
 /**
  * @brief Sets memory to value
@@ -98,12 +98,8 @@ LAPI void *allocator_copy_memory(
  *
  * @param value Value for each byte
  */
-LAPI void *allocator_set_memory(
-    struct allocator *allocator,
-    void *dest, 
-    i32 value, 
-    u64 size
-);
+LAPI void *allocator_set_memory(struct allocator *allocator, void *dest,
+				i32 value, u64 size);
 
 /**
  * @brief Prints memory usage in logs

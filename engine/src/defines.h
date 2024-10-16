@@ -11,20 +11,20 @@
 
 #include <stdint.h>
 
-typedef uint8_t                     u8;
-typedef uint16_t                    u16;
-typedef uint32_t                    u32;
-typedef unsigned long long int      u64;
-typedef int8_t                      i8;
-typedef int16_t                     i16;
-typedef int32_t                     i32;
-typedef signed long long int        i64;
-typedef float                       f32;
-typedef double                      f64;
-typedef _Bool                       b8;
+typedef uint8_t u8;
+typedef uint16_t u16;
+typedef uint32_t u32;
+typedef unsigned long long int u64;
+typedef int8_t i8;
+typedef int16_t i16;
+typedef int32_t i32;
+typedef signed long long int i64;
+typedef float f32;
+typedef double f64;
+typedef _Bool b8;
 
-#define true    ((b8)1)
-#define false   ((b8)0)
+#define true ((b8)1)
+#define false ((b8)0)
 
 /**
  * @brief Returns the number of elements in a statically-sized array.
@@ -74,8 +74,8 @@ typedef _Bool                       b8;
 #elif defined(_WIN32)
 #define LPLATFORM_WINDOWS
 #define LPLATFORM "Windows"
-#elif defined (__APPLE__)
-/#define LPLATFORM_MACOS
+#elif defined(__APPLE__)
+/ #define LPLATFORM_MACOS
 #define LPLATFORM "MacOS"
 #else
 #error Unsupported platform
@@ -104,11 +104,9 @@ typedef _Bool                       b8;
  * @brief Generates a compiler warning with the passed message.
  */
 #ifdef LCOMPILER_CLANG_OR_GCC
-#define LCOMPILE_WARN(msg) \
-    _Pragma(LSTRINGIFY(message(msg)))
+#define LCOMPILE_WARN(msg) _Pragma(LSTRINGIFY(message(msg)))
 #else // MSVC
-#define LCOMPILE_WARN(msg) \
-    __pragma(message(msg))
+#define LCOMPILE_WARN(msg) __pragma(message(msg))
 #endif
 
 /**
@@ -126,7 +124,7 @@ typedef _Bool                       b8;
  */
 #ifdef LCOMPILER_CLANG_OR_GCC
 #define LHINT_FORMAT(fmt_index, arg_index) \
-    __attribute__((format(printf, fmt_index, arg_index)));
+	__attribute__((format(printf, fmt_index, arg_index)));
 #else // MSVC
 #define LHINT_FORMAT(fmt_index, arg_index)
 #endif
@@ -140,33 +138,27 @@ typedef _Bool                       b8;
  * invalidate the benefits of using SIMD.
  */
 #ifdef LCOMPILER_CLANG_OR_GCC
-#define LHINT_INLINE \
-    __attribute__((always_inline))
+#define LHINT_INLINE __attribute__((always_inline))
 #else // MSVC
-#define LHINT_INLINE \
-    __forceinline
+#define LHINT_INLINE __forceinline
 #endif
 
 /**
  * @brief Returns the current function name as a string literal
  */
 #ifdef LCOMPILER_CLANG_OR_GCC
-#define LFUNCTION \
-    __func__
+#define LFUNCTION __func__
 #else // MSVC
-#define LFUNCTION \
-    __FUNCTION__
+#define LFUNCTION __FUNCTION__
 #endif
 
 /**
  * @brief Returns the type of the passed expression as a token
  */
 #ifdef LCOMPILER_CLANG_OR_GCC
-#define LTYPEOF(expr) \
-    typeof(expr)
+#define LTYPEOF(expr) typeof(expr)
 #else // MSVC
-#define LTYPEOF(expr) \
-    __typeof__(expr)
+#define LTYPEOF(expr) __typeof__(expr)
 #endif
 
 /**
@@ -180,4 +172,4 @@ typedef _Bool                       b8;
  * do {} while(0) and the like.
  */
 #define LUNIQUE_ID(num) \
-    LCONCAT(_unique_id_, LCONCAT(__LINE__, LCONCAT(_ver_, num)))
+	LCONCAT(_unique_id_, LCONCAT(__LINE__, LCONCAT(_ver_, num)))

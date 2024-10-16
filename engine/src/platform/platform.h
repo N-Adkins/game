@@ -18,11 +18,11 @@
  * @brief Colors to be used in platform_print_color
  */
 enum terminal_color {
-    TERMINAL_COLOR_PURPLE,
-    TERMINAL_COLOR_RED,
-    TERMINAL_COLOR_YELLOW,
-    TERMINAL_COLOR_GREEN,
-    TERMINAL_COLOR_GRAY,
+	TERMINAL_COLOR_PURPLE,
+	TERMINAL_COLOR_RED,
+	TERMINAL_COLOR_YELLOW,
+	TERMINAL_COLOR_GREEN,
+	TERMINAL_COLOR_GRAY,
 };
 
 typedef struct platform_impl platform_impl;
@@ -31,17 +31,16 @@ typedef struct platform_impl platform_impl;
  * @brief Wrapper for internal platform state
  */
 struct platform {
-    platform_impl* impl;
+	platform_impl *impl;
 };
 
 typedef struct mutex_impl mutex_impl;
-
 
 /**
  * @brief Wrapper for internal platform mutex
  */
 struct mutex {
-    mutex_impl *impl;
+	mutex_impl *impl;
 };
 
 /*
@@ -58,14 +57,9 @@ struct mutex {
  *
  * @param app_name The name on the top of the window
  */
-void platform_startup(
-    struct platform *platform,
-    const char *app_name,
-    i32 start_x,
-    i32 start_y,
-    i32 start_width,
-    i32 start_height
-);
+void platform_startup(struct platform *platform, const char *app_name,
+		      i32 start_x, i32 start_y, i32 start_width,
+		      i32 start_height);
 
 /**
  * @brief Shuts down platform-specifics
@@ -103,11 +97,8 @@ b8 platform_poll_events(struct platform platform);
  * @param file Output file, can be an actual opened file
  * or stderr / stdout.
  */
-void platform_print_color(
-    FILE *file,
-    const char *string,
-    enum terminal_color color
-);
+void platform_print_color(FILE *file, const char *string,
+			  enum terminal_color color);
 
 /**
  * @brief Calls a breakpoint
@@ -150,7 +141,8 @@ void *platform_zero_memory(void *ptr, u64 size);
  * The parameters are "restrict" because the memory cannot overlap between the two
  * pointers.
  */
-void *platform_copy_memory(void *restrict dest, const void *restrict source, u64 size);
+void *platform_copy_memory(void *restrict dest, const void *restrict source,
+			   u64 size);
 
 /**
  * @brief Platform-agnostic equivalent to memset

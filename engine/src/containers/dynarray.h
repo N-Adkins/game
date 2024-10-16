@@ -19,11 +19,11 @@
  * @brief Dynamic array container
  */
 struct dynarray {
-    struct allocator *allocator;
-    u64 capacity;
-    u64 length;
-    u64 stride; // type size in bytes
-    void *values; // values[0] guaranteed to be first element in array
+	struct allocator *allocator;
+	u64 capacity;
+	u64 length;
+	u64 stride; // type size in bytes
+	void *values; // values[0] guaranteed to be first element in array
 };
 
 /**
@@ -42,7 +42,8 @@ LAPI struct dynarray dynarray_create(struct allocator *allocator, u64 stride);
   *
   * This **does** allocate.
   */
-LAPI struct dynarray dynarray_create_capacity(struct allocator *allocator, u64 capacity, u64 stride);
+LAPI struct dynarray dynarray_create_capacity(struct allocator *allocator,
+					      u64 capacity, u64 stride);
 
 /**
   * @brief Frees all memory in a dynarray
@@ -75,6 +76,8 @@ LAPI b8 dynarray_get(struct dynarray *array, u64 index, void *result);
   */
 LAPI void dynarray_push_ptr(struct dynarray *array, const void *value);
 
+// clang-format off
+
 /**
   * @brief Push element to dynarray by value
   *
@@ -82,8 +85,10 @@ LAPI void dynarray_push_ptr(struct dynarray *array, const void *value);
   * it can be a pain for literals sometimes. Prefer using
   * the ptr variation when able.
   */
-#define dynarray_push(array, value)                                 \
-    do {                                                            \
-        LTYPEOF(value) LUNIQUE_ID(0) = (value);                     \
-        dynarray_push_ptr((array), &LUNIQUE_ID(0));                 \
-    } while(0)
+#define dynarray_push(array, value)                             \
+	do {                                                        \
+		LTYPEOF(value) LUNIQUE_ID(0) = (value);                 \
+		dynarray_push_ptr((array), &LUNIQUE_ID(0));             \
+	} while (0)
+
+// clang-format on

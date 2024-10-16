@@ -18,5 +18,5 @@ LAPI int real_main(void);
 
 int main(void)
 {
-    return real_main();
+	return real_main();
 }
