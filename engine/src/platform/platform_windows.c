@@ -1,5 +1,4 @@
 #include "platform.h"
-#include <errhandlingapi.h>
 
 #ifdef LPLATFORM_WINDOWS
 
