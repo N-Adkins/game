@@ -104,9 +104,9 @@ LAPI void dump_memory_usage(void)
         "STRING   ",
     };
 
-    const u64 gib = 1024 * 1024 * 1024;
-    const u64 mib = 1024 * 1024;
-    const u64 kib = 1024;
+    const u64 gib = 1024LU * 1024LU * 1024LU;
+    const u64 mib = 1024LU * 1024LU;
+    const u64 kib = 1024LU;
 
     const u64 array_len = LARRAY_LENGTH(memory_state.tag_bytes);
     

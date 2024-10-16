@@ -1,0 +1,8 @@
+Checks:
+  - bugprone-*                        # Enable bugprone checks
+  - performance-*                     # Enable performance checks
+  - clang-analyzer-*                  # Enable clang-analyzer checks
+  - cert-*                            # Enable CERT coding standards checks
+  
+  # IMO just kind of a dumb check
+  - -bugprone-easily-swappable-parameters

@@ -123,7 +123,7 @@ void platform_startup(
         8, 
         PropModeReplace, 
         (unsigned char *) app_name,
-        strlen(app_name)
+        (i32)strlen(app_name)
     )) {
         LFATAL("Failed to change X11 window name");
         return;
@@ -266,20 +266,26 @@ struct mutex mutex_create(void)
     // to give us information about deadlocks and such.
     pthread_mutexattr_t mutex_attr;
     pthread_mutexattr_t *attr_ptr = &mutex_attr;
-    if (!(err = pthread_mutexattr_init(&mutex_attr))) {
+    err = pthread_mutexattr_init(&mutex_attr);
+    if (!err) {
         // TODO: Remove errorcheck for release modes, likely
-        pthread_mutexattr_settype(&mutex_attr, PTHREAD_MUTEX_ERRORCHECK);
+        err = pthread_mutexattr_settype(&mutex_attr, PTHREAD_MUTEX_ERRORCHECK);
+        if (err) {
+            LERROR("Failed to set pthread mutex type in attributes: %s", strerror(err));
+        }
     } else {
         LERROR("Failed to initialize pthread mutex attributes, falling back to default: %s", strerror(err));
         attr_ptr = NULL;
     };
     
-    if ((err = pthread_mutex_init(&linux_mutex->mutex, attr_ptr))) {
+    err = pthread_mutex_init(&linux_mutex->mutex, attr_ptr);
+    if (err) {
         LERROR("Failed to initialize pthread mutex for Linux: %s", strerror(err));
     }
 
     if (attr_ptr != NULL) {
-        if ((err = pthread_mutexattr_destroy(&mutex_attr))) {
+        err = pthread_mutexattr_destroy(&mutex_attr);
+        if (err) {
             LERROR("Failed to destroy pthread mutex attributes: %s", strerror(err));
         }
     }
@@ -295,7 +301,8 @@ void mutex_destroy(struct mutex *mutex)
 
     struct linux_mutex *linux_mutex = mutex->inner_mutex;
     
-    if ((err = pthread_mutex_destroy(&linux_mutex->mutex))) {
+    err = pthread_mutex_destroy(&linux_mutex->mutex);
+    if (err) {
         LERROR("Failed to destroy pthread mutex for Linux: %s", strerror(err));
     }
 
@@ -310,7 +317,8 @@ void mutex_lock(struct mutex *mutex)
 
     struct linux_mutex *linux_mutex = mutex->inner_mutex;
 
-    if ((err = pthread_mutex_lock(&linux_mutex->mutex))) {
+    err = pthread_mutex_lock(&linux_mutex->mutex);
+    if (err) {
         LERROR("Failed to lock pthread mutex for Linux: %s", strerror(err));
     }
 }
@@ -323,7 +331,8 @@ void mutex_unlock(struct mutex *mutex)
 
     struct linux_mutex *linux_mutex = mutex->inner_mutex;
 
-    if ((err = pthread_mutex_unlock(&linux_mutex->mutex))) {
+    err = pthread_mutex_unlock(&linux_mutex->mutex);
+    if (err) {
         LERROR("Failed to unlock pthread mutex for Linux: %s", strerror(err));
     }
 }
