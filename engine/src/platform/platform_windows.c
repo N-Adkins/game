@@ -165,7 +165,7 @@ void *platform_zero_memory(void *ptr, u64 size)
 void *platform_copy_memory(void *restrict dest, const void *restrict source, u64 size)
 {
     LASSERT(dest != NULL);
-    LASSERT(soruce != NULL);
+    LASSERT(source != NULL);
 
     return memcpy(dest, source, size);
 }
