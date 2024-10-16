@@ -28,5 +28,12 @@
         }                                                               \
     } while(0)
 
+/**
+ * @brief Errors at compile time if expr is false at compile time
+ *
+ * This uses __COUNTER__ to attempt to make every static_assertion unique.
+ * We could use LUNIQUE_NAME(0) but it's better to have the name have 
+ * "static_assertion_failed" in it for clarity on error.
+ */
 #define LSTATIC_ASSERT(expr, msg) \
-    typedef char LUNIQUE_ID(0)[(expr)?1:-1]
+    typedef char LCONCAT(static_assertion_failed_, __COUNTER__)[(expr)?1:-1]
