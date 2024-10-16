@@ -5,7 +5,7 @@
 #include <stdio.h>
 #include <string.h>
 
-struct allocator allocator_create(void)
+LAPI struct allocator allocator_create(void)
 {
 	struct allocator allocator;
 
@@ -14,7 +14,7 @@ struct allocator allocator_create(void)
 	return allocator;
 }
 
-void allocator_destroy(struct allocator *allocator)
+LAPI void allocator_destroy(struct allocator *allocator)
 {
 	LASSERT(allocator != NULL);
 

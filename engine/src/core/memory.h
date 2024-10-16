@@ -43,14 +43,14 @@ struct allocator {
 /**
  * @brief Initializes allocator (shocking)
  */
-struct allocator allocator_create(void);
+LAPI struct allocator allocator_create(void);
 
 /**
  * @brief Destroys allocator (shocking)
  *
  * Will print diagnostics if leaked memory is detected.
  */
-void allocator_destroy(struct allocator *allocator);
+LAPI void allocator_destroy(struct allocator *allocator);
 
 /**
  * @brief General allocation function
