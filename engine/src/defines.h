@@ -129,7 +129,6 @@ typedef _Bool                       b8;
 #define LHINT_FORMAT(fmt_index, arg_index) \
     __attribute__((format(printf, fmt_index, arg_index)));
 #else // MSVC
-//LCOMPILE_WARN("LHINT_FORMAT not supported on this compiler")
 #define LHINT_FORMAT(fmt_index, arg_index)
 #endif
 
@@ -145,8 +144,8 @@ typedef _Bool                       b8;
 #define LHINT_INLINE \
     __attribute__((always_inline))
 #else // MSVC
-//LCOMPILE_WARN("LHINT_INLINE not supported on this compiler")
-#define LHINT_INLINE
+#define LHINT_INLINE \
+    __forceinline
 #endif
 
 /**

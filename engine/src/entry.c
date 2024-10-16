@@ -23,6 +23,7 @@ LAPI int real_main(void)
 
     struct mutex mutex = mutex_create();
     mutex_lock(&mutex);
+    mutex_lock(&mutex);
     mutex_unlock(&mutex);
     mutex_unlock(&mutex);
     mutex_destroy(&mutex);
