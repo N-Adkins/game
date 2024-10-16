@@ -1,5 +1,6 @@
 target_sources(engine PRIVATE
     entry.c
+    defines.c
 )
 
 add_subdirectory(core)

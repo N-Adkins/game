@@ -1,5 +1,6 @@
 #include "entry.h"
 
+#include <core/assert.h>
 #include <core/memory.h>
 #include <core/logger.h>
 #include <containers/dynarray.h>

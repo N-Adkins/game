@@ -9,6 +9,7 @@
  */
 
 #include <platform/platform.h>
+#include <defines.h>
 #include "logger.h"
 
 #define LASSERT(expr)                                                   \
@@ -26,3 +27,6 @@
             platform_debug_break();                                     \
         }                                                               \
     } while(0)
+
+#define LSTATIC_ASSERT(expr, msg) \
+    typedef char LUNIQUE_ID(0)[(expr)?1:-1]

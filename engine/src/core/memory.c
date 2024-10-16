@@ -4,7 +4,6 @@
 #include <core/logger.h>
 #include <stdio.h>
 #include <string.h>
-#include <inttypes.h>
 
 /**
  * @brief Global memory state
@@ -35,7 +34,7 @@ void memory_shutdown(void)
     LINFO("Shutting down memory subsystem");
 
     if (memory_state.total_bytes > 0) {
-        LWARN("Memory has leaked, 0x%04" PRIx64 " bytes in use at shutdown", memory_state.total_bytes);
+        LWARN("Memory has leaked, 0x%04llX bytes in use at shutdown", memory_state.total_bytes);
         dump_memory_usage();
     }
     
@@ -52,7 +51,7 @@ LAPI void *engine_allocate(u64 size, enum memory_tag tag)
     LASSERT(initialized);
 
     if (tag == MEMORY_TAG_UNKNOWN) {
-        LWARN("Allocating 0x%04" PRIx64 " bytes using MEMORY_TAG_UNKNOWN, change this tag", size);
+        LWARN("Allocating 0x%04llX bytes using MEMORY_TAG_UNKNOWN, change this tag", size);
     }
 
     memory_state.total_bytes += size;
@@ -68,7 +67,7 @@ LAPI void engine_free(void *ptr, u64 size, enum memory_tag tag)
     LASSERT(initialized);
 
     if (tag == MEMORY_TAG_UNKNOWN) {
-        LWARN("Freeing 0x%04" PRIx64 " bytes using MEMORY_TAG_UNKNOWN, change this tag", size);
+        LWARN("Freeing 0x%04llX bytes using MEMORY_TAG_UNKNOWN, change this tag", size);
     }
 
     memory_state.total_bytes -= size;

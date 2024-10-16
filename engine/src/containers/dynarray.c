@@ -2,7 +2,6 @@
 
 #include <core/assert.h>
 #include <core/memory.h>
-#include <inttypes.h>
 
 LAPI struct dynarray dynarray_create(u64 stride)
 {
@@ -47,7 +46,7 @@ LAPI b8 dynarray_get(struct dynarray *array, u64 index, void *result)
     LASSERT(result != NULL);
 
     if (index > array->length) {
-        LERROR("Dynarray out of bounds access at index %" PRIu64 " with length %" PRIu64, index, array->length);
+        LERROR("Dynarray out of bounds access at index %llu with length %llu", index, array->length);
         return false;
     }
     

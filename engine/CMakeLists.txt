@@ -11,7 +11,7 @@ if (NOT WIN32)
     find_package(X11 REQUIRED)
     target_link_libraries(engine PRIVATE ${X11_LIBRARIES})
     target_compile_options(engine PRIVATE
-        -Wall -Wformat -Wextra -Werror -fdiagnostics-color=always
+        -Wall -Wformat -Wextra -Werror -fdiagnostics-color=always 
     )
 endif()
 
