@@ -5,97 +5,93 @@
 #include <stdio.h>
 #include <string.h>
 
-/**
- * @brief Global memory state
- */
-static struct {
-    u64 total_bytes;
-    u64 tag_bytes[MEMORY_TAG_MAX_TAGS];
-} memory_state;
-
-// Used for asserting if memory was started up
-b8 initialized = false;
-
-void memory_startup(void)
+struct allocator allocator_create(void)
 {
-    LINFO("Starting up memory subsystem");
+    struct allocator allocator;
 
     platform_zero_memory(
-        &memory_state,
-        sizeof(memory_state)
+        &allocator,
+        sizeof(struct allocator)
     );
 
-    initialized = true;
+    return allocator;
 }
 
-void memory_shutdown(void)
+void allocator_destroy(struct allocator *allocator)
 {
-    LASSERT(initialized);
-    LINFO("Shutting down memory subsystem");
+    LASSERT(allocator != NULL);
 
-    if (memory_state.total_bytes > 0) {
-        LWARN("Memory has leaked, 0x%04llX bytes in use at shutdown", memory_state.total_bytes);
-        dump_memory_usage();
+    if (allocator->total_bytes > 0) {
+        LWARN("Memory has leaked, 0x%04llX bytes in use at allocator destruction", allocator->total_bytes);
+        allocator_dump_usage(allocator);
     }
     
     // Consistency check
     u64 tag_total = 0;
-    for (u64 i = 0; i < LARRAY_LENGTH(memory_state.tag_bytes); i++) {
-        tag_total += memory_state.tag_bytes[i];
+    for (u64 i = 0; i < LARRAY_LENGTH(allocator->tag_bytes); i++) {
+        tag_total += allocator->tag_bytes[i];
     }
-    LASSERT(memory_state.total_bytes == tag_total);
+    LASSERT(allocator->total_bytes == tag_total);
 }
 
-LAPI void *engine_allocate(u64 size, enum memory_tag tag)
+LAPI void *allocator_alloc(struct allocator *allocator, u64 size, enum memory_tag tag)
 {
-    LASSERT(initialized);
+    LASSERT(allocator != NULL);
 
     if (tag == MEMORY_TAG_UNKNOWN) {
         LWARN("Allocating 0x%04llX bytes using MEMORY_TAG_UNKNOWN, change this tag", size);
     }
 
-    memory_state.total_bytes += size;
-    memory_state.tag_bytes[tag] += size;
+    allocator->total_bytes += size;
+    allocator->tag_bytes[tag] += size;
     
     void *ptr = platform_allocate(size, false);
     platform_zero_memory(ptr, size);
     return ptr;
 }
 
-LAPI void engine_free(void *ptr, u64 size, enum memory_tag tag)
+LAPI void allocator_free(struct allocator *allocator, void *ptr, u64 size, enum memory_tag tag)
 {
-    LASSERT(initialized);
+    LASSERT(allocator != NULL);
 
     if (tag == MEMORY_TAG_UNKNOWN) {
         LWARN("Freeing 0x%04llX bytes using MEMORY_TAG_UNKNOWN, change this tag", size);
     }
 
-    memory_state.total_bytes -= size;
-    memory_state.tag_bytes[tag] -= size;
+    allocator->total_bytes -= size;
+    allocator->tag_bytes[tag] -= size;
     platform_free(ptr, false);
 }
 
-LAPI void *engine_zero_memory(void *ptr, u64 size)
+LAPI void *allocator_zero_memory(struct allocator *allocator, void *ptr, u64 size)
 {
-    LASSERT(initialized);
+    LASSERT(allocator != NULL);
+
     return platform_zero_memory(ptr, size);
 }
 
-LAPI void *engine_copy_memory(void *restrict dest, const void *restrict source, u64 size)
+LAPI void *allocator_copy_memory(
+    struct allocator *allocator, 
+    void *restrict dest, 
+    const void *restrict source, 
+    u64 size
+)
 {
-    LASSERT(initialized);
+    LASSERT(allocator != NULL);
+
     return platform_copy_memory(dest, source, size);
 }
 
-LAPI void *engine_set_memory(void *dest, i32 value, u64 size)
+LAPI void *allocator_set_memory(struct allocator *allocator, void *dest, i32 value, u64 size)
 {
-    LASSERT(initialized);
+    LASSERT(allocator != NULL);
+
     return platform_set_memory(dest, value, size);
 }
 
-LAPI void dump_memory_usage(void)
+LAPI void allocator_dump_usage(struct allocator *allocator)
 {
-    LASSERT(initialized);
+    LASSERT(allocator != NULL);
     
     const char *tag_strings[] = {
         "UNKNOWN  ",
@@ -108,7 +104,7 @@ LAPI void dump_memory_usage(void)
     const u64 mib = 1024LU * 1024LU;
     const u64 kib = 1024LU;
 
-    const u64 array_len = LARRAY_LENGTH(memory_state.tag_bytes);
+    const u64 array_len = LARRAY_LENGTH(allocator->tag_bytes);
     
     char buffer[LOG_MAX_LENGTH] = "Memory subsystem usage:\n";
     u64 offset = strlen(buffer);
@@ -117,17 +113,17 @@ LAPI void dump_memory_usage(void)
         const char *unit = "GiB";
         f64 amount = 1.0;
 
-        if (memory_state.tag_bytes[i] >= gib) {
-            amount = (f64)memory_state.tag_bytes[i] / (f64)gib;
-        } else if (memory_state.tag_bytes[i] >= mib) {
+        if (allocator->tag_bytes[i] >= gib) {
+            amount = (f64)allocator->tag_bytes[i] / (f64)gib;
+        } else if (allocator->tag_bytes[i] >= mib) {
             unit = "MiB";
-            amount = (f64)memory_state.tag_bytes[i] / (f64)mib;
-        } else if (memory_state.tag_bytes[i] >= kib) {
+            amount = (f64)allocator->tag_bytes[i] / (f64)mib;
+        } else if (allocator->tag_bytes[i] >= kib) {
             unit = "KiB";
-            amount = (f64)memory_state.tag_bytes[i] / (f64)kib;
+            amount = (f64)allocator->tag_bytes[i] / (f64)kib;
         } else {
             unit = "B";
-            amount = (f64)memory_state.tag_bytes[i];
+            amount = (f64)allocator->tag_bytes[i];
         }
         
         // This part is just for cleaner printing in the logger.

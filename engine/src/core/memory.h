@@ -7,6 +7,11 @@
  * All memory allocation should go through these facilities - they will log
  * and keep track of the memory usage of different parts of the program, and this
  * log can be dumped to the logger at any time.
+ *
+ * This is not a vtable interface like lots of other things use the term "allocator" for!
+ * That would be super slow here. I could have made these global, and they used to be, but 
+ * for the sake of correctness and so that hot-reloading is possible in the future (as I 
+ * understand it, statics are reset when a DLL is re-linked) it was changed to this API.
  */
 
 #include <defines.h>
@@ -27,17 +32,22 @@ enum memory_tag {
     MEMORY_TAG_MAX_TAGS,
 };
 
-/**
- * @brief Initializes the global memory state
- */
-void memory_startup(void);
+struct allocator {
+    u64 total_bytes;
+    u64 tag_bytes[MEMORY_TAG_MAX_TAGS];
+};
 
 /**
- * @brief Shuts down the global memory state
+ * @brief Initializes allocator (shocking)
+ */
+struct allocator allocator_create(void);
+
+/**
+ * @brief Destroys allocator (shocking)
  *
  * Will print diagnostics if leaked memory is detected.
  */
-void memory_shutdown(void);
+void allocator_destroy(struct allocator *allocator);
 
 /**
  * @brief General allocation function
@@ -46,7 +56,7 @@ void memory_shutdown(void);
  *
  * @param tag Allocation type
  */
-LAPI void *engine_allocate(u64 size, enum memory_tag tag);
+LAPI void *allocator_alloc(struct allocator *allocator, u64 size, enum memory_tag tag);
 
 /**
  * @brief General free function
@@ -56,14 +66,14 @@ LAPI void *engine_allocate(u64 size, enum memory_tag tag);
  *
  * @param tag Allocation type
  */
-LAPI void engine_free(void *ptr, u64 size, enum memory_tag tag);
+LAPI void allocator_free(struct allocator *allocator, void *ptr, u64 size, enum memory_tag tag);
 
 /**
  * @brief Zeroes memory
  *
  * Sets "size" bytes from ptr to zero
  */
-LAPI void *engine_zero_memory(void *ptr, u64 size);
+LAPI void *allocator_free_memory(struct allocator *allocator, void *ptr, u64 size);
 
 /**
  * @brief Copies memory
@@ -71,7 +81,12 @@ LAPI void *engine_zero_memory(void *ptr, u64 size);
  * Copies "size" bytes from source to dest. Source and dest memory blocks
  * must not overlap.
  */
-LAPI void *engine_copy_memory(void *restrict dest, const void *restrict source, u64 size);
+LAPI void *allocator_copy_memory(
+    struct allocator *allocator,
+    void *restrict dest, 
+    const void *restrict source, 
+    u64 size
+);
 
 /**
  * @brief Sets memory to value
@@ -80,7 +95,12 @@ LAPI void *engine_copy_memory(void *restrict dest, const void *restrict source, 
  *
  * @param value Value for each byte
  */
-LAPI void *engine_set_memory(void *dest, i32 value, u64 size);
+LAPI void *allocator_set_memory(
+    struct allocator *allocator,
+    void *dest, 
+    i32 value, 
+    u64 size
+);
 
 /**
  * @brief Prints memory usage in logs
@@ -88,4 +108,4 @@ LAPI void *engine_set_memory(void *dest, i32 value, u64 size);
  * Dumps a log at the debug level showing how much memory is allocated
  * with each memory_tag.
  */
-LAPI void dump_memory_usage(void);
+LAPI void allocator_dump_usage(struct allocator *allocator);

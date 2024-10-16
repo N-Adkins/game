@@ -25,18 +25,23 @@ enum terminal_color {
     TERMINAL_COLOR_GRAY,
 };
 
+typedef struct platform_impl platform_impl;
+
 /**
  * @brief Wrapper for internal platform state
  */
-struct platform_state {
-    void *inner_state;
+struct platform {
+    platform_impl* impl;
 };
+
+typedef struct mutex_impl mutex_impl;
+
 
 /**
  * @brief Wrapper for internal platform mutex
  */
 struct mutex {
-    void *inner_mutex;
+    mutex_impl *impl;
 };
 
 /*
@@ -54,7 +59,7 @@ struct mutex {
  * @param app_name The name on the top of the window
  */
 void platform_startup(
-    struct platform_state *state,
+    struct platform *platform,
     const char *app_name,
     i32 start_x,
     i32 start_y,
@@ -69,7 +74,7 @@ void platform_startup(
  * No platform functions can be called with the passed state 
  * after this is called.
  */
-void platform_shutdown(struct platform_state *state);
+void platform_shutdown(struct platform platform);
 
 /**
  * @brief Processes OS and window events
@@ -80,7 +85,7 @@ void platform_shutdown(struct platform_state *state);
  * @return true if the window should stay open, false if it 
  * should close
  */
-b8 platform_poll_events(struct platform_state *state);
+b8 platform_poll_events(struct platform platform);
 
 /**
  * @brief Prints a string to the passed file with a color
@@ -157,6 +162,6 @@ void *platform_set_memory(void *dest, i32 value, u64 size);
  */
 
 struct mutex mutex_create(void);
-void mutex_destroy(struct mutex *mutex);
-void mutex_lock(struct mutex *mutex);
-void mutex_unlock(struct mutex *mutex);
+void mutex_destroy(struct mutex mutex);
+void mutex_lock(struct mutex mutex);
+void mutex_unlock(struct mutex mutex);

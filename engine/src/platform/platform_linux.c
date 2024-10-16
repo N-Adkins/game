@@ -23,7 +23,7 @@
 /**
  * Linux-specific platform state, contains X11 handles.
  */
-struct linux_platform_state {
+struct platform_impl {
     Display *display; // X11 display handle
     Window window; // X11 window handle
     Atom wm_delete; // Handle to the window deletion event
@@ -32,12 +32,12 @@ struct linux_platform_state {
 /**
  * Linux-specific mutex, in this case a pthread mutex
  */
-struct linux_mutex {
+struct mutex_impl {
     pthread_mutex_t mutex;
 };
 
 void platform_startup(
-    struct platform_state *state,
+    struct platform *platform,
     const char *app_name,
     i32 start_x,
     i32 start_y,
@@ -45,43 +45,43 @@ void platform_startup(
     i32 start_height
 )
 {
-    LASSERT(state != NULL);
+    LASSERT(platform != NULL);
     LASSERT(app_name != NULL);
 
     LINFO("Initializing the Linux platform state");
 
-    struct linux_platform_state *linux_state = malloc(sizeof(struct linux_platform_state));
-    state->inner_state = linux_state;
+    struct platform_impl *linux_impl = malloc(sizeof(struct platform_impl));
+    platform->impl = linux_impl;
 
-    linux_state->display = XOpenDisplay(NULL); // fetch default display
-    if (linux_state->display == NULL) {
+    linux_impl->display = XOpenDisplay(NULL); // fetch default display
+    if (linux_impl->display == NULL) {
         LFATAL("Failed to open X11 display");
         return;
     }
 
-    Window root_window = XDefaultRootWindow(linux_state->display);
+    Window root_window = XDefaultRootWindow(linux_impl->display);
     if (root_window <= 0) {
         LFATAL("Failed to fetch default X11 window");
         return;
     }
 
-    linux_state->window = XCreateSimpleWindow(
-        linux_state->display,
+    linux_impl->window = XCreateSimpleWindow(
+        linux_impl->display,
         root_window,
         start_x,
         start_y,
         start_width,
         start_height,
         0, // no border
-        BlackPixel(linux_state->display, 0),
-        BlackPixel(linux_state->display, 0)
+        BlackPixel(linux_impl->display, 0),
+        BlackPixel(linux_impl->display, 0)
     );
-    if (linux_state->window <= 0) {
+    if (linux_impl->window <= 0) {
         LFATAL("Failed to create X11 window");
         return;
     }
 
-    if (!XMapWindow(linux_state->display, linux_state->window)) {
+    if (!XMapWindow(linux_impl->display, linux_impl->window)) {
         LFATAL("Failed to map X11 window to display");
         return;
     }
@@ -93,21 +93,21 @@ void platform_startup(
         ButtonReleaseMask |
         PointerMotionMask;
 
-    if (!XSelectInput(linux_state->display, linux_state->window, event_mask)) {
+    if (!XSelectInput(linux_impl->display, linux_impl->window, event_mask)) {
         LFATAL("Failed to enable X11 event mask");
         return;
     }
 
-    linux_state->wm_delete = XInternAtom(
-        linux_state->display,
+    linux_impl->wm_delete = XInternAtom(
+        linux_impl->display,
         "WM_DELETE_WINDOW",
         false
     );
 
     if (!XSetWMProtocols(
-        linux_state->display,
-        linux_state->window,
-        &linux_state->wm_delete,
+        linux_impl->display,
+        linux_impl->window,
+        &linux_impl->wm_delete,
         1
     )) {
         LFATAL("Failed to set X11 WM protocols");
@@ -117,10 +117,10 @@ void platform_startup(
     const i32 BYTE_SIZE = 8;
     // Set window name to app_name
     if (!XChangeProperty(
-        linux_state->display,
-        linux_state->window,
-        XInternAtom(linux_state->display, "_NET_WM_NAME", False),
-        XInternAtom(linux_state->display, "UTF8_STRING", False),
+        linux_impl->display,
+        linux_impl->window,
+        XInternAtom(linux_impl->display, "_NET_WM_NAME", False),
+        XInternAtom(linux_impl->display, "UTF8_STRING", False),
         BYTE_SIZE, 
         PropModeReplace, 
         (unsigned char *) app_name,
@@ -130,41 +130,37 @@ void platform_startup(
         return;
     }
 
-    if (XFlush(linux_state->display) <= 0) {
+    if (XFlush(linux_impl->display) <= 0) {
         LFATAL("Failed to flush X11");
         return;
     }
 }
 
-void platform_shutdown(struct platform_state *state)
+void platform_shutdown(struct platform platform)
 {
-    LASSERT(state != NULL);
+    LASSERT(platform.impl != NULL);
 
     LINFO("Shutting down the Linux platform state");
 
-    struct linux_platform_state *linux_state = state->inner_state;
-    
-    XDestroyWindow(linux_state->display, linux_state->window);
-    XCloseDisplay(linux_state->display);
+    XDestroyWindow(platform.impl->display, platform.impl->window);
+    XCloseDisplay(platform.impl->display);
 
-    free(state->inner_state);
+    free(platform.impl);
 }
 
 
-b8 platform_poll_events(struct platform_state *state)
+b8 platform_poll_events(struct platform platform)
 { 
-    LASSERT(state != NULL);
-
-    struct linux_platform_state *linux_state = state->inner_state;
+    LASSERT(platform.impl != NULL);
 
     b8 stay_open = true;
     XEvent event;
 
-    while (XPending(linux_state->display)) {
-        XNextEvent(linux_state->display, &event);
+    while (XPending(platform.impl->display)) {
+        XNextEvent(platform.impl->display, &event);
         switch (event.type) {
         case ClientMessage:
-            if (event.xclient.data.l[0] == (long)linux_state->wm_delete) {
+            if (event.xclient.data.l[0] == (long)platform.impl->wm_delete) {
                 stay_open = false;
             }
             break;
@@ -259,9 +255,9 @@ struct mutex mutex_create(void)
 {
     int err = 0;
 
-    struct linux_mutex *linux_mutex = platform_allocate(sizeof(struct linux_mutex), true);
+    struct mutex_impl *linux_impl = platform_allocate(sizeof(struct mutex_impl), true);
     struct mutex mutex;
-    mutex.inner_mutex = linux_mutex;
+    mutex.impl = linux_impl;
     
     // The main attribute we set is ERRORCHECK which we can have enabled in debug modes
     // to give us information about deadlocks and such.
@@ -279,7 +275,7 @@ struct mutex mutex_create(void)
         attr_ptr = NULL;
     };
     
-    err = pthread_mutex_init(&linux_mutex->mutex, attr_ptr);
+    err = pthread_mutex_init(&linux_impl->mutex, attr_ptr);
     if (err) {
         LERROR("Failed to initialize pthread mutex for Linux: %s", strerror(err));
     }
@@ -294,45 +290,39 @@ struct mutex mutex_create(void)
     return mutex;
 }
 
-void mutex_destroy(struct mutex *mutex)
+void mutex_destroy(struct mutex mutex)
 {
-    LASSERT(mutex != NULL);
+    LASSERT(mutex.impl != NULL);
 
     int err = 0;
 
-    struct linux_mutex *linux_mutex = mutex->inner_mutex;
-    
-    err = pthread_mutex_destroy(&linux_mutex->mutex);
+    err = pthread_mutex_destroy(&mutex.impl->mutex);
     if (err) {
         LERROR("Failed to destroy pthread mutex for Linux: %s", strerror(err));
     }
 
-    platform_free(linux_mutex, true);
+    platform_free(mutex.impl, true);
 }
 
-void mutex_lock(struct mutex *mutex)
+void mutex_lock(struct mutex mutex)
 {
-    LASSERT(mutex != NULL);
+    LASSERT(mutex.impl != NULL);
 
     int err = 0;
 
-    struct linux_mutex *linux_mutex = mutex->inner_mutex;
-
-    err = pthread_mutex_lock(&linux_mutex->mutex);
+    err = pthread_mutex_lock(&mutex.impl->mutex);
     if (err) {
         LERROR("Failed to lock pthread mutex for Linux: %s", strerror(err));
     }
 }
 
-void mutex_unlock(struct mutex *mutex)
+void mutex_unlock(struct mutex mutex)
 {
-    LASSERT(mutex != NULL);
+    LASSERT(mutex.impl != NULL);
 
     int err = 0;
 
-    struct linux_mutex *linux_mutex = mutex->inner_mutex;
-
-    err = pthread_mutex_unlock(&linux_mutex->mutex);
+    err = pthread_mutex_unlock(&mutex.impl->mutex);
     if (err) {
         LERROR("Failed to unlock pthread mutex for Linux: %s", strerror(err));
     }
