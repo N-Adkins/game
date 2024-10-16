@@ -21,7 +21,7 @@ typedef int32_t     i32;
 typedef int64_t     i64;
 typedef float       f32;
 typedef double      f64;
-typedef u8          b8;
+typedef _Bool       b8;
 
 #define true    ((b8)1)
 #define false   ((b8)0)
