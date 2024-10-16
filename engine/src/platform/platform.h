@@ -15,7 +15,7 @@
 #include <stdio.h>
 
 /**
- * Colors to be used in platform_print_color
+ * @brief Colors to be used in platform_print_color
  */
 enum terminal_color {
     TERMINAL_COLOR_PURPLE,
@@ -26,12 +26,22 @@ enum terminal_color {
 };
 
 /**
- * Holds a type-erased handle to the underlying
- * platform's state struct
+ * @brief Wrapper for internal platform state
  */
 struct platform_state {
     void *inner_state;
 };
+
+/**
+ * @brief Wrapper for internal platform mutex
+ */
+struct mutex {
+    void *inner_mutex;
+};
+
+/*
+ * Platform functions
+ */
 
 /**
  * @brief Starts the platform layer
@@ -77,7 +87,9 @@ b8 platform_poll_events(struct platform_state *state);
  *
  * Uses platform-specific escape codes to print colored text
  * to a file. This is mostly intended for use with logging,
- * avoid using this in most contexts.
+ * avoid using this in most contexts. It is also permitted
+ * for the output to not be colored on platforms where it is
+ * either not possible or doesn't make sense.
  *
  * One important note is that this function may **NOT** call
  * any logging functions or assertions because an error could
@@ -139,3 +151,12 @@ void *platform_copy_memory(void *restrict dest, const void *restrict source, u64
  * @brief Platform-agnostic equivalent to memset
  */
 void *platform_set_memory(void *dest, i32 value, u64 size);
+
+/*
+ * Mutex functions
+ */
+
+struct mutex mutex_create(void);
+void mutex_destroy(struct mutex *mutex);
+void mutex_lock(struct mutex *mutex);
+void mutex_unlock(struct mutex *mutex);

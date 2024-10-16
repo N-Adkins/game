@@ -31,6 +31,9 @@ void platform_startup(
     i32 start_height
 )
 {
+    LASSERT(state != NULL);
+    LASSERT(app_name != NULL);
+
     LINFO("Initializing the Windows platform state");
 
     struct windows_platform_state *windows_state = malloc(sizeof(struct windows_platform_state));
@@ -87,6 +90,8 @@ void platform_startup(
 
 void platform_shutdown(struct platform_state *state)
 {
+    LASSERT(state != NULL);
+
     LINFO("Shutting down the Windows platform state");
 
     struct windows_platform_state *windows_state = state->inner_state;
@@ -97,6 +102,8 @@ void platform_shutdown(struct platform_state *state)
 
 b8 platform_poll_events(struct platform_state *state)
 { 
+    LASSERT(state != NULL);
+
     struct windows_platform_state *windows_state = state->inner_state;
     (void)windows_state;
 
@@ -115,6 +122,9 @@ void platform_print_color(
     enum terminal_color color
 )
 {
+    LASSERT(file != NULL);
+    LASSERT(string != NULL);
+
     // TODO: Color
     (void)color;
     fprintf(file, "%s", string);
@@ -147,16 +157,23 @@ void platform_free(void *ptr, b8 aligned)
 
 void *platform_zero_memory(void *ptr, u64 size)
 {
+    LASSERT(ptr != NULL);
+
     return memset(ptr, 0, size);
 }
 
 void *platform_copy_memory(void *restrict dest, const void *restrict source, u64 size)
 {
+    LASSERT(dest != NULL);
+    LASSERT(soruce != NULL);
+
     return memcpy(dest, source, size);
 }
 
 void *platform_set_memory(void *dest, i32 value, u64 size)
 {
+    LASSERT(dest != NULL);
+
     return memset(dest, value, size); 
 }
 

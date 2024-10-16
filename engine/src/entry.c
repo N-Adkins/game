@@ -21,6 +21,12 @@ LAPI int real_main(void)
     struct dynarray array = dynarray_create(sizeof(int));
     dynarray_push(&array, 10);
 
+    struct mutex mutex = mutex_create();
+    mutex_lock(&mutex);
+    mutex_unlock(&mutex);
+    mutex_unlock(&mutex);
+    mutex_destroy(&mutex);
+
     while (platform_poll_events(&platform)) {}
 
     memory_shutdown();

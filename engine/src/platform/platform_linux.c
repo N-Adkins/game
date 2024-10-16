@@ -17,6 +17,7 @@
 #include <string.h>
 
 #include <X11/Xlib.h>
+#include <pthread.h>
 #include <signal.h>
 
 /**
@@ -28,6 +29,13 @@ struct linux_platform_state {
     Atom wm_delete; // Handle to the window deletion event
 };
 
+/**
+ * Linux-specific mutex, in this case a pthread mutex
+ */
+struct linux_mutex {
+    pthread_mutex_t mutex;
+};
+
 void platform_startup(
     struct platform_state *state,
     const char *app_name,
@@ -37,6 +45,9 @@ void platform_startup(
     i32 start_height
 )
 {
+    LASSERT(state != NULL);
+    LASSERT(app_name != NULL);
+
     LINFO("Initializing the Linux platform state");
 
     struct linux_platform_state *linux_state = malloc(sizeof(struct linux_platform_state));
@@ -126,6 +137,8 @@ void platform_startup(
 
 void platform_shutdown(struct platform_state *state)
 {
+    LASSERT(state != NULL);
+
     LINFO("Shutting down the Linux platform state");
 
     struct linux_platform_state *linux_state = state->inner_state;
@@ -139,6 +152,8 @@ void platform_shutdown(struct platform_state *state)
 
 b8 platform_poll_events(struct platform_state *state)
 { 
+    LASSERT(state != NULL);
+
     struct linux_platform_state *linux_state = state->inner_state;
 
     b8 stay_open = true;
@@ -166,6 +181,9 @@ void platform_print_color(
     enum terminal_color color
 )
 {
+    LASSERT(file != NULL);
+    LASSERT(string != NULL);
+
     const char *reset_code = "\e[0;0m";
     const char *color_code = NULL;
 
@@ -213,17 +231,90 @@ void platform_free(void *ptr, b8 aligned)
 
 void *platform_zero_memory(void *ptr, u64 size)
 {
+    LASSERT(ptr != NULL);
+
     return memset(ptr, 0, size);
 }
 
 void *platform_copy_memory(void *restrict dest, const void *restrict source, u64 size)
 {
+    LASSERT(dest != NULL);
+    LASSERT(source != NULL);
+
     return memcpy(dest, source, size);
 }
 
 void *platform_set_memory(void *dest, i32 value, u64 size)
 {
+    LASSERT(dest != NULL);
+
     return memset(dest, value, size); 
+}
+
+struct mutex mutex_create(void)
+{
+    struct linux_mutex *linux_mutex = platform_allocate(sizeof(struct linux_mutex), true);
+    struct mutex mutex;
+    mutex.inner_mutex = linux_mutex;
+    
+    // The main attribute we set is ERRORCHECK which we can have enabled in debug modes
+    // to give us information about deadlocks and such.
+    pthread_mutexattr_t mutex_attr;
+    pthread_mutexattr_t *attr_ptr = &mutex_attr;
+    if (!pthread_mutexattr_init(&mutex_attr)) {
+        // TODO: Remove errorcheck for release modes, likely
+        pthread_mutexattr_settype(&mutex_attr, PTHREAD_MUTEX_ERRORCHECK);
+    } else {
+        LERROR("Failed to initialize pthread mutex attributes, falling back to default");
+        attr_ptr = NULL;
+    };
+    
+    if (pthread_mutex_init(&linux_mutex->mutex, attr_ptr)) {
+        LERROR("Failed to initialize pthread mutex for Linux");
+    }
+
+    if (attr_ptr != NULL) {
+        if (pthread_mutexattr_destroy(&mutex_attr)) {
+            LERROR("Failed to destroy pthread mutex attributes");
+        }
+    }
+
+    return mutex;
+}
+
+void mutex_destroy(struct mutex *mutex)
+{
+    LASSERT(mutex != NULL);
+
+    struct linux_mutex *linux_mutex = mutex->inner_mutex;
+    
+    if (pthread_mutex_destroy(&linux_mutex->mutex)) {
+        LERROR("Failed to destroy pthread mutex for Linux");
+    }
+
+    platform_free(linux_mutex, true);
+}
+
+void mutex_lock(struct mutex *mutex)
+{
+    LASSERT(mutex != NULL);
+
+    struct linux_mutex *linux_mutex = mutex->inner_mutex;
+
+    if (pthread_mutex_lock(&linux_mutex->mutex)) {
+        LERROR("Failed to lock pthread mutex for Linux, likely deadlocked");
+    }
+}
+
+void mutex_unlock(struct mutex *mutex)
+{
+    LASSERT(mutex != NULL);
+
+    struct linux_mutex *linux_mutex = mutex->inner_mutex;
+
+    if (pthread_mutex_unlock(&linux_mutex->mutex)) {
+        LERROR("Failed to unlock pthread mutex for Linux, does the current thread own this mutex?");
+    }
 }
 
 #endif
