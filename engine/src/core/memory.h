@@ -32,6 +32,9 @@ enum memory_tag {
     MEMORY_TAG_MAX_TAGS,
 };
 
+/**
+ * @brief Allocation metadata state
+ */
 struct allocator {
     u64 total_bytes;
     u64 tag_bytes[MEMORY_TAG_MAX_TAGS];

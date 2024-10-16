@@ -10,9 +10,13 @@
 // Not sure how important this name is honestly.
 const char class_name[] = "AppClass";
 
-struct windows_platform_state {
+struct platform_impl {
     HINSTANCE instance; // Windows process instance
     HWND window; // Windows window handle
+};
+
+struct mutex_impl {
+    HANDLE mutex;
 };
 
 // TODO: Use this properly
@@ -23,7 +27,7 @@ LRESULT CALLBACK window_procedure(HWND window, UINT msg, WPARAM w_param, LPARAM 
 }
 
 void platform_startup(
-    struct platform_state *state,
+    struct platform *platform,
     const char *app_name,
     i32 start_x,
     i32 start_y,
@@ -31,16 +35,16 @@ void platform_startup(
     i32 start_height
 )
 {
-    LASSERT(state != NULL);
+    LASSERT(platform != NULL);
     LASSERT(app_name != NULL);
 
     LINFO("Initializing the Windows platform state");
 
-    struct windows_platform_state *windows_state = malloc(sizeof(struct windows_platform_state));
-    state->inner_state = windows_state;
+    struct platform_impl *windows_impl = malloc(sizeof(struct platform_impl));
+    platform->impl = windows_impl;
     
-    windows_state->instance = GetModuleHandle(0);
-    if (windows_state->instance == NULL) {
+    windows_impl->instance = GetModuleHandle(0);
+    if (windows_impl->instance == NULL) {
         LFATAL("Failed to fetch Windows instance");
         return;
     }
@@ -51,7 +55,7 @@ void platform_startup(
     win_info.lpfnWndProc = DefWindowProc;
     win_info.cbClsExtra = 0;
     win_info.cbWndExtra = 0;
-    win_info.hInstance = windows_state->instance;
+    win_info.hInstance = windows_impl->instance;
     win_info.hIcon = LoadIcon(NULL, IDI_APPLICATION); // Default icon
     win_info.hIconSm = LoadIcon(NULL, IDI_APPLICATION); // Default icon
     win_info.hCursor = LoadCursor(NULL, IDC_ARROW); // Default cursor
@@ -64,7 +68,7 @@ void platform_startup(
         return;
     }
 
-    windows_state->window = CreateWindowEx(
+    windows_impl->window = CreateWindowEx(
         0,
         class_name,
         app_name,
@@ -75,37 +79,33 @@ void platform_startup(
         start_height,
         NULL,
         NULL,
-        windows_state->instance,
+        windows_impl->instance,
         NULL
     );
 
-    if (windows_state->window == NULL) {
+    if (windows_impl->window == NULL) {
         LFATAL("Failed to create window on Windows Error code: %lu", GetLastError());
         return;
     }
 
-    ShowWindow(windows_state->window, SW_NORMAL);
-    UpdateWindow(windows_state->window);
+    ShowWindow(windows_impl->window, SW_NORMAL);
+    UpdateWindow(windows_impl->window);
 }
 
-void platform_shutdown(struct platform_state *state)
+void platform_shutdown(struct platform platform)
 {
-    LASSERT(state != NULL);
+    LASSERT(platform.impl != NULL);
 
     LINFO("Shutting down the Windows platform state");
 
-    struct windows_platform_state *windows_state = state->inner_state;
-    DestroyWindow(windows_state->window);
-    
-    free(state->inner_state);
+    DestroyWindow(platform.impl->window);
+
+    free(platform.impl);
 }
 
-b8 platform_poll_events(struct platform_state *state)
+b8 platform_poll_events(struct platform platform)
 { 
-    LASSERT(state != NULL);
-
-    struct windows_platform_state *windows_state = state->inner_state;
-    (void)windows_state;
+    LASSERT(platform.impl != NULL);
 
     MSG msg;
     while (GetMessage(&msg, NULL, 0, 0) > 0) {
@@ -127,7 +127,7 @@ void platform_print_color(
 
     // TODO: Color
     (void)color;
-    fprintf(file, "%s", string);
+    (void)fprintf(file, "%s", string);
 }
 
 void platform_debug_break(void)
@@ -178,25 +178,65 @@ void *platform_set_memory(void *dest, i32 value, u64 size)
 }
 
 struct mutex mutex_create(void)
-{
+{ 
     struct mutex mutex;
-    mutex.inner_mutex = NULL;
+    mutex.impl = NULL;
+
+    HANDLE mutex_handle = CreateMutex(NULL, false, NULL);
+    if (mutex_handle == NULL) {
+        LERROR("Failed to create Windows mutex: %lu", GetLastError());
+        return mutex;
+    }
+
+    struct mutex_impl *windows_impl = platform_allocate(sizeof(struct mutex_impl), true);
+    windows_impl->mutex = mutex_handle;
+    mutex.impl = windows_impl;
+
     return mutex;
 }
 
-void mutex_destroy(struct mutex *mutex)
+void mutex_destroy(struct mutex mutex)
 {
-    LASSERT(mutex != NULL);
+    LASSERT(mutex.impl != NULL);
+
+    b8 result = CloseHandle(mutex.impl->mutex);
+    if (!result) {
+        LERROR("Failed to destroy Windows mutex: %lu", GetLastError());
+    }
+
+    platform_free(mutex.impl, true);
 }
 
-void mutex_lock(struct mutex *mutex)
+void mutex_lock(struct mutex mutex)
 {
-    LASSERT(mutex != NULL);
+    LASSERT(mutex.impl != NULL);
+    
+    const DWORD timeout = INFINITE;
+    const DWORD result = WaitForSingleObject(mutex.impl->mutex, timeout);
+    switch (result) {
+    case WAIT_ABANDONED:
+        LERROR("The thread that owned this Windows mutex has terminated");
+        break;
+    case WAIT_TIMEOUT:
+        LERROR("Windows mutex lock has timed out! Amount of time was %lu", timeout);
+        break;
+    case WAIT_FAILED:
+        LERROR("Failed to lock Windows mutex: %lu", GetLastError());
+        break;
+    default: // success
+        break;
+    }
 }
 
-void mutex_unlock(struct mutex *mutex)
+void mutex_unlock(struct mutex mutex)
 {
-    LASSERT(mutex != NULL);
+    LASSERT(mutex.impl != NULL);
+
+    const b8 result = ReleaseMutex(mutex.impl->mutex);
+    if (!result) {
+        LERROR("Failed to release Windows mutex: %lu", GetLastError());
+        return;
+    }
 }
 
 #endif

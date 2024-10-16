@@ -8,7 +8,7 @@
 
 LAPI int real_main(void)
 {
-    LDEBUG("Compiler: %s, Platform: %s", LCOMPILER, LPLATFORM);
+    LINFO("Compiler: %s, Platform: %s", LCOMPILER, LPLATFORM);
     
     const i32 START_X = 640;
     const i32 START_Y = 360;
@@ -25,6 +25,7 @@ LAPI int real_main(void)
     struct dynarray array = dynarray_create(&alloc, sizeof(int));
     dynarray_push(&array, 120312);
     dynarray_get(&array, 1, ptr);
+    dynarray_destroy(&array);
     
     // Testing some mutex error stuff
     struct mutex mutex = mutex_create();

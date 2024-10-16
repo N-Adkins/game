@@ -8,8 +8,6 @@ struct logger GLOBAL_LOGGER;
 
 LAPI void logger_message(struct logger *logger, enum log_level level, const char *fmt, ...)
 {
-    // TODO - platform specific print for colors
-    
     if (level < logger->level) {
         return;
     }
