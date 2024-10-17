@@ -25,20 +25,18 @@ enum terminal_color {
 	TERMINAL_COLOR_GRAY,
 };
 
-typedef struct platform_impl platform_impl;
-
 /**
  * @brief Wrapper for internal platform state
  */
+typedef struct platform_impl platform_impl;
 struct platform {
 	platform_impl *impl;
 };
 
-typedef struct mutex_impl mutex_impl;
-
 /**
  * @brief Wrapper for internal platform mutex
  */
+typedef struct mutex_impl mutex_impl;
 struct mutex {
 	mutex_impl *impl;
 };
@@ -153,7 +151,24 @@ void *platform_set_memory(void *dest, i32 value, u64 size);
  * Mutex functions
  */
 
+/**
+ * @brief Creates a mutex (shocker)
+ */
 struct mutex mutex_create(void);
+
+/**
+ * @brief Destroys the mutex (shocker)
+ */
 void mutex_destroy(struct mutex mutex);
+
+/**
+ * @brief Locks the mutex in the current calling thread
+ *
+ * Infinite timeout lock, can deadlock on some platforms
+ */
 void mutex_lock(struct mutex mutex);
+
+/**
+ * @brief Releases the mutex from the current calling thread
+ */
 void mutex_unlock(struct mutex mutex);

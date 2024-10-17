@@ -12,8 +12,13 @@ if (NOT WIN32)
         -Wall -Wextra -Werror -fdiagnostics-color=always
     )
 
+    if (CMAKE_C_COMPILER_ID STREQUAL "Clang") 
+        message("Using clang, enabling more warnings on editor")
+        target_compile_options(editor PRIVATE ${LESS_CLANG_WARNINGS})
+    endif()
+
     if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-        message("Building in debug mode, enabling sanitizer")
+        message("Building in debug mode, enabling sanitizer on editor")
         target_compile_options(editor PRIVATE -fsanitize=address,undefined)
         target_link_options(editor PRIVATE -fsanitize=address,undefined)
     endif()

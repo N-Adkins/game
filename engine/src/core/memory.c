@@ -129,15 +129,15 @@ LAPI void allocator_dump_usage(struct allocator *allocator)
 
 		// This part is just for cleaner printing in the logger.
 		if (i != array_len - 1) {
-			offset += snprintf(buffer + offset,
-					   LARRAY_LENGTH(buffer),
-					   "  %s: %.2lf%s\n", tag_strings[i],
-					   amount, unit);
+			offset += (u64)snprintf(buffer + offset,
+						LARRAY_LENGTH(buffer),
+						"  %s: %.2lf%s\n",
+						tag_strings[i], amount, unit);
 		} else {
-			offset += snprintf(buffer + offset,
-					   LARRAY_LENGTH(buffer),
-					   "  %s: %.2lf%s", tag_strings[i],
-					   amount, unit);
+			offset += (u64)snprintf(buffer + offset,
+						LARRAY_LENGTH(buffer),
+						"  %s: %.2lf%s", tag_strings[i],
+						amount, unit);
 		}
 	}
 

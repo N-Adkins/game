@@ -30,9 +30,6 @@ LAPI void logger_message(struct logger *logger, enum log_level level,
 	case LOG_LEVEL_FATAL:
 		color = TERMINAL_COLOR_PURPLE;
 		break;
-	default:
-		color = TERMINAL_COLOR_GRAY;
-		break;
 	}
 
 	char buffer[LOG_MAX_LENGTH]; // please dont use all of this

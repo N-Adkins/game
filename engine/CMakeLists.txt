@@ -15,8 +15,13 @@ if (NOT WIN32)
         -Wall -Wformat -Wextra -Werror -fdiagnostics-color=always 
     )
 
-    if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-        message("Building in debug mode, enabling sanitizer")
+    if (CMAKE_C_COMPILER_ID STREQUAL "Clang") 
+        message("Using clang, enabling more warnings on engine")
+        target_compile_options(engine PRIVATE ${LESS_CLANG_WARNINGS})
+    endif()
+
+    if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+        message("Building in debug mode, enabling sanitizer on engine")
         target_compile_options(engine PRIVATE -fsanitize=address,undefined)
         target_link_options(engine PRIVATE -fsanitize=address,undefined)
     endif()

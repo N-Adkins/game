@@ -8,9 +8,9 @@
  * the logging system and attempt to cause a debug breakpoint, otherwise it will abort.
  */
 
+#include <core/logger.h>
 #include <platform/platform.h>
 #include <defines.h>
-#include "logger.h"
 
 // clang-format off
 

@@ -60,12 +60,12 @@ void platform_startup(struct platform *platform, const char *app_name,
 		return;
 	}
 
-	linux_impl->window =
-		XCreateSimpleWindow(linux_impl->display, root_window, start_x,
-				    start_y, start_width, start_height,
-				    0, // no border
-				    BlackPixel(linux_impl->display, 0),
-				    BlackPixel(linux_impl->display, 0));
+	linux_impl->window = XCreateSimpleWindow(
+		linux_impl->display, root_window, start_x, start_y,
+		(u32)start_width, (u32)start_height,
+		0, // no border
+		BlackPixel(linux_impl->display, 0),
+		BlackPixel(linux_impl->display, 0));
 	if (linux_impl->window <= 0) {
 		LFATAL("Failed to create X11 window");
 		return;
@@ -174,9 +174,6 @@ void platform_print_color(FILE *file, const char *string,
 	case TERMINAL_COLOR_GRAY:
 		color_code = "\e[0;37m";
 		break;
-	default:
-		color_code = "";
-		break;
 	}
 
 	(void)fputs(color_code, file);
@@ -252,7 +249,7 @@ struct mutex mutex_create(void)
 		LERROR("Failed to initialize pthread mutex attributes, falling back to default: %s",
 		       strerror(err));
 		attr_ptr = NULL;
-	};
+	}
 
 	err = pthread_mutex_init(&linux_impl->mutex, attr_ptr);
 	if (err) {
