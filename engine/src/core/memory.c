@@ -19,7 +19,7 @@ LAPI void allocator_destroy(struct allocator *allocator)
 	LASSERT(allocator != NULL);
 
 	if (allocator->total_bytes > 0) {
-		LWARN("Memory has leaked, 0x%04llX bytes in use at allocator destruction",
+		LWARN("Memory has leaked, 0x%04llX bytes in use at allocator destruction, dumping usage",
 		      allocator->total_bytes);
 		allocator_dump_usage(allocator);
 	}

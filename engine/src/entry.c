@@ -22,7 +22,6 @@ LAPI int real_main(void)
 	int *ptr = allocator_alloc(&alloc, sizeof(int), MEMORY_TAG_UNKNOWN);
 	allocator_free(&alloc, ptr, sizeof(int), MEMORY_TAG_UNKNOWN);
 
-	LDEBUG("Alloc: %p", &alloc);
 	struct dynarray array = dynarray_create(&alloc, sizeof(int));
 	dynarray_push(&array, 120312);
 	dynarray_get(&array, 1, ptr);
