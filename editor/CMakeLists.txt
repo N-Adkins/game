@@ -16,11 +16,11 @@ if (NOT WIN32)
         message("Using clang, enabling more warnings on editor")
         target_compile_options(editor PRIVATE ${LESS_CLANG_WARNINGS})
     endif()
-
-    if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-        message("Building in debug mode, enabling sanitizer on editor")
-        target_compile_options(editor PRIVATE -fsanitize=address,undefined)
-        target_link_options(editor PRIVATE -fsanitize=address,undefined)
+    
+    if (DEFINED LESS_SANITIZE)
+        message("Enabling sanitizer on editor")
+        target_compile_options(engine PRIVATE -fsanitize=address,undefined)
+        target_link_options(engine PRIVATE -fsanitize=address,undefined)
     endif()
 endif()
 

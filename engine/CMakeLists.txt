@@ -20,12 +20,11 @@ if (NOT WIN32)
         target_compile_options(engine PRIVATE ${LESS_CLANG_WARNINGS})
     endif()
 
-    if (CMAKE_BUILD_TYPE STREQUAL "Debug")
-        message("Building in debug mode, enabling sanitizer on engine")
+    if (DEFINED LESS_SANITIZE)
+        message("Enabling sanitizer on engine")
         target_compile_options(engine PRIVATE -fsanitize=address,undefined)
         target_link_options(engine PRIVATE -fsanitize=address,undefined)
     endif()
-
 endif()
 
 add_subdirectory(src)
