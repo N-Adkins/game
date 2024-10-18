@@ -20,7 +20,7 @@ if (NOT WIN32)
         target_compile_options(engine PRIVATE ${LESS_CLANG_WARNINGS})
     endif()
 
-    if (DEFINED LESS_SANITIZE)
+    if (LESS_SANITIZE)
         message("Enabling sanitizer on engine")
         target_compile_options(engine PRIVATE -fsanitize=address,undefined)
         target_link_options(engine PRIVATE -fsanitize=address,undefined)

@@ -25,7 +25,7 @@ LAPI int real_main(void)
 	struct dynarray array = dynarray_create(&alloc, sizeof(int));
 	dynarray_push(&array, 120312);
 	dynarray_get(&array, 1, ptr);
-	dynarray_destroy(&array);
+	//dynarray_destroy(&array);
 
 	// Testing some mutex error stuff
 	struct mutex mutex = mutex_create();
