@@ -87,8 +87,8 @@ LAPI void dynarray_push_ptr(struct dynarray *array, const void *value)
 	// Must cast to char pointer to do arithmetic
 	char *char_array = array->values;
 	allocator_copy_memory(array->allocator,
-			      char_array + (array->stride * array->length), value,
-			      array->stride);
+			      char_array + (array->stride * array->length),
+			      value, array->stride);
 
 	array->length++;
 }

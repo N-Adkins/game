@@ -3,8 +3,38 @@
 #include <core/assert.h>
 #include <core/memory.h>
 #include <core/logger.h>
+#include <containers/bintree.h>
 #include <containers/dynarray.h>
 #include <platform/platform.h>
+#include <defines.h>
+
+struct int_node {
+	int value;
+	struct bintree_node node;
+};
+
+i8 int_compare(const struct bintree_node *left,
+	       const struct bintree_node *right)
+{
+	const struct int_node *left_int =
+		LCONTAINER_OF(left, const struct int_node, node);
+	const struct int_node *right_int =
+		LCONTAINER_OF(right, const struct int_node, node);
+	if (left_int->value > right_int->value) {
+		return -1;
+	}
+	if (left_int->value < right_int->value) {
+		return 1;
+	}
+	return 0;
+}
+
+void int_free(struct allocator *allocator, struct bintree_node *node)
+{
+	struct int_node *int_node = LCONTAINER_OF(node, struct int_node, node);
+	allocator_free(allocator, int_node, sizeof(struct int_node),
+		       MEMORY_TAG_UNKNOWN);
+}
 
 LAPI int real_main(void)
 {
@@ -25,7 +55,23 @@ LAPI int real_main(void)
 	struct dynarray array = dynarray_create(&alloc, sizeof(int));
 	dynarray_push(&array, 120312);
 	dynarray_get(&array, 1, ptr);
-	//dynarray_destroy(&array);
+	dynarray_destroy(&array);
+
+	struct bintree tree = bintree_create(&alloc, int_compare, int_free);
+
+	for (int i = 100; i > 0; i--) {
+		struct int_node *node = allocator_alloc(
+			&alloc, sizeof(struct int_node), MEMORY_TAG_UNKNOWN);
+        node->value = i;
+		bintree_insert(&tree, &node->node);
+	}
+	bintree_destroy(&tree);
+
+    struct int_node dummy_node = {
+        .value = 86,
+    };
+
+    LINFO("Contains 86: %d", bintree_contains(&tree, &dummy_node.node));
 
 	// Testing some mutex error stuff
 	struct mutex mutex = mutex_create();

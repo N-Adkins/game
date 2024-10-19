@@ -94,8 +94,8 @@ void platform_startup(struct platform *platform, const char *app_name,
 		LFATAL("Failed to set X11 WM protocols");
 		return;
 	}
-    
-    // Set window name to app_name
+
+	// Set window name to app_name
 	const i32 BYTE_SIZE = 8;
 	if (!XChangeProperty(
 		    linux_impl->display, linux_impl->window,

@@ -9,6 +9,7 @@
  * of the definitions for the current platform and compiler.
  */
 
+#include <stddef.h>
 #include <stdint.h>
 
 typedef uint8_t u8;
@@ -173,3 +174,24 @@ typedef _Bool b8;
  */
 #define LUNIQUE_ID(num) \
 	LCONCAT(_unique_id_, LCONCAT(__LINE__, LCONCAT(_ver_, num)))
+
+// clang-format off
+
+/**
+ * @brief Returns parent pointer to pointer of child of struct
+ *
+ * This is only type-checked -time if statement expressions are 
+ * supported by the compiler being used
+ */
+#ifdef LCOMPILER_CLANG_OR_GCC // Statement expressions supported, type-safe
+#define LCONTAINER_OF(ptr, type, member)                                        \
+    ({                                                                          \
+        const LTYPEOF(((type *)0)->member) *LUNIQUE_ID(0) = (ptr);              \
+        (type *)((char *)LUNIQUE_ID(0) - offsetof(type, member));               \
+    })
+#else
+#define LCONTAINER_OF(ptr, type, member) \
+    ((type *) ((char *)(ptr) - offsetof(type, member)))
+#endif
+
+// clang-format on
