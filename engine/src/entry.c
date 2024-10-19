@@ -13,16 +13,6 @@ struct int_node {
 	struct bintree_node node;
 };
 
-void int_swap(struct bintree_node *left, struct bintree_node *right)
-{
-	struct int_node *left_int = LCONTAINER_OF(left, struct int_node, node);
-	struct int_node *right_int =
-		LCONTAINER_OF(right, struct int_node, node);
-	int temp = left_int->value;
-	left_int->value = right_int->value;
-	right_int->value = temp;
-}
-
 i8 int_compare(const struct bintree_node *left,
 	       const struct bintree_node *right)
 {
@@ -68,20 +58,19 @@ LAPI int real_main(void)
 	dynarray_destroy(&array);
 
 	struct bintree tree =
-		bintree_create(&alloc, int_swap, int_compare, int_free);
-	for (int i = 40000; i > 0; i--) {
+		bintree_create(&alloc, int_compare, int_free);
+	for (int i = 328238; i > 0; i--) {
 		struct int_node *node = allocator_alloc(
 			&alloc, sizeof(struct int_node), MEMORY_TAG_ARRAY);
 		node->value = i;
 		bintree_insert(&tree, &node->node);
 	}
 	struct int_node dummy_node = {
-		.value = 9982,
+		.value = 2812,
 	};
+    LINFO("Contains 2812: %d", bintree_contains(&tree, &dummy_node.node));
 	bintree_delete(&tree, &dummy_node.node);
-	dummy_node.value = 2137;
-	bintree_delete(&tree, &dummy_node.node);
-	LINFO("Contains 27: %d", bintree_contains(&tree, &dummy_node.node));
+	LINFO("Contains 2812: %d", bintree_contains(&tree, &dummy_node.node));
 	bintree_destroy(&tree);
 
 	// Testing some mutex error stuff

@@ -13,18 +13,8 @@
 struct bintree_node {
 	struct bintree_node *_left;
 	struct bintree_node *_right;
-	struct bintree_node *_parent; // we may get rid of this later on
-	b8 _color;
-	b8 _nil;
+    u64 _weight;
 };
-
-/**
- * @brief Swapping function for binary tree nodes
- *
- * This function must swap the internal state between the two passed nodes.
- */
-typedef void (*pfn_bintree_swap)(struct bintree_node *left,
-				 struct bintree_node *right);
 
 /**
  * @brief Comparison function for binary tree nodes
@@ -49,9 +39,9 @@ typedef void (*pfn_bintree_free)(struct allocator *allocator,
  * @brief Binary search tree
  *
  * This has no set implementation, so don't depend on one. Currently it
- * is a red-black tree. The usage of this struct relies on LCONTAINER_OF.
- * To make a node type, you need to embed the bintree_node type into the
- * desired node type.
+ * is a treap. The usage of this struct relies on LCONTAINER_OF. To make 
+ * a node type, you need to embed the bintree_node type into the desired 
+ * node type.
  *
  * Example:
  *
@@ -62,7 +52,6 @@ typedef void (*pfn_bintree_free)(struct allocator *allocator,
  */
 struct bintree {
 	struct allocator *allocator;
-	pfn_bintree_swap swap_func;
 	pfn_bintree_compare compare_func;
 	pfn_bintree_free free_func;
 	struct bintree_node *root;
@@ -74,7 +63,6 @@ struct bintree {
  * This function does not allocate memory.
  */
 LAPI struct bintree bintree_create(struct allocator *allocator,
-				   pfn_bintree_swap swap_func,
 				   pfn_bintree_compare compare_func,
 				   pfn_bintree_free free_func);
 
@@ -88,6 +76,8 @@ LAPI void bintree_destroy(struct bintree *tree);
  *
  * Note that the passed pointer is directly used in the tree, hence
  * no const qualification.
+ *
+ * Guaranteed average case O(logn)
  */
 LAPI void bintree_insert(struct bintree *tree, struct bintree_node *node);
 
@@ -96,11 +86,15 @@ LAPI void bintree_insert(struct bintree *tree, struct bintree_node *node);
  *
  * This node is not inserted into the tree in any way, it's just the only
  * way to generically check nodes using the check_func.
+ *
+ * Guaranteed average case O(logn)
  */
 LAPI void bintree_delete(struct bintree *tree, const struct bintree_node *node);
 
 /**
  * @brief Checks if bintree contains the passed node's equivalent
+ *
+ * Guaranteed average case O(logn)
  *
  * @returns frue if the tree has the value, false if it doesn't
  */
