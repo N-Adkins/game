@@ -58,20 +58,17 @@ LAPI int real_main(void)
 	dynarray_destroy(&array);
 
 	struct bintree tree = bintree_create(&alloc, int_compare, int_free);
-
 	for (int i = 100; i > 0; i--) {
 		struct int_node *node = allocator_alloc(
 			&alloc, sizeof(struct int_node), MEMORY_TAG_UNKNOWN);
-        node->value = i;
+		node->value = i;
 		bintree_insert(&tree, &node->node);
-	}
-	bintree_destroy(&tree);
-
-    struct int_node dummy_node = {
-        .value = 86,
-    };
-
-    LINFO("Contains 86: %d", bintree_contains(&tree, &dummy_node.node));
+	}	
+	struct int_node dummy_node = {
+		.value = 99,
+	};
+	LINFO("Contains 99: %d", bintree_contains(&tree, &dummy_node.node));
+    bintree_destroy(&tree);
 
 	// Testing some mutex error stuff
 	struct mutex mutex = mutex_create();

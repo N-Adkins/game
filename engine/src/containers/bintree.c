@@ -297,6 +297,18 @@ static void bintree_fix_after_delete(struct bintree *tree,
 	}
 }
 
+void bintree_destroy_node(struct bintree *tree, struct bintree_node *node)
+{
+    if (node == NULL) {
+        return;
+    }
+
+    bintree_destroy_node(tree, node->_left);
+    bintree_destroy_node(tree, node->_right);
+
+    tree->free_func(tree->allocator, node);
+}
+
 /**
  * Actual bintree interface
  */
@@ -319,7 +331,7 @@ LAPI struct bintree bintree_create(struct allocator *allocator,
 
 LAPI void bintree_destroy(struct bintree *tree)
 {
-	(void)tree;
+	bintree_destroy_node(tree, tree->root);
 }
 
 LAPI void bintree_insert(struct bintree *tree, struct bintree_node *node)
@@ -334,7 +346,7 @@ LAPI void bintree_insert(struct bintree *tree, struct bintree_node *node)
 	while (iter != NULL) {
 		parent = iter;
 
-		cmp = tree->compare_func(node, iter);
+		cmp = tree->compare_func(iter, node);
 		if (cmp == -1) {
 			iter = iter->_left;
 		} else if (cmp == 1) {
@@ -352,7 +364,7 @@ LAPI void bintree_insert(struct bintree *tree, struct bintree_node *node)
 	node->_nil = false;
 	if (parent == NULL) {
 		tree->root = node;
-	} else if (cmp == 1) {
+	} else if (cmp == -1) {
 		parent->_left = node;
 	} else {
 		parent->_right = node;
@@ -367,7 +379,7 @@ LAPI void bintree_delete(struct bintree *tree, const struct bintree_node *node)
 	struct bintree_node *iter = tree->root;
 	i8 cmp = 0;
 
-	while (iter != NULL && (cmp = tree->compare_func(node, iter)) != 0) {
+	while (iter != NULL && (cmp = tree->compare_func(iter, node)) != 0) {
 		if (cmp == -1) {
 			iter = iter->_left;
 		} else {
@@ -416,9 +428,9 @@ LAPI b8 bintree_contains(struct bintree *tree, const struct bintree_node *node)
 
 	while (iter != NULL) {
 		const i8 cmp = tree->compare_func(iter, node);
-		if (cmp == 1) {
+		if (cmp == -1) {
 			iter = iter->_left;
-		} else if (cmp == -1) {
+		} else if (cmp == 1) {
 			iter = iter->_right;
 		} else { // equal
 			return true;
