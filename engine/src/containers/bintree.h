@@ -18,6 +18,11 @@ struct bintree_node {
 	b8 _nil;
 };
 
+/**
+ * @brief Swapping function for binary tree nodes
+ *
+ * This function must swap the internal state between the two passed nodes.
+ */
 typedef void (*pfn_bintree_swap)(struct bintree_node *left,
 				 struct bintree_node *right);
 
