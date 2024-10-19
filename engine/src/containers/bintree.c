@@ -73,7 +73,7 @@ static struct bintree_node *bintree_insert_node(struct bintree *tree, struct bin
 static struct bintree_node *bintree_delete_node(struct bintree *tree, struct bintree_node *root, const struct bintree_node *node)
 {
     if (root == NULL) {
-        return root;
+        return NULL;
     }
     
     i8 cmp = tree->compare_func(root, node);
@@ -94,7 +94,7 @@ static struct bintree_node *bintree_delete_node(struct bintree *tree, struct bin
         root->_left = bintree_delete_node(tree, root->_left, node);
     } else {
         root = bintree_right_rotate(root);
-        root->_left = bintree_delete_node(tree, root->_right, node);
+        root->_right = bintree_delete_node(tree, root->_right, node);
     }
 
     return root;
