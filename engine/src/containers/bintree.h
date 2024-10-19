@@ -18,6 +18,8 @@ struct bintree_node {
 	b8 _nil;
 };
 
+typedef void (*pfn_bintree_swap)(struct bintree_node *left, struct bintree_node *right);
+
 /**
  * @brief Comparison function for binary tree nodes
  *
@@ -54,15 +56,46 @@ typedef void (*pfn_bintree_free)(struct allocator *allocator,
  */
 struct bintree {
 	struct allocator *allocator;
+    pfn_bintree_swap swap_func;
 	pfn_bintree_compare compare_func;
 	pfn_bintree_free free_func;
 	struct bintree_node *root;
 };
 
+/**
+ * @brief Creates binary search tree
+ *
+ * This function does not allocate memory.
+ */
 LAPI struct bintree bintree_create(struct allocator *allocator,
+                   pfn_bintree_swap swap_func,
 				   pfn_bintree_compare compare_func,
 				   pfn_bintree_free free_func);
+
+/**
+ * @brief Destroys binary search tree
+ */
 LAPI void bintree_destroy(struct bintree *tree);
+
+/**
+ * @brief Inserts the passed node into the binary search tree
+ *
+ * Note that the passed pointer is directly used in the tree, hence
+ * no const qualification.
+ */
 LAPI void bintree_insert(struct bintree *tree, struct bintree_node *node);
+
+/**
+ * @brief Deletes the passed node's equivalent from the binary search tree
+ *
+ * This node is not inserted into the tree in any way, it's just the only
+ * way to generically check nodes using the check_func.
+ */
 LAPI void bintree_delete(struct bintree *tree, const struct bintree_node *node);
+
+/**
+ * @brief Checks if bintree contains the passed node's equivalent
+ *
+ * @returns frue if the tree has the value, false if it doesn't
+ */
 LAPI b8 bintree_contains(struct bintree *tree, const struct bintree_node *node);

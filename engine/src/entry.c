@@ -13,6 +13,17 @@ struct int_node {
 	struct bintree_node node;
 };
 
+void int_swap(struct bintree_node *left, struct bintree_node *right)
+{
+    struct int_node *left_int =
+		LCONTAINER_OF(left, struct int_node, node);
+	struct int_node *right_int =
+		LCONTAINER_OF(right, struct int_node, node);
+    int temp = left_int->value;
+    left_int->value = right_int->value;
+    right_int->value = temp;
+}
+
 i8 int_compare(const struct bintree_node *left,
 	       const struct bintree_node *right)
 {
@@ -33,7 +44,7 @@ void int_free(struct allocator *allocator, struct bintree_node *node)
 {
 	struct int_node *int_node = LCONTAINER_OF(node, struct int_node, node);
 	allocator_free(allocator, int_node, sizeof(struct int_node),
-		       MEMORY_TAG_UNKNOWN);
+		       MEMORY_TAG_ARRAY);
 }
 
 LAPI int real_main(void)
@@ -57,16 +68,17 @@ LAPI int real_main(void)
 	dynarray_get(&array, 1, ptr);
 	dynarray_destroy(&array);
 
-	struct bintree tree = bintree_create(&alloc, int_compare, int_free);
+	struct bintree tree = bintree_create(&alloc, int_swap, int_compare, int_free);
 	for (int i = 100; i > 0; i--) {
 		struct int_node *node = allocator_alloc(
-			&alloc, sizeof(struct int_node), MEMORY_TAG_UNKNOWN);
+			&alloc, sizeof(struct int_node), MEMORY_TAG_ARRAY);
 		node->value = i;
 		bintree_insert(&tree, &node->node);
-	}	
+	}
 	struct int_node dummy_node = {
 		.value = 99,
 	};
+    bintree_delete(&tree, &dummy_node.node);
 	LINFO("Contains 99: %d", bintree_contains(&tree, &dummy_node.node));
     bintree_destroy(&tree);
 

@@ -160,13 +160,17 @@ struct bintree_node *bintree_delete_zero_or_one_child(struct bintree *tree,
 	LASSERT(node != NULL);
 
 	if (node->_left != NULL) {
-		bintree_replace_child(tree, node->_parent, node, node->_left);
-		return node->_left;
+        struct bintree_node *left = node->_left;
+		bintree_replace_child(tree, node->_parent, node, left);
+        tree->free_func(tree->allocator, node);
+		return left;
 	}
 
 	if (node->_right != NULL) {
-		bintree_replace_child(tree, node->_parent, node, node->_right);
-		return node->_right;
+        struct bintree_node *right = node->_right;
+		bintree_replace_child(tree, node->_parent, node, right);
+        tree->free_func(tree->allocator, node);
+		return right;
 	}
 
 	if (node->_color == BINTREE_BLACK) {
@@ -186,6 +190,7 @@ static struct bintree_node *bintree_find_min(struct bintree_node *node)
 	while (node->_left != NULL) {
 		node = node->_left;
 	}
+
 	return node;
 }
 
@@ -314,15 +319,18 @@ void bintree_destroy_node(struct bintree *tree, struct bintree_node *node)
  */
 
 LAPI struct bintree bintree_create(struct allocator *allocator,
+                   pfn_bintree_swap swap_func,
 				   pfn_bintree_compare compare_func,
 				   pfn_bintree_free free_func)
 {
 	LASSERT(allocator != NULL);
+    LASSERT(swap_func != NULL);
 	LASSERT(compare_func != NULL);
 	LASSERT(free_func != NULL);
 
 	struct bintree tree;
 	tree.allocator = allocator;
+    tree.swap_func = swap_func;
 	tree.compare_func = compare_func;
 	tree.free_func = free_func;
 	tree.root = NULL;
@@ -399,25 +407,22 @@ LAPI void bintree_delete(struct bintree *tree, const struct bintree_node *node)
 	if (iter->_left == NULL || iter->_right == NULL) {
 		moved_up = bintree_delete_zero_or_one_child(tree, iter);
 		deleted_color = iter->_color;
-	}
-
-	else {
+	} else {
 		struct bintree_node *inorder_successor =
 			bintree_find_min(iter->_right);
-		struct bintree_node old_successor = *inorder_successor;
-		*inorder_successor = *iter;
-		deleted_color = iter->_color;
-		*iter = old_successor;
+        tree->swap_func(iter, inorder_successor);
 		moved_up = bintree_delete_zero_or_one_child(tree, iter);
+        deleted_color = inorder_successor->_color;
+        tree->free_func(tree->allocator, inorder_successor);
 	}
 
 	if (deleted_color == BINTREE_BLACK) {
 		bintree_fix_after_delete(tree, moved_up);
 
 		if (moved_up->_nil) {
-			tree->free_func(tree->allocator, moved_up);
-			bintree_replace_child(tree, moved_up->_parent, moved_up,
-					      NULL);
+		    bintree_replace_child(tree, moved_up->_parent, moved_up,
+			    NULL);
+            tree->free_func(tree->allocator, moved_up);
 		}
 	}
 }
