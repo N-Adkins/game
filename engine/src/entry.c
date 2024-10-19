@@ -69,17 +69,17 @@ LAPI int real_main(void)
 
 	struct bintree tree =
 		bintree_create(&alloc, int_swap, int_compare, int_free);
-	for (int i = 10000; i > 0; i--) {
+	for (int i = 40000; i > 0; i--) {
 		struct int_node *node = allocator_alloc(
 			&alloc, sizeof(struct int_node), MEMORY_TAG_ARRAY);
 		node->value = i;
 		bintree_insert(&tree, &node->node);
 	}
 	struct int_node dummy_node = {
-		.value = 99,
+		.value = 9982,
 	};
 	bintree_delete(&tree, &dummy_node.node);
-	dummy_node.value = 27;
+	dummy_node.value = 2137;
 	bintree_delete(&tree, &dummy_node.node);
 	LINFO("Contains 27: %d", bintree_contains(&tree, &dummy_node.node));
 	bintree_destroy(&tree);
