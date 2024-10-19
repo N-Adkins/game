@@ -30,6 +30,7 @@ LAPI void allocator_destroy(struct allocator *allocator)
 		tag_total += allocator->tag_bytes[i];
 	}
 	LASSERT(allocator->total_bytes == tag_total);
+	(void)tag_total;
 }
 
 LAPI void *allocator_alloc(struct allocator *allocator, u64 size,
@@ -69,6 +70,7 @@ LAPI void *allocator_zero_memory(struct allocator *allocator, void *ptr,
 				 u64 size)
 {
 	LASSERT(allocator != NULL);
+	(void)allocator;
 
 	return platform_zero_memory(ptr, size);
 }
@@ -78,6 +80,7 @@ LAPI void *allocator_copy_memory(struct allocator *allocator,
 				 const void *restrict source, u64 size)
 {
 	LASSERT(allocator != NULL);
+	(void)allocator;
 
 	return platform_copy_memory(dest, source, size);
 }
@@ -86,6 +89,7 @@ LAPI void *allocator_set_memory(struct allocator *allocator, void *dest,
 				i32 value, u64 size)
 {
 	LASSERT(allocator != NULL);
+	(void)allocator;
 
 	return platform_set_memory(dest, value, size);
 }
@@ -93,6 +97,7 @@ LAPI void *allocator_set_memory(struct allocator *allocator, void *dest,
 LAPI void allocator_dump_usage(struct allocator *allocator)
 {
 	LASSERT(allocator != NULL);
+	(void)allocator;
 
 	const char *tag_strings[] = {
 		"UNKNOWN  ",

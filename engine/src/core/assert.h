@@ -14,6 +14,8 @@
 
 // clang-format off
 
+#ifdef LENGINE_DEBUG
+
 #define LASSERT(expr)                                                           \
 	do {                                                                        \
 		if (!(expr)) {                                                          \
@@ -29,6 +31,11 @@
 			platform_debug_break();                                             \
 		}                                                                       \
 	} while (0)
+
+#else 
+#define LASSERT(expr) ((void)0)
+#define LASSERT_MSG(expr, msg) ((void)0)
+#endif
 
 /**
  * @brief Errors at compile time if expr is false at compile time

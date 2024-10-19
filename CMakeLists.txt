@@ -5,13 +5,6 @@ project(
     LANGUAGES C
 )
 
-if (NOT WIN32)
-    if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-        message("Building in debug mode, enabling clang-tidy")
-        set(CMAKE_C_CLANG_TIDY clang-tidy --quiet --use-color -warnings-as-errors=*)
-    endif()
-endif()
-
 set(CMAKE_C_STANDARD 99)
 set(CMAKE_EXPORT_COMPILE_COMMANDS true)
 
@@ -38,3 +31,15 @@ set(LESS_CLANG_OPTIONS
 
 add_subdirectory(editor)
 add_subdirectory(engine)
+
+if (NOT WIN32)
+    if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+        message("Building in debug mode, enabling clang-tidy")
+        set(CMAKE_C_CLANG_TIDY clang-tidy --quiet --use-color -warnings-as-errors=*)
+    endif()
+endif()
+
+if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+    target_compile_definitions(engine PRIVATE LENGINE_DEBUG)
+    target_compile_definitions(editor PRIVATE LENGINE_DEBUG)
+endif()

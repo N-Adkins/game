@@ -13,7 +13,7 @@
 struct bintree_node {
 	struct bintree_node *_left;
 	struct bintree_node *_right;
-    u64 _weight;
+	u32 _weight;
 };
 
 /**
@@ -55,6 +55,7 @@ struct bintree {
 	pfn_bintree_compare compare_func;
 	pfn_bintree_free free_func;
 	struct bintree_node *root;
+	u64 size;
 };
 
 /**

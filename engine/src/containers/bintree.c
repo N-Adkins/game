@@ -10,34 +10,36 @@
  */
 static struct bintree_node *bintree_right_rotate(struct bintree_node *node)
 {
-    struct bintree_node *left = node->_left;
-    struct bintree_node *subtree = left->_right;
-    left->_right = node;
-    node->_left = subtree;
-    return left;
+	struct bintree_node *left = node->_left;
+	struct bintree_node *subtree = left->_right;
+	left->_right = node;
+	node->_left = subtree;
+	return left;
 }
 
 static struct bintree_node *bintree_left_rotate(struct bintree_node *node)
 {
-    struct bintree_node *right = node->_right;
-    struct bintree_node *subtree = right->_left;
-    right->_left = node;
-    node->_right = subtree;
-    return right;
+	struct bintree_node *right = node->_right;
+	struct bintree_node *subtree = right->_left;
+	right->_left = node;
+	node->_right = subtree;
+	return right;
 }
 
-static u64 bintree_hash_ptr(const struct bintree_node *node)
+static u32 bintree_hash_ptr(const struct bintree_node *node)
 {
-    u64 hash = (u64)(uintptr_t)node;
-    hash ^= hash >> 33;
-    hash *= (u64)0xff51afd7ed558ccd;
-    hash ^= hash >> 33;
-    hash *= (u64)0xc4ceb9fe1a85ec53;
-    hash ^= hash >> 33;
-    return hash;
+	u32 hash = (u32)((u64)(uintptr_t)(node) >> 32) ^
+		   (u32)((u64)(uintptr_t)(node) & 0xFFFFFFFF);
+	hash ^= hash >> 16;
+	hash *= (u32)0x45d9f3b;
+	hash ^= hash >> 16;
+	hash *= (u32)0x45d9f3b;
+	hash ^= hash >> 16;
+	return hash;
 }
 
-static void bintree_destroy_node(struct bintree *tree, struct bintree_node *node)
+static void bintree_destroy_node(struct bintree *tree,
+				 struct bintree_node *node)
 {
 	if (node == NULL) {
 		return;
@@ -49,55 +51,61 @@ static void bintree_destroy_node(struct bintree *tree, struct bintree_node *node
 	tree->free_func(tree->allocator, node);
 }
 
-static struct bintree_node *bintree_insert_node(struct bintree *tree, struct bintree_node *root, struct bintree_node *node)
+static struct bintree_node *bintree_insert_node(struct bintree *tree,
+						struct bintree_node *root,
+						struct bintree_node *node)
 {
-    if (root == NULL) {
-        return node;
-    }
+	if (root == NULL) {
+		return node;
+	}
 
-    if (tree->compare_func(node, root) >= 0) {
-        root->_left = bintree_insert_node(tree, root->_left, node);
-        if (root->_left->_weight > root->_weight) {
-            root = bintree_right_rotate(root);
-        }
-    } else {
-        root->_right = bintree_insert_node(tree, root->_right, node);
-        if (root->_right->_weight > root->_weight) {
-            root = bintree_left_rotate(root);
-        }
-    }
-    
-    return root;
+	if (tree->compare_func(node, root) >= 0) {
+		root->_left = bintree_insert_node(tree, root->_left, node);
+		if (root->_left->_weight > root->_weight) {
+			root = bintree_right_rotate(root);
+		}
+	} else {
+		root->_right = bintree_insert_node(tree, root->_right, node);
+		if (root->_right->_weight > root->_weight) {
+			root = bintree_left_rotate(root);
+		}
+	}
+
+	return root;
 }
 
-static struct bintree_node *bintree_delete_node(struct bintree *tree, struct bintree_node *root, const struct bintree_node *node)
+static struct bintree_node *bintree_delete_node(struct bintree *tree,
+						struct bintree_node *root,
+						const struct bintree_node *node)
 {
-    if (root == NULL) {
-        return NULL;
-    }
-    
-    i8 cmp = tree->compare_func(root, node);
-    if (cmp == -1) {
-        root->_left = bintree_delete_node(tree, root->_left, node);
-    } else if (cmp == 1) {
-        root->_right = bintree_delete_node(tree, root->_right, node);
-    } else if (root->_left == NULL) {
-        struct bintree_node *temp = root->_right;
-        tree->free_func(tree->allocator, root);
-        root = temp;
-    } else if (root->_right == NULL) {
-        struct bintree_node *temp = root->_left;
-        tree->free_func(tree->allocator, root);
-        root = temp;
-    } else if (root->_left->_weight < root->_right->_weight) {
-        root = bintree_left_rotate(root);
-        root->_left = bintree_delete_node(tree, root->_left, node);
-    } else {
-        root = bintree_right_rotate(root);
-        root->_right = bintree_delete_node(tree, root->_right, node);
-    }
+	if (root == NULL) {
+		return NULL;
+	}
 
-    return root;
+	i8 cmp = tree->compare_func(root, node);
+	if (cmp == -1) {
+		root->_left = bintree_delete_node(tree, root->_left, node);
+	} else if (cmp == 1) {
+		root->_right = bintree_delete_node(tree, root->_right, node);
+	} else if (root->_left == NULL) {
+		struct bintree_node *temp = root->_right;
+		tree->free_func(tree->allocator, root);
+		tree->size -= 1;
+		root = temp;
+	} else if (root->_right == NULL) {
+		struct bintree_node *temp = root->_left;
+		tree->free_func(tree->allocator, root);
+		tree->size -= 1;
+		root = temp;
+	} else if (root->_left->_weight < root->_right->_weight) {
+		root = bintree_left_rotate(root);
+		root->_left = bintree_delete_node(tree, root->_left, node);
+	} else {
+		root = bintree_right_rotate(root);
+		root->_right = bintree_delete_node(tree, root->_right, node);
+	}
+
+	return root;
 }
 
 /**
@@ -116,12 +124,13 @@ LAPI struct bintree bintree_create(struct allocator *allocator,
 	tree.compare_func = compare_func;
 	tree.free_func = free_func;
 	tree.root = NULL;
+	tree.size = 0;
 	return tree;
 }
 
 LAPI void bintree_destroy(struct bintree *tree)
 {
-    LASSERT(tree != NULL);
+	LASSERT(tree != NULL);
 
 	bintree_destroy_node(tree, tree->root);
 }
@@ -131,25 +140,27 @@ LAPI void bintree_insert(struct bintree *tree, struct bintree_node *node)
 	LASSERT(tree != NULL);
 	LASSERT(node != NULL);
 
-    node->_left = NULL;
-    node->_right = NULL;
-    node->_weight = bintree_hash_ptr(node);
-    
-    tree->root = bintree_insert_node(tree, tree->root, node);
+	node->_left = NULL;
+	node->_right = NULL;
+	node->_weight = bintree_hash_ptr(node);
+
+	tree->root = bintree_insert_node(tree, tree->root, node);
+
+	tree->size += 1;
 }
 
 LAPI void bintree_delete(struct bintree *tree, const struct bintree_node *node)
 {
-    LASSERT(tree != NULL);
-    LASSERT(node != NULL);
+	LASSERT(tree != NULL);
+	LASSERT(node != NULL);
 
-    tree->root = bintree_delete_node(tree, tree->root, node);
+	tree->root = bintree_delete_node(tree, tree->root, node);
 }
 
 LAPI b8 bintree_contains(struct bintree *tree, const struct bintree_node *node)
 {
-    LASSERT(tree != NULL);
-    LASSERT(node != NULL);
+	LASSERT(tree != NULL);
+	LASSERT(node != NULL);
 
 	struct bintree_node *iter = tree->root;
 
