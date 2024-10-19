@@ -18,7 +18,8 @@ struct bintree_node {
 	b8 _nil;
 };
 
-typedef void (*pfn_bintree_swap)(struct bintree_node *left, struct bintree_node *right);
+typedef void (*pfn_bintree_swap)(struct bintree_node *left,
+				 struct bintree_node *right);
 
 /**
  * @brief Comparison function for binary tree nodes
@@ -56,7 +57,7 @@ typedef void (*pfn_bintree_free)(struct allocator *allocator,
  */
 struct bintree {
 	struct allocator *allocator;
-    pfn_bintree_swap swap_func;
+	pfn_bintree_swap swap_func;
 	pfn_bintree_compare compare_func;
 	pfn_bintree_free free_func;
 	struct bintree_node *root;
@@ -68,7 +69,7 @@ struct bintree {
  * This function does not allocate memory.
  */
 LAPI struct bintree bintree_create(struct allocator *allocator,
-                   pfn_bintree_swap swap_func,
+				   pfn_bintree_swap swap_func,
 				   pfn_bintree_compare compare_func,
 				   pfn_bintree_free free_func);
 
