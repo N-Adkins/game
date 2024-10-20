@@ -8,15 +8,23 @@
  * to have the layers start.
  */
 
+#include <core/application.h>
+#include <core/game.h>
 #include <defines.h>
 
-// TODO: Completely remove this and make application layer lol
-// This is pretty much just here for making sure windows builds
-// work fine
+extern void configure_game(struct game *game);
 
-LAPI int real_main(void);
+extern void lmain();
 
 int main(void)
 {
-	return real_main();
+	struct game game;
+	configure_game(&game);
+
+	struct application app;
+	application_create(&app, &game);
+	application_run(&app);
+	application_destroy(&app);
+
+	return 0;
 }

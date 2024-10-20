@@ -1,5 +1,4 @@
 target_sources(engine PRIVATE
-    entry.c
     defines.c
 )
 
