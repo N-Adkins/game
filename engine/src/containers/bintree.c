@@ -30,11 +30,9 @@ static u32 bintree_hash_ptr(const struct bintree_node *node)
 {
 	u32 hash = (u32)((u64)(uintptr_t)(node) >> 32) ^
 		   (u32)((u64)(uintptr_t)(node) & 0xFFFFFFFF);
-	hash ^= hash >> 16;
-	hash *= (u32)0x45d9f3b;
-	hash ^= hash >> 16;
-	hash *= (u32)0x45d9f3b;
-	hash ^= hash >> 16;
+    hash ^= hash << 13;
+    hash ^= hash >> 17;
+    hash ^= hash << 5;
 	return hash;
 }
 
@@ -157,7 +155,7 @@ LAPI void bintree_delete(struct bintree *tree, const struct bintree_node *node)
 	tree->root = bintree_delete_node(tree, tree->root, node);
 }
 
-LAPI b8 bintree_contains(struct bintree *tree, const struct bintree_node *node)
+LAPI b8 bintree_contains(const struct bintree *tree, const struct bintree_node *node)
 {
 	LASSERT(tree != NULL);
 	LASSERT(node != NULL);

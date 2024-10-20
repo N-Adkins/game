@@ -97,6 +97,6 @@ LAPI void bintree_delete(struct bintree *tree, const struct bintree_node *node);
  *
  * Guaranteed average case O(logn)
  *
- * @returns frue if the tree has the value, false if it doesn't
+ * @returns true if the tree has the value, false if it doesn't
  */
-LAPI b8 bintree_contains(struct bintree *tree, const struct bintree_node *node);
+LAPI b8 bintree_contains(const struct bintree *tree, const struct bintree_node *node);
