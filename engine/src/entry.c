@@ -58,7 +58,7 @@ LAPI int real_main(void)
 	dynarray_destroy(&array);
 
 	struct bintree tree = bintree_create(&alloc, int_compare, int_free);
-	for (int i = 3282380; i > 0; i--) {
+	for (int i = 3282; i > 0; i--) {
 		struct int_node *node = allocator_alloc(
 			&alloc, sizeof(struct int_node), MEMORY_TAG_ARRAY);
 		node->value = i;
