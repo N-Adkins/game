@@ -15,9 +15,6 @@ static void application_window_resized(union event_payload payload,
 			app->game_state, payload.window_resized.width,
 			payload.window_resized.height);
 	}
-
-	event_system_unregister(&app->event_system, EVENT_TAG_WINDOW_RESIZED,
-				application_window_resized);
 }
 
 LAPI void application_create(struct application *app, struct game *game_state)

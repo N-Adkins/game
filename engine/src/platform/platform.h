@@ -73,14 +73,6 @@ void platform_startup(struct platform *platform,
 void platform_shutdown(struct platform platform);
 
 /**
- * @brief Sets up callbacks for platform-specific events.
- *
- * This is a separate function from startup because the event system requires platform memory
- * to be prepared, which implies that the platform is started up already.
- */
-void platform_register_events(struct platform platform);
-
-/**
  * @brief Processes OS and window events
  *
  * Goes through all of the events buffered since the last call
