@@ -1,5 +1,20 @@
 #pragma once
 
+/**
+ * @file
+ * @brief Binary search tree container
+ *
+ * A general-use binary search tree. The following operations are guaranteed to be 
+ * average-case O(logn):
+ * - Insertion
+ * - Deletion
+ * - Searching
+ *
+ * The actual implementation of the tree is fully subject to change, meaning it could be 
+ * a red-black tree (most likely in the future), a treap, or something else that 
+ * guarantees those time complexity constraints.
+ */
+
 #include <core/memory.h>
 #include <defines.h>
 

@@ -1,23 +1,33 @@
 #pragma once
 
+/**
+ * @file
+ * @brief Game layer
+ *
+ * This is the layer that is exposed to the actual game executable / library -
+ * they cannot see the rest of the application state, only some functions that are
+ * also exposed. The game provides function pointers here that are run at certain
+ * times during execution.
+ */
+
 #include <core/application.h>
 #include <defines.h>
 
-struct game;
-
-typedef void (*pfn_game_init)(struct game *game);
-typedef void (*pfn_game_deinit)(struct game *game);
-typedef void (*pfn_game_fixed_step)(struct game *game,
-				    f32 delta_time); // Fixed update, 60 hz
-typedef void (*pfn_game_render_step)(
-	struct game *game, f32 delta_time); // Dynamic update, runs each frame
-
+/**
+ * @brief Game state
+ *
+ * This holds *all* state that is to be used within the game. There is an opaque
+ * handle provided for the game to hold an arbitrary state struct. The function pointers
+ * are called at self-explanatory points of execution.
+ */
 struct game {
-	struct allocator *allocator;
 	struct application_config config;
-	pfn_game_init init_func;
-	pfn_game_deinit deinit_func;
-	pfn_game_fixed_step fixed_step_func;
-	pfn_game_render_step render_step_func;
+	struct allocator *allocator;
+	struct {
+		void (*init)(struct game *game);
+		void (*deinit)(struct game *game);
+		void (*fixed_step)(struct game *game, f32 delta_time);
+		void (*render_step)(struct game *game, f32 delta_time);
+	} vtable;
 	void *state; // Internal game state
 };

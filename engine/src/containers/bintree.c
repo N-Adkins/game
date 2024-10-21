@@ -2,9 +2,6 @@
 
 #include <core/assert.h>
 
-#define BINTREE_RED true
-#define BINTREE_BLACK false
-
 /*
  * "Private" functions for bintree
  */

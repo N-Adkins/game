@@ -2,16 +2,16 @@
 
 /**
  * @file
- * @brief Memory subsystem
+ * @brief memory subsystem
  *
- * All memory allocation should go through these facilities - they will log
+ * all memory allocation should go through these facilities - they will log
  * and keep track of the memory usage of different parts of the program, and this
  * log can be dumped to the logger at any time.
  *
- * This is not a vtable interface like lots of other things use the term "allocator" for!
- * That would be super slow here. I could have made these global, and they used to be, but 
- * for the sake of correctness and so that hot-reloading is possible in the future (as I 
- * understand it, statics are reset when a DLL is re-linked) it was changed to this API.
+ * this is not a vtable interface like lots of other things use the term "allocator" for!
+ * that would be super slow here. i could have made these global, and they used to be, but 
+ * for the sake of correctness and so that hot-reloading is possible in the future (as i 
+ * understand it, statics are reset when a dll is re-linked) it was changed to this api.
  */
 
 #include <defines.h>

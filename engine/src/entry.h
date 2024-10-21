@@ -14,8 +14,6 @@
 
 extern void configure_game(struct game *game);
 
-extern void lmain();
-
 int main(void)
 {
 	struct game game;
