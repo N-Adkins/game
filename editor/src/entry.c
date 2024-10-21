@@ -1,19 +1,21 @@
+#include "core/memory.h"
 #include <entry.h>
 #include <core/logger.h>
 
-struct {
-} state;
+struct game_state {
+
+};
 
 void game_init(struct game *game)
 {
-	LINFO("Game initialized");
-	(void)game;
+    LINFO("Game initializing");
+    game->state = allocator_alloc(game->allocator, sizeof(struct game_state), MEMORY_TAG_UNKNOWN);
 }
 
 void game_deinit(struct game *game)
 {
-	LINFO("Game deinitialized");
-	(void)game;
+	LINFO("Game deinitializing");
+    allocator_free(game->allocator, game->state, sizeof(struct game_state), MEMORY_TAG_UNKNOWN);
 }
 
 void game_fixed_step(struct game *game, f32 delta_time)
@@ -37,7 +39,6 @@ void configure_game(struct game *game)
 		.start_width = 1280,
 		.start_height = 720,
 	};
-	game->state = &state;
 	game->vtable.init = &game_init;
 	game->vtable.deinit = &game_deinit;
 	game->vtable.fixed_step = &game_fixed_step;
