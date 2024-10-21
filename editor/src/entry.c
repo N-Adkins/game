@@ -38,8 +38,8 @@ void configure_game(struct game *game)
 		.start_height = 720,
 	};
 	game->state = &state;
-	game->init_func = &game_init;
-	game->deinit_func = &game_deinit;
-	game->fixed_step_func = &game_fixed_step;
-	game->render_step_func = &game_render_step;
+	game->vtable.init = &game_init;
+	game->vtable.deinit = &game_deinit;
+	game->vtable.fixed_step = &game_fixed_step;
+	game->vtable.render_step = &game_render_step;
 }
