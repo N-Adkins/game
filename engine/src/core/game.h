@@ -28,6 +28,8 @@ struct game {
 		void (*deinit)(struct game *game);
 		void (*fixed_step)(struct game *game, f32 delta_time);
 		void (*render_step)(struct game *game, f32 delta_time);
+		void (*window_resized)(struct game *game, i32 width,
+				       i32 height);
 	} vtable;
 	void *state; // Internal game state
 };

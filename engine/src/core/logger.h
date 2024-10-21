@@ -30,36 +30,36 @@ struct logger {
 LAPI void logger_message(struct logger *logger, enum log_level level,
 			 const char *fmt, ...) LHINT_FORMAT(3, 4);
 
+LAPI struct logger *get_global_logger(void);
+
 // clang-format off
 
 #define LDEBUG(fmt, ...)                                                        \
-	logger_message(&GLOBAL_LOGGER, LOG_LEVEL_DEBUG,                             \
+	logger_message(get_global_logger(), LOG_LEVEL_DEBUG,                        \
 		       "[" LFILE_PATH ":%d] Debug: " fmt "\n", __LINE__,                \
 		       ##__VA_ARGS__)
 
 #define LINFO(fmt, ...)                                                         \
-	logger_message(&GLOBAL_LOGGER, LOG_LEVEL_INFO,                              \
+	logger_message(get_global_logger(), LOG_LEVEL_INFO,                         \
 		       "[" LFILE_PATH ":%d] Info: " fmt "\n", __LINE__,                 \
 		       ##__VA_ARGS__)
 
 #define LWARN(fmt, ...)                                                         \
-	logger_message(&GLOBAL_LOGGER, LOG_LEVEL_WARNING,                           \
+	logger_message(get_global_logger(), LOG_LEVEL_WARNING,                      \
 		       "[" LFILE_PATH ":%d] Warning: " fmt "\n", __LINE__,              \
 		       ##__VA_ARGS__)
 
 #define LERROR(fmt, ...)                                                        \
-	logger_message(&GLOBAL_LOGGER, LOG_LEVEL_ERROR,                             \
+	logger_message(get_global_logger(), LOG_LEVEL_ERROR,                        \
 		       "[" LFILE_PATH ":%d] Error: " fmt "\n", __LINE__,                \
 		       ##__VA_ARGS__)
 
 #define LFATAL(fmt, ...)                                                        \
 	do {                                                                        \
-		logger_message(&GLOBAL_LOGGER, LOG_LEVEL_FATAL,                         \
+		logger_message(get_global_logger(), LOG_LEVEL_FATAL,                    \
 			       "[" LFILE_PATH ":%d] Fatal: " fmt "\n",                      \
 			       __LINE__, ##__VA_ARGS__);                                    \
 		abort();                                                                \
 	} while (0)
 
 // clang-format on
-
-extern struct logger GLOBAL_LOGGER;

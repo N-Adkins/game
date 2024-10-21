@@ -7,6 +7,8 @@
 
 #include <windows.h>
 
+// TODO: Events
+
 // Not sure how important this name is honestly.
 const char class_name[] = "AppClass";
 
@@ -27,12 +29,15 @@ LRESULT CALLBACK window_procedure(HWND window, UINT msg, WPARAM w_param,
 	return 0;
 }
 
-void platform_startup(struct platform *platform, const char *app_name,
+void platform_startup(struct platform *platform,
+		      struct event_system *event_system, const char *app_name,
 		      i32 start_x, i32 start_y, i32 start_width,
 		      i32 start_height)
 {
 	LASSERT(platform != NULL);
 	LASSERT(app_name != NULL);
+
+	(void)event_system;
 
 	LINFO("Initializing the Windows platform state");
 
@@ -117,7 +122,7 @@ void platform_print_color(FILE *file, const char *string,
 	(void)fprintf(file, "%s", string);
 }
 
-void platform_debug_break(void)
+LAPI void platform_debug_break(void)
 {
 #if defined(LCOMPILER_GCC)
 	__builtin_trap();
@@ -158,7 +163,15 @@ void *platform_copy_memory(void *restrict dest, const void *restrict source,
 	return memcpy(dest, source, size);
 }
 
-void *platform_set_memory(void *dest, i32 value, u64 size)
+void *platform_move_memory(void *dest, const void *source, u64 size)
+{
+	LASSERT(dest != NULL);
+	LASSERT(source != NULL);
+
+	return memmove(dest, source, size);
+}
+
+void *platform_set_memory(void *dest, u8 value, u64 size)
 {
 	LASSERT(dest != NULL);
 

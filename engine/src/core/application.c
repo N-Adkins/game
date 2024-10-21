@@ -1,6 +1,24 @@
 #include "application.h"
 
+#include "core/event.h"
+#include <core/assert.h>
 #include <core/game.h>
+
+static void application_window_resized(union event_payload payload,
+				       void *user_data)
+{
+	LASSERT(user_data != NULL);
+	struct application *app = user_data;
+
+	if (app->game_state->vtable.window_resized != NULL) {
+		app->game_state->vtable.window_resized(
+			app->game_state, payload.window_resized.width,
+			payload.window_resized.height);
+	}
+
+	event_system_unregister(&app->event_system, EVENT_TAG_WINDOW_RESIZED,
+				application_window_resized);
+}
 
 LAPI void application_create(struct application *app, struct game *game_state)
 {
@@ -11,13 +29,18 @@ LAPI void application_create(struct application *app, struct game *game_state)
 	app->height = game_state->config.start_height;
 	app->last_time = (f32)0;
 
-	platform_startup(&app->platform_state, game_state->config.app_name,
+	platform_startup(&app->platform_state, &app->event_system,
+			 game_state->config.app_name,
 			 game_state->config.start_x, game_state->config.start_y,
 			 game_state->config.start_width,
 			 game_state->config.start_height);
 
 	app->allocator = allocator_create();
 	game_state->allocator = &app->allocator;
+
+	event_system_startup(&app->event_system, &app->allocator);
+	event_system_register(&app->event_system, EVENT_TAG_WINDOW_RESIZED,
+			      application_window_resized, app);
 
 	if (game_state->vtable.init != NULL) {
 		game_state->vtable.init(game_state);
@@ -29,6 +52,7 @@ LAPI void application_destroy(struct application *app)
 	if (app->game_state->vtable.deinit != NULL) {
 		app->game_state->vtable.deinit(app->game_state);
 	}
+	event_system_shutdown(&app->event_system);
 	allocator_destroy(&app->allocator);
 	platform_shutdown(app->platform_state);
 }

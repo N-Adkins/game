@@ -73,6 +73,27 @@ LAPI b8 dynarray_get(struct dynarray *array, u64 index, void *result)
 	return true;
 }
 
+LAPI void dynarray_remove(struct dynarray *array, u64 index)
+{
+	LASSERT(array != NULL);
+
+	if (index >= array->length) {
+		LERROR("Dynarray out of bounds removal at index %llu with length %llu",
+		       index, array->length);
+	}
+
+	// If last element
+	if (index == array->length - 1) {
+		array->length--;
+		return;
+	}
+
+	const u64 size_after = array->length - index - 1;
+	char *dest = ((char *)array->values) + index;
+	const char *source = ((char *)array->values) + index + 1;
+	allocator_move_memory(array->allocator, dest, source, size_after);
+}
+
 LAPI void dynarray_push_ptr(struct dynarray *array, const void *value)
 {
 	LASSERT(array != NULL);

@@ -92,6 +92,15 @@ LAPI void *allocator_copy_memory(struct allocator *allocator,
 				 const void *restrict source, u64 size);
 
 /**
+ * @brief Moves memory
+ *
+ * Copies "size" bytes from source to dest. Source and dest memory blocks
+ * may overlap.
+ */
+LAPI void *allocator_move_memory(struct allocator *allocator, void *dest,
+				 const void *source, u64 size);
+
+/**
  * @brief Sets memory to value
  *
  * Sets "size" bytes from dest to the passed value.

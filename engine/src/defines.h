@@ -76,7 +76,7 @@ typedef _Bool b8;
 #define LPLATFORM_WINDOWS
 #define LPLATFORM "Windows"
 #elif defined(__APPLE__)
-/ #define LPLATFORM_MACOS
+#define LPLATFORM_MACOS
 #define LPLATFORM "MacOS"
 #else
 #error Unsupported platform
@@ -142,15 +142,6 @@ typedef _Bool b8;
 #define LHINT_INLINE __attribute__((always_inline))
 #else // MSVC
 #define LHINT_INLINE __forceinline
-#endif
-
-/**
- * @brief Returns the current function name as a string literal
- */
-#ifdef LCOMPILER_CLANG_OR_GCC
-#define LFUNCTION __func__
-#else // MSVC
-#define LFUNCTION __FUNCTION__
 #endif
 
 /**

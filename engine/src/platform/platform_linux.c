@@ -11,12 +11,14 @@
 #ifdef LPLATFORM_LINUX
 
 #include <core/assert.h>
+#include <core/event.h>
 #include <core/logger.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include <X11/Xlib.h>
+#include <X11/X.h>
 #include <pthread.h>
 #include <signal.h>
 
@@ -24,6 +26,7 @@
  * Linux-specific platform state, contains X11 handles.
  */
 struct platform_impl {
+	struct event_system *event_system;
 	Display *display; // X11 display handle
 	Window window; // X11 window handle
 	Atom wm_delete; // Handle to the window deletion event
@@ -36,7 +39,8 @@ struct mutex_impl {
 	pthread_mutex_t mutex;
 };
 
-void platform_startup(struct platform *platform, const char *app_name,
+void platform_startup(struct platform *platform,
+		      struct event_system *event_system, const char *app_name,
 		      i32 start_x, i32 start_y, i32 start_width,
 		      i32 start_height)
 {
@@ -47,6 +51,8 @@ void platform_startup(struct platform *platform, const char *app_name,
 
 	struct platform_impl *linux_impl = malloc(sizeof(struct platform_impl));
 	platform->impl = linux_impl;
+
+	linux_impl->event_system = event_system;
 
 	linux_impl->display = XOpenDisplay(NULL); // fetch default display
 	if (linux_impl->display == NULL) {
@@ -78,7 +84,7 @@ void platform_startup(struct platform *platform, const char *app_name,
 
 	const long event_mask = KeyPressMask | KeyReleaseMask |
 				ButtonPressMask | ButtonReleaseMask |
-				PointerMotionMask;
+				PointerMotionMask | ResizeRedirectMask;
 
 	if (!XSelectInput(linux_impl->display, linux_impl->window,
 			  event_mask)) {
@@ -131,10 +137,19 @@ b8 platform_poll_events(struct platform platform)
 
 	b8 stay_open = true;
 	XEvent event;
+	union event_payload payload;
 
 	while (XPending(platform.impl->display)) {
 		XNextEvent(platform.impl->display, &event);
 		switch (event.type) {
+		case ResizeRequest:
+			payload.window_resized.width =
+				event.xresizerequest.width;
+			payload.window_resized.height =
+				event.xresizerequest.height;
+			event_system_fire(platform.impl->event_system,
+					  EVENT_TAG_WINDOW_RESIZED, payload);
+			break;
 		case ClientMessage:
 			if (event.xclient.data.l[0] ==
 			    (long)platform.impl->wm_delete) {
@@ -181,7 +196,7 @@ void platform_print_color(FILE *file, const char *string,
 	(void)fputs(reset_code, file);
 }
 
-void platform_debug_break(void)
+LAPI void platform_debug_break(void)
 {
 	(void)raise(SIGTRAP);
 }
@@ -216,7 +231,15 @@ void *platform_copy_memory(void *restrict dest, const void *restrict source,
 	return memcpy(dest, source, size);
 }
 
-void *platform_set_memory(void *dest, i32 value, u64 size)
+void *platform_move_memory(void *dest, const void *source, u64 size)
+{
+	LASSERT(dest != NULL);
+	LASSERT(source != NULL);
+
+	return memmove(dest, source, size);
+}
+
+void *platform_set_memory(void *dest, u8 value, u64 size)
 {
 	LASSERT(dest != NULL);
 

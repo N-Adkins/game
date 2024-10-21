@@ -11,6 +11,7 @@
  * layer.
  */
 
+#include <core/event.h>
 #include <defines.h>
 #include <stdio.h>
 
@@ -54,8 +55,11 @@ struct mutex {
  * the platform layer.
  *
  * @param app_name The name on the top of the window
+ * @param event_system This event system will not actually be initialized here,
+ * but the platform needs a handle to it for polling.
  */
-void platform_startup(struct platform *platform, const char *app_name,
+void platform_startup(struct platform *platform,
+		      struct event_system *event_system, const char *app_name,
 		      i32 start_x, i32 start_y, i32 start_width,
 		      i32 start_height);
 
@@ -67,6 +71,14 @@ void platform_startup(struct platform *platform, const char *app_name,
  * after this is called.
  */
 void platform_shutdown(struct platform platform);
+
+/**
+ * @brief Sets up callbacks for platform-specific events.
+ *
+ * This is a separate function from startup because the event system requires platform memory
+ * to be prepared, which implies that the platform is started up already.
+ */
+void platform_register_events(struct platform platform);
 
 /**
  * @brief Processes OS and window events
@@ -104,11 +116,12 @@ void platform_print_color(FILE *file, const char *string,
  * Attempts to use a platform-specific instruction or syscall to
  * break for a debugger. Otherwise, aborts.
  */
-void platform_debug_break(void);
+LAPI void platform_debug_break(void);
 
 /*
 The main justification for these memory functions is the case of a console / strange platform.
-On platforms like MacOS, Windows, or Linux, these are going to be the expected libc functions.
+On platforms like MacOS, Windows, or Linux, these are going to be the expected libc functions
+(assuming dynamic linking).
 
 These really should only be used by the memory subsystem under the hood. If used otherwise, document
 extensively why.
@@ -143,9 +156,17 @@ void *platform_copy_memory(void *restrict dest, const void *restrict source,
 			   u64 size);
 
 /**
+ * @brief Platform-agnostic equivalent to memmove
+ *
+ * Same as platform_copy_memory but it works on overlapping buffers, with a performance
+ * cost.
+ */
+void *platform_move_memory(void *dest, const void *source, u64 size);
+
+/**
  * @brief Platform-agnostic equivalent to memset
  */
-void *platform_set_memory(void *dest, i32 value, u64 size);
+void *platform_set_memory(void *dest, u8 value, u64 size);
 
 /*
  * Mutex functions

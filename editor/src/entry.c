@@ -30,6 +30,12 @@ void game_render_step(struct game *game, f32 delta_time)
 	(void)delta_time;
 }
 
+void game_window_resized(struct game *game, i32 width, i32 height)
+{
+	(void)game;
+	LINFO("Window resized with size (%d, %d)", width, height);
+}
+
 void configure_game(struct game *game)
 {
 	game->config = (struct application_config){
@@ -43,4 +49,5 @@ void configure_game(struct game *game)
 	game->vtable.deinit = &game_deinit;
 	game->vtable.fixed_step = &game_fixed_step;
 	game->vtable.render_step = &game_render_step;
+	game->vtable.window_resized = &game_window_resized;
 }

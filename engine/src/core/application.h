@@ -10,6 +10,7 @@
  */
 
 #include <platform/platform.h>
+#include <core/event.h>
 #include <core/memory.h>
 #include <defines.h>
 
@@ -35,9 +36,10 @@ struct application_config {
  * that game function pointers can be called
  */
 struct application {
+	struct event_system event_system;
 	struct allocator allocator;
-	struct game *game_state;
 	struct platform platform_state;
+	struct game *game_state;
 	f32 last_time; // for deltatime
 	i32 width;
 	i32 height;

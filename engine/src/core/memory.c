@@ -85,6 +85,15 @@ LAPI void *allocator_copy_memory(struct allocator *allocator,
 	return platform_copy_memory(dest, source, size);
 }
 
+LAPI void *allocator_move_memory(struct allocator *allocator, void *dest,
+				 const void *source, u64 size)
+{
+	LASSERT(allocator != NULL);
+	(void)allocator;
+
+	return platform_move_memory(dest, source, size);
+}
+
 LAPI void *allocator_set_memory(struct allocator *allocator, void *dest,
 				i32 value, u64 size)
 {

@@ -4,7 +4,7 @@
 #include <stdarg.h>
 #include <stdio.h>
 
-struct logger GLOBAL_LOGGER;
+static struct logger GLOBAL_LOGGER;
 
 LAPI void logger_message(struct logger *logger, enum log_level level,
 			 const char *fmt, ...)
@@ -33,10 +33,15 @@ LAPI void logger_message(struct logger *logger, enum log_level level,
 	}
 
 	char buffer[LOG_MAX_LENGTH]; // please dont use all of this
-	va_list args;
+	va_list args = {};
 	va_start(args, fmt);
 	(void)vsprintf(buffer, fmt, args);
 	va_end(args);
 
 	platform_print_color(stdout, buffer, color);
+}
+
+LAPI struct logger *get_global_logger(void)
+{
+	return &GLOBAL_LOGGER;
 }
