@@ -91,6 +91,7 @@ LAPI void dynarray_remove(struct dynarray *array, u64 index)
 	const u64 size_after = array->length - index - 1;
 	char *dest = ((char *)array->values) + index;
 	const char *source = ((char *)array->values) + index + 1;
+    array->length--;
 	allocator_move_memory(array->allocator, dest, source, size_after);
 }
 
