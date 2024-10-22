@@ -103,6 +103,16 @@ void platform_print_color(FILE *file, const char *string,
 			  enum terminal_color color);
 
 /**
+ * @brief Returns the current time in milliseconds
+ *
+ * This uses platform-specific functions to return the time in milliseconds
+ * based on any arbitrary starting point. The actual value doesn't matter as
+ * long as calling the function once before and after a 1 millisecond interval
+ * would result in a 1 millisecond difference in return values;
+ */
+u64 platform_time_ms(void);
+
+/**
  * @brief Calls a breakpoint
  *
  * Attempts to use a platform-specific instruction or syscall to

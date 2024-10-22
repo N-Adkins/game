@@ -64,10 +64,14 @@ LAPI void application_run(struct application *app)
 		}
 		app->is_running = platform_poll_events(app->platform_state);
 
+		const f32 current_time = (f32)platform_time_ms() / 1000;
+		const f32 last_time = app->last_time;
+		app->last_time = current_time;
+		const f32 delta_time = current_time - last_time;
 		if (app->game_state->vtable.render_step != NULL) {
 			// TODO: Deltatime
 			app->game_state->vtable.render_step(app->game_state,
-							    (f32)0);
+							    delta_time);
 		}
 	}
 }

@@ -19,6 +19,7 @@
 
 #include <X11/Xlib.h>
 #include <X11/X.h>
+#include <sys/time.h>
 #include <pthread.h>
 #include <signal.h>
 
@@ -194,6 +195,17 @@ void platform_print_color(FILE *file, const char *string,
 	(void)fputs(color_code, file);
 	(void)fputs(string, file);
 	(void)fputs(reset_code, file);
+}
+
+u64 platform_time_ms(void)
+{
+	struct timeval time;
+	gettimeofday(&time, NULL);
+
+	const u64 time_in_ms = time.tv_sec * 1000LL + time.tv_usec / 1000LL;
+
+	return time_in_ms %
+	       100000; // We mod it to save some bits, we have no use for the big part of the value.
 }
 
 LAPI void platform_debug_break(void)
