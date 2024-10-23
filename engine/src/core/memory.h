@@ -32,25 +32,8 @@ enum memory_tag {
 	MEMORY_TAG_MAX_TAGS,
 };
 
-/**
- * @brief Allocation metadata state
- */
-struct allocator {
-	u64 total_bytes;
-	u64 tag_bytes[MEMORY_TAG_MAX_TAGS];
-};
-
-/**
- * @brief Initializes allocator (shocking)
- */
-LAPI struct allocator allocator_create(void);
-
-/**
- * @brief Destroys allocator (shocking)
- *
- * Will print diagnostics if leaked memory is detected.
- */
-LAPI void allocator_destroy(struct allocator *allocator);
+void memory_system_startup(void);
+void memory_system_shutdown(void);
 
 /**
  * @brief General allocation function
@@ -59,8 +42,7 @@ LAPI void allocator_destroy(struct allocator *allocator);
  *
  * @param tag Allocation type
  */
-LAPI void *allocator_alloc(struct allocator *allocator, u64 size,
-			   enum memory_tag tag);
+LAPI void *engine_alloc(u64 size, enum memory_tag tag);
 
 /**
  * @brief General free function
@@ -70,16 +52,14 @@ LAPI void *allocator_alloc(struct allocator *allocator, u64 size,
  *
  * @param tag Allocation type
  */
-LAPI void allocator_free(struct allocator *allocator, void *ptr, u64 size,
-			 enum memory_tag tag);
+LAPI void engine_free(void *ptr, u64 size, enum memory_tag tag);
 
 /**
  * @brief Zeroes memory
  *
  * Sets "size" bytes from ptr to zero
  */
-LAPI void *allocator_free_memory(struct allocator *allocator, void *ptr,
-				 u64 size);
+LAPI void *engine_zero_memory(void *ptr, u64 size);
 
 /**
  * @brief Copies memory
@@ -87,9 +67,8 @@ LAPI void *allocator_free_memory(struct allocator *allocator, void *ptr,
  * Copies "size" bytes from source to dest. Source and dest memory blocks
  * must not overlap.
  */
-LAPI void *allocator_copy_memory(struct allocator *allocator,
-				 void *restrict dest,
-				 const void *restrict source, u64 size);
+LAPI void *engine_copy_memory(void *restrict dest, const void *restrict source,
+			      u64 size);
 
 /**
  * @brief Moves memory
@@ -97,8 +76,7 @@ LAPI void *allocator_copy_memory(struct allocator *allocator,
  * Copies "size" bytes from source to dest. Source and dest memory blocks
  * may overlap.
  */
-LAPI void *allocator_move_memory(struct allocator *allocator, void *dest,
-				 const void *source, u64 size);
+LAPI void *engine_move_memory(void *dest, const void *source, u64 size);
 
 /**
  * @brief Sets memory to value
@@ -107,8 +85,7 @@ LAPI void *allocator_move_memory(struct allocator *allocator, void *dest,
  *
  * @param value Value for each byte
  */
-LAPI void *allocator_set_memory(struct allocator *allocator, void *dest,
-				i32 value, u64 size);
+LAPI void *engine_set_memory(void *dest, u8 value, u64 size);
 
 /**
  * @brief Prints memory usage in logs
@@ -116,4 +93,4 @@ LAPI void *allocator_set_memory(struct allocator *allocator, void *dest,
  * Dumps a log at the debug level showing how much memory is allocated
  * with each memory_tag.
  */
-LAPI void allocator_dump_usage(struct allocator *allocator);
+LAPI void engine_dump_memory_usage(void);

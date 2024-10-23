@@ -47,8 +47,7 @@ typedef i8 (*pfn_bintree_compare)(const struct bintree_node *left,
  * This function should completely free the passed node, including the pointer to the parent
  * struct that is wrapping the bintree_node.
  */
-typedef void (*pfn_bintree_free)(struct allocator *allocator,
-				 struct bintree_node *node);
+typedef void (*pfn_bintree_free)(struct bintree_node *node);
 
 /** 
  * @brief Binary search tree
@@ -66,7 +65,6 @@ typedef void (*pfn_bintree_free)(struct allocator *allocator,
  * };
  */
 struct bintree {
-	struct allocator *allocator;
 	pfn_bintree_compare compare_func;
 	pfn_bintree_free free_func;
 	struct bintree_node *root;
@@ -78,8 +76,7 @@ struct bintree {
  *
  * This function does not allocate memory.
  */
-LAPI struct bintree bintree_create(struct allocator *allocator,
-				   pfn_bintree_compare compare_func,
+LAPI struct bintree bintree_create(pfn_bintree_compare compare_func,
 				   pfn_bintree_free free_func);
 
 /**

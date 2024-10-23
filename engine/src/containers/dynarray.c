@@ -3,23 +3,19 @@
 #include <core/assert.h>
 #include <core/memory.h>
 
-LAPI struct dynarray dynarray_create(struct allocator *allocator, u64 stride)
+LAPI struct dynarray dynarray_create(u64 stride)
 {
 	LASSERT(allocator != NULL);
 
-	return dynarray_create_capacity(allocator, DYNARRAY_DEFAULT_CAPACITY,
-					stride);
+	return dynarray_create_capacity(DYNARRAY_DEFAULT_CAPACITY, stride);
 }
 
-LAPI struct dynarray dynarray_create_capacity(struct allocator *allocator,
-					      u64 capacity, u64 stride)
+LAPI struct dynarray dynarray_create_capacity(u64 capacity, u64 stride)
 {
 	LASSERT(allocator != NULL);
 
-	void *values = allocator_alloc(allocator, stride * capacity,
-				       MEMORY_TAG_DYNARRAY);
+	void *values = engine_alloc(stride * capacity, MEMORY_TAG_DYNARRAY);
 	struct dynarray array = {
-		.allocator = allocator,
 		.capacity = capacity,
 		.length = 0,
 		.stride = stride,
@@ -32,8 +28,8 @@ LAPI void dynarray_destroy(struct dynarray *array)
 {
 	LASSERT(array != NULL);
 
-	allocator_free(array->allocator, array->values,
-		       array->capacity * array->stride, MEMORY_TAG_DYNARRAY);
+	engine_free(array->values, array->capacity * array->stride,
+		    MEMORY_TAG_DYNARRAY);
 }
 
 LAPI void dynarray_resize(struct dynarray *array, u64 capacity)
@@ -41,13 +37,12 @@ LAPI void dynarray_resize(struct dynarray *array, u64 capacity)
 	LASSERT(array != NULL);
 
 	// Effectively a realloc here
-	void *values = allocator_alloc(array->allocator,
-				       array->stride * capacity,
-				       MEMORY_TAG_DYNARRAY);
-	allocator_copy_memory(array->allocator, values, array->values,
-			      array->length * array->stride);
-	allocator_free(array->allocator, array->values,
-		       array->capacity * array->stride, MEMORY_TAG_DYNARRAY);
+	void *values =
+		engine_alloc(array->stride * capacity, MEMORY_TAG_DYNARRAY);
+	engine_copy_memory(values, array->values,
+			   array->length * array->stride);
+	engine_free(array->values, array->capacity * array->stride,
+		    MEMORY_TAG_DYNARRAY);
 
 	array->capacity = capacity;
 	array->values = values;
@@ -66,9 +61,8 @@ LAPI b8 dynarray_get(struct dynarray *array, u64 index, void *result)
 
 	// Must cast to char pointer to do arithmetic
 	char *char_array = array->values;
-	allocator_copy_memory(array->allocator, result,
-			      char_array + (index * array->stride),
-			      array->stride);
+	engine_copy_memory(result, char_array + (index * array->stride),
+			   array->stride);
 
 	return true;
 }
@@ -92,7 +86,7 @@ LAPI void dynarray_remove(struct dynarray *array, u64 index)
 	char *dest = ((char *)array->values) + index;
 	const char *source = ((char *)array->values) + index + 1;
     array->length--;
-	allocator_move_memory(array->allocator, dest, source, size_after);
+    engine_move_memory(dest, source, size_after);
 }
 
 LAPI void dynarray_push_ptr(struct dynarray *array, const void *value)
@@ -108,9 +102,8 @@ LAPI void dynarray_push_ptr(struct dynarray *array, const void *value)
 
 	// Must cast to char pointer to do arithmetic
 	char *char_array = array->values;
-	allocator_copy_memory(array->allocator,
-			      char_array + (array->stride * array->length),
-			      value, array->stride);
+	engine_copy_memory(char_array + (array->stride * array->length), value,
+			   array->stride);
 
 	array->length++;
 }

@@ -2,15 +2,13 @@
 
 #include <core/assert.h>
 
-void event_system_startup(struct event_system *event_system,
-			  struct allocator *allocator)
+void event_system_startup(struct event_system *event_system)
 {
 	LASSERT(event_system != NULL);
 
 	for (u64 i = 0; i < EVENT_TAG_MAX_TAGS; i++) {
 		struct dynarray *array = &event_system->listeners[i];
-		*array = dynarray_create(allocator,
-					 sizeof(struct event_listener));
+		*array = dynarray_create(sizeof(struct event_listener));
 	}
 }
 

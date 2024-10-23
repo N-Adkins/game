@@ -43,7 +43,7 @@ static void bintree_destroy_node(struct bintree *tree,
 	bintree_destroy_node(tree, node->_left);
 	bintree_destroy_node(tree, node->_right);
 
-	tree->free_func(tree->allocator, node);
+	tree->free_func(node);
 }
 
 static struct bintree_node *bintree_insert_node(struct bintree *tree,
@@ -84,12 +84,12 @@ static struct bintree_node *bintree_delete_node(struct bintree *tree,
 		root->_right = bintree_delete_node(tree, root->_right, node);
 	} else if (root->_left == NULL) {
 		struct bintree_node *temp = root->_right;
-		tree->free_func(tree->allocator, root);
+		tree->free_func(root);
 		tree->size -= 1;
 		root = temp;
 	} else if (root->_right == NULL) {
 		struct bintree_node *temp = root->_left;
-		tree->free_func(tree->allocator, root);
+		tree->free_func(root);
 		tree->size -= 1;
 		root = temp;
 	} else if (root->_left->_weight < root->_right->_weight) {
@@ -106,8 +106,7 @@ static struct bintree_node *bintree_delete_node(struct bintree *tree,
 /**
  * Actual bintree interface
  */
-LAPI struct bintree bintree_create(struct allocator *allocator,
-				   pfn_bintree_compare compare_func,
+LAPI struct bintree bintree_create(pfn_bintree_compare compare_func,
 				   pfn_bintree_free free_func)
 {
 	LASSERT(allocator != NULL);
@@ -115,7 +114,6 @@ LAPI struct bintree bintree_create(struct allocator *allocator,
 	LASSERT(free_func != NULL);
 
 	struct bintree tree;
-	tree.allocator = allocator;
 	tree.compare_func = compare_func;
 	tree.free_func = free_func;
 	tree.root = NULL;

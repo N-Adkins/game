@@ -19,7 +19,6 @@
  * @brief Dynamic array container
  */
 struct dynarray {
-	struct allocator *allocator;
 	u64 capacity;
 	u64 length;
 	u64 stride; // type size in bytes
@@ -35,15 +34,14 @@ struct dynarray {
  *
  * This **does** allocate.
  */
-LAPI struct dynarray dynarray_create(struct allocator *allocator, u64 stride);
+LAPI struct dynarray dynarray_create(u64 stride);
 
 /**
  * @brief Initialize dynamic array with passed capacity
  *
  * This **does** allocate.
  */
-LAPI struct dynarray dynarray_create_capacity(struct allocator *allocator,
-					      u64 capacity, u64 stride);
+LAPI struct dynarray dynarray_create_capacity(u64 capacity, u64 stride);
 
 /**
  * @brief Frees all memory in a dynarray

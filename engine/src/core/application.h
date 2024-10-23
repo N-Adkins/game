@@ -37,7 +37,6 @@ struct application_config {
  */
 struct application {
 	struct event_system event_system;
-	struct allocator allocator;
 	struct platform platform_state;
 	struct game *game_state;
 	f32 last_time; // for deltatime

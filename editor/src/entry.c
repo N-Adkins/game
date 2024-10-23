@@ -9,13 +9,13 @@ struct game_state {
 void game_init(struct game *game)
 {
     LINFO("Game initializing");
-    game->state = allocator_alloc(game->allocator, sizeof(struct game_state), MEMORY_TAG_UNKNOWN);
+    game->state = engine_alloc(sizeof(struct game_state), MEMORY_TAG_UNKNOWN);
 }
 
 void game_deinit(struct game *game)
 {
 	LINFO("Game deinitializing");
-    allocator_free(game->allocator, game->state, sizeof(struct game_state), MEMORY_TAG_UNKNOWN);
+	engine_free(game->state, sizeof(struct game_state), MEMORY_TAG_UNKNOWN);
 }
 
 void game_fixed_step(struct game *game, f32 delta_time)

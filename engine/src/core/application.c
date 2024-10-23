@@ -1,6 +1,7 @@
 #include "application.h"
 
 #include "core/event.h"
+#include "core/memory.h"
 #include <core/assert.h>
 #include <core/game.h>
 
@@ -32,10 +33,9 @@ LAPI void application_create(struct application *app, struct game *game_state)
 			 game_state->config.start_width,
 			 game_state->config.start_height);
 
-	app->allocator = allocator_create();
-	game_state->allocator = &app->allocator;
+	memory_system_startup();
 
-	event_system_startup(&app->event_system, &app->allocator);
+	event_system_startup(&app->event_system);
 	event_system_register(&app->event_system, EVENT_TAG_WINDOW_RESIZED,
 			      application_window_resized, app);
 
@@ -50,7 +50,7 @@ LAPI void application_destroy(struct application *app)
 		app->game_state->vtable.deinit(app->game_state);
 	}
 	event_system_shutdown(&app->event_system);
-	allocator_destroy(&app->allocator);
+	memory_system_shutdown();
 	platform_shutdown(app->platform_state);
 }
 

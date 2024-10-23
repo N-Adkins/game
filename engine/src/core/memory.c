@@ -5,109 +5,85 @@
 #include <stdio.h>
 #include <string.h>
 
-LAPI struct allocator allocator_create(void)
+struct {
+	u64 tag_bytes[MEMORY_TAG_MAX_TAGS];
+	u64 total_bytes;
+} memory_state;
+
+void memory_system_startup(void)
 {
-	struct allocator allocator;
-
-	platform_zero_memory(&allocator, sizeof(struct allocator));
-
-	return allocator;
+	platform_zero_memory(&memory_state, sizeof(memory_state));
 }
 
-LAPI void allocator_destroy(struct allocator *allocator)
+LAPI void memory_system_shutdown(void)
 {
 	LASSERT(allocator != NULL);
 
-	if (allocator->total_bytes > 0) {
+	if (memory_state.total_bytes > 0) {
 		LWARN("Memory has leaked, 0x%04llX bytes in use at allocator destruction, dumping usage",
-		      allocator->total_bytes);
-		allocator_dump_usage(allocator);
+		      memory_state.total_bytes);
+		engine_dump_memory_usage();
 	}
 
 	// Consistency check
 	u64 tag_total = 0;
-	for (u64 i = 0; i < LARRAY_LENGTH(allocator->tag_bytes); i++) {
-		tag_total += allocator->tag_bytes[i];
+	for (u64 i = 0; i < LARRAY_LENGTH(memory_state.tag_bytes); i++) {
+		tag_total += memory_state.tag_bytes[i];
 	}
 	LASSERT(allocator->total_bytes == tag_total);
 	(void)tag_total;
 }
 
-LAPI void *allocator_alloc(struct allocator *allocator, u64 size,
-			   enum memory_tag tag)
+LAPI void *engine_alloc(u64 size, enum memory_tag tag)
 {
-	LASSERT(allocator != NULL);
-
 	if (tag == MEMORY_TAG_UNKNOWN) {
 		LWARN("Allocating 0x%04llX bytes using MEMORY_TAG_UNKNOWN, change this tag",
 		      size);
 	}
 
-	allocator->total_bytes += size;
-	allocator->tag_bytes[tag] += size;
+	memory_state.total_bytes += size;
+	memory_state.tag_bytes[tag] += size;
 
 	void *ptr = platform_allocate(size, false);
 	platform_zero_memory(ptr, size);
 	return ptr;
 }
 
-LAPI void allocator_free(struct allocator *allocator, void *ptr, u64 size,
-			 enum memory_tag tag)
+LAPI void engine_free(void *ptr, u64 size, enum memory_tag tag)
 {
-	LASSERT(allocator != NULL);
-
 	if (tag == MEMORY_TAG_UNKNOWN) {
 		LWARN("Freeing 0x%04llX bytes using MEMORY_TAG_UNKNOWN, change this tag",
 		      size);
 	}
 
-	allocator->total_bytes -= size;
-	allocator->tag_bytes[tag] -= size;
+	memory_state.total_bytes -= size;
+	memory_state.tag_bytes[tag] -= size;
 	platform_free(ptr, false);
 }
 
-LAPI void *allocator_zero_memory(struct allocator *allocator, void *ptr,
-				 u64 size)
+LAPI void *engine_zero_memory(void *ptr, u64 size)
 {
-	LASSERT(allocator != NULL);
-	(void)allocator;
-
 	return platform_zero_memory(ptr, size);
 }
 
-LAPI void *allocator_copy_memory(struct allocator *allocator,
-				 void *restrict dest,
-				 const void *restrict source, u64 size)
+LAPI void *engine_copy_memory(void *restrict dest, const void *restrict source,
+			      u64 size)
 {
-	LASSERT(allocator != NULL);
-	(void)allocator;
-
 	return platform_copy_memory(dest, source, size);
 }
 
-LAPI void *allocator_move_memory(struct allocator *allocator, void *dest,
-				 const void *source, u64 size)
+LAPI void *engine_move_memory(void *dest, const void *source, u64 size)
 {
-	LASSERT(allocator != NULL);
-	(void)allocator;
-
 	return platform_move_memory(dest, source, size);
 }
 
-LAPI void *allocator_set_memory(struct allocator *allocator, void *dest,
-				i32 value, u64 size)
+LAPI void *engine_set_memory(void *dest, u8 value, u64 size)
 {
-	LASSERT(allocator != NULL);
-	(void)allocator;
-
 	return platform_set_memory(dest, value, size);
 }
 
-LAPI void allocator_dump_usage(struct allocator *allocator)
+LAPI void engine_dump_memory_usage(void)
 {
-	LASSERT(allocator != NULL);
-	(void)allocator;
-
 	const char *tag_strings[] = {
 		"UNKNOWN  ",
 		"ARRAY    ",
@@ -119,7 +95,7 @@ LAPI void allocator_dump_usage(struct allocator *allocator)
 	const u64 mib = 1024LU * 1024LU;
 	const u64 kib = 1024LU;
 
-	const u64 array_len = LARRAY_LENGTH(allocator->tag_bytes);
+	const u64 array_len = LARRAY_LENGTH(memory_state.tag_bytes);
 
 	char buffer[LOG_MAX_LENGTH] = "Memory subsystem usage:\n";
 	u64 offset = strlen(buffer);
@@ -128,17 +104,17 @@ LAPI void allocator_dump_usage(struct allocator *allocator)
 		const char *unit = "GiB";
 		f64 amount = 1.0;
 
-		if (allocator->tag_bytes[i] >= gib) {
-			amount = (f64)allocator->tag_bytes[i] / (f64)gib;
-		} else if (allocator->tag_bytes[i] >= mib) {
+		if (memory_state.tag_bytes[i] >= gib) {
+			amount = (f64)memory_state.tag_bytes[i] / (f64)gib;
+		} else if (memory_state.tag_bytes[i] >= mib) {
 			unit = "MiB";
-			amount = (f64)allocator->tag_bytes[i] / (f64)mib;
-		} else if (allocator->tag_bytes[i] >= kib) {
+			amount = (f64)memory_state.tag_bytes[i] / (f64)mib;
+		} else if (memory_state.tag_bytes[i] >= kib) {
 			unit = "KiB";
-			amount = (f64)allocator->tag_bytes[i] / (f64)kib;
+			amount = (f64)memory_state.tag_bytes[i] / (f64)kib;
 		} else {
 			unit = "B";
-			amount = (f64)allocator->tag_bytes[i];
+			amount = (f64)memory_state.tag_bytes[i];
 		}
 
 		// This part is just for cleaner printing in the logger.

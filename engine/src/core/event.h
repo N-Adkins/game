@@ -61,8 +61,7 @@ struct event_system {
 /**
  * @brief Event system initializer
  */
-void event_system_startup(struct event_system *event_system,
-			  struct allocator *allocator);
+void event_system_startup(struct event_system *event_system);
 
 /**
  * @brief Event system deinitializer

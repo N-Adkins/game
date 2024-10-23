@@ -22,7 +22,6 @@
  */
 struct game {
 	struct application_config config;
-	struct allocator *allocator;
 	struct {
 		void (*init)(struct game *game);
 		void (*deinit)(struct game *game);
