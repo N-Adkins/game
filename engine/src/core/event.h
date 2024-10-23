@@ -89,7 +89,7 @@ void event_system_unregister(struct event_system *event_system,
 			     enum event_tag tag, pfn_event_callback callback);
 
 /**
- * @briefs Fires all listeners from the passed tag
+ * @brief Fires all listeners from the passed tag
  *
  * This calls every listener under the passed tag with the passed payload,
  * and their respective user_data pointers.
