@@ -18,20 +18,32 @@ static void application_window_resized(union event_payload payload,
 	}
 }
 
-static void application_key_pressed(union event_payload payload, void *user_data)
+static void application_key_pressed(union event_payload payload,
+				    void *user_data)
 {
-    LASSERT(user_data != NULL);
-    struct application *app = user_data;
+	LASSERT(user_data != NULL);
+	struct application *app = user_data;
 
-    app->input_state.keyboard[payload.key_pressed.key] = true;
+	app->input_state.keyboard[payload.key_pressed.key] = true;
+
+    if (app->game_state->vtable.key_pressed != NULL) {
+		app->game_state->vtable.key_pressed(
+			app->game_state, payload.key_pressed.key);
+	}
 }
 
-static void application_key_released(union event_payload payload, void *user_data)
+static void application_key_released(union event_payload payload,
+				     void *user_data)
 {
-    LASSERT(user_data != NULL);
-    struct application *app = user_data;
+	LASSERT(user_data != NULL);
+	struct application *app = user_data;
 
-    app->input_state.keyboard[payload.key_released.key] = false;
+	app->input_state.keyboard[payload.key_released.key] = false;
+
+    if (app->game_state->vtable.key_released != NULL) {
+		app->game_state->vtable.key_released(
+			app->game_state, payload.key_released.key);
+	}
 }
 
 LAPI void application_create(struct application *app, struct game *game_state)
@@ -51,15 +63,15 @@ LAPI void application_create(struct application *app, struct game *game_state)
 
 	memory_system_startup();
 
-    input_state_create(&app->input_state);
+	input_state_create(&app->input_state);
 
 	event_system_startup(&app->event_system);
 	event_system_register(&app->event_system, EVENT_TAG_WINDOW_RESIZED,
 			      application_window_resized, app);
-    event_system_register(&app->event_system, EVENT_TAG_KEY_PRESSED,
-                  application_key_pressed, app);
-    event_system_register(&app->event_system, EVENT_TAG_KEY_RELEASED,
-                  application_key_released, app);
+	event_system_register(&app->event_system, EVENT_TAG_KEY_PRESSED,
+			      application_key_pressed, app);
+	event_system_register(&app->event_system, EVENT_TAG_KEY_RELEASED,
+			      application_key_released, app);
 
 	if (game_state->vtable.init != NULL) {
 		game_state->vtable.init(game_state);

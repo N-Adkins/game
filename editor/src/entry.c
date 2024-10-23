@@ -36,6 +36,20 @@ void game_window_resized(struct game *game, i32 width, i32 height)
 	LINFO("Window resized with size (%d, %d)", width, height);
 }
 
+void game_key_pressed(struct game *game, enum keycode keycode)
+{
+    (void)game;
+    (void)keycode;
+    LINFO("Pressed key");
+}
+
+void game_key_released(struct game *game, enum keycode keycode)
+{
+    (void)game;
+    (void)keycode;
+    LINFO("Released key");
+}
+
 void configure_game(struct game *game)
 {
 	game->config = (struct application_config){
@@ -50,4 +64,6 @@ void configure_game(struct game *game)
 	game->vtable.fixed_step = &game_fixed_step;
 	game->vtable.render_step = &game_render_step;
 	game->vtable.window_resized = &game_window_resized;
+    game->vtable.key_pressed = &game_key_pressed;
+    game->vtable.key_released = &game_key_released;
 }

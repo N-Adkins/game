@@ -38,10 +38,10 @@ struct application_config {
  */
 struct application {
 	struct event_system event_system; /**< Manages events */
-    struct input_state input_state; /**< Keeps track of held keys */
+	struct input_state input_state;	  /**< Keeps track of held keys */
 	struct platform platform_state; /**< Owning reference to platform state */
 	struct game *game_state; /**< Non-owning reference to game state */
-    f32 last_time; /**< Used for delta_time, is the last frame's time in ms */
+	f32 last_time; /**< Used for delta_time, is the last frame's time in ms */
 	i32 width;     /**< Current window width */
 	i32 height;    /**< Current window height */
 	b8 is_running; /**< True if the app is running, false if not */

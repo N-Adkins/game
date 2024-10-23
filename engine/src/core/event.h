@@ -16,8 +16,8 @@
  */
 enum event_tag {
 	EVENT_TAG_WINDOW_RESIZED,
-    EVENT_TAG_KEY_PRESSED,
-    EVENT_TAG_KEY_RELEASED,
+	EVENT_TAG_KEY_PRESSED,
+	EVENT_TAG_KEY_RELEASED,
 
 	EVENT_TAG_MAX_TAGS,
 };
@@ -33,13 +33,13 @@ union event_payload {
 		i32 height;
 	} window_resized;
 
-    struct {
-        enum keycode key;
-    } key_pressed;
+	struct {
+		enum keycode key;
+	} key_pressed;
 
-    struct {
-        enum keycode key;
-    } key_released;
+	struct {
+		enum keycode key;
+	} key_released;
 };
 
 /**

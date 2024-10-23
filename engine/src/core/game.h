@@ -11,6 +11,7 @@
  */
 
 #include <core/application.h>
+#include <core/input.h>
 #include <defines.h>
 
 /**
@@ -31,6 +32,8 @@ struct game {
 		void (*render_step)(struct game *game, f32 delta_time);
 		void (*window_resized)(struct game *game, i32 width,
 				       i32 height);
+        void (*key_pressed)(struct game *game, enum keycode keycode);
+        void (*key_released)(struct game *game, enum keycode keycode);
 	} vtable;
 	void *state; /**< Arbitrary state pointer */
 };
