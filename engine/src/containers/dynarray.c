@@ -5,15 +5,11 @@
 
 LAPI struct dynarray dynarray_create(u64 stride)
 {
-	LASSERT(allocator != NULL);
-
 	return dynarray_create_capacity(DYNARRAY_DEFAULT_CAPACITY, stride);
 }
 
 LAPI struct dynarray dynarray_create_capacity(u64 capacity, u64 stride)
 {
-	LASSERT(allocator != NULL);
-
 	void *values = engine_alloc(stride * capacity, MEMORY_TAG_DYNARRAY);
 	struct dynarray array = {
 		.capacity = capacity,

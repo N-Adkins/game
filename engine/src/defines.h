@@ -171,8 +171,8 @@ typedef _Bool b8;
 /**
  * @brief Returns parent pointer to pointer of child of struct
  *
- * This is only type-checked -time if statement expressions are 
- * supported by the compiler being used
+ * This is only type-checked if statement expressions are supported 
+ * by the compiler being used
  */
 #ifdef LCOMPILER_CLANG_OR_GCC // Statement expressions supported, type-safe
 #define LCONTAINER_OF(ptr, type, member)                                        \

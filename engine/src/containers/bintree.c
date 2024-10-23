@@ -109,7 +109,6 @@ static struct bintree_node *bintree_delete_node(struct bintree *tree,
 LAPI struct bintree bintree_create(pfn_bintree_compare compare_func,
 				   pfn_bintree_free free_func)
 {
-	LASSERT(allocator != NULL);
 	LASSERT(compare_func != NULL);
 	LASSERT(free_func != NULL);
 

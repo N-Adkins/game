@@ -17,8 +17,6 @@ void memory_system_startup(void)
 
 LAPI void memory_system_shutdown(void)
 {
-	LASSERT(allocator != NULL);
-
 	if (memory_state.total_bytes > 0) {
 		LWARN("Memory has leaked, 0x%04llX bytes in use at allocator destruction, dumping usage",
 		      memory_state.total_bytes);
@@ -30,7 +28,7 @@ LAPI void memory_system_shutdown(void)
 	for (u64 i = 0; i < LARRAY_LENGTH(memory_state.tag_bytes); i++) {
 		tag_total += memory_state.tag_bytes[i];
 	}
-	LASSERT(allocator->total_bytes == tag_total);
+	LASSERT(memory_state.total_bytes == tag_total);
 	(void)tag_total;
 }
 
