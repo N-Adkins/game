@@ -8,6 +8,7 @@
  */
 
 #include <containers/dynarray.h>
+#include <core/input.h>
 #include <defines.h>
 
 /**
@@ -15,6 +16,8 @@
  */
 enum event_tag {
 	EVENT_TAG_WINDOW_RESIZED,
+    EVENT_TAG_KEY_PRESSED,
+    EVENT_TAG_KEY_RELEASED,
 
 	EVENT_TAG_MAX_TAGS,
 };
@@ -29,6 +32,14 @@ union event_payload {
 		i32 width;
 		i32 height;
 	} window_resized;
+
+    struct {
+        enum keycode key;
+    } key_pressed;
+
+    struct {
+        enum keycode key;
+    } key_released;
 };
 
 /**

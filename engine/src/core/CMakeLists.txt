@@ -3,4 +3,5 @@ target_sources(engine PRIVATE
     memory.c
     application.c
     event.c
+    input.c
 )

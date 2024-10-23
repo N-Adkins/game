@@ -13,12 +13,15 @@
 #include <core/assert.h>
 #include <core/event.h>
 #include <core/logger.h>
+#include <core/input.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include <X11/Xlib.h>
 #include <X11/X.h>
+#include <X11/XKBlib.h>
+#include <X11/keysym.h>
 #include <sys/time.h>
 #include <pthread.h>
 #include <signal.h>
@@ -39,6 +42,9 @@ struct platform_impl {
 struct mutex_impl {
 	pthread_mutex_t mutex;
 };
+
+// Prototypes
+b8 keysym_to_keycode(KeySym key_sym, enum keycode *key_code);
 
 void platform_startup(struct platform *platform,
 		      struct event_system *event_system, const char *app_name,
@@ -143,6 +149,7 @@ b8 platform_poll_events(struct platform platform)
 	while (XPending(platform.impl->display)) {
 		XNextEvent(platform.impl->display, &event);
 		switch (event.type) {
+
 		case ResizeRequest:
 			payload.window_resized.width =
 				event.xresizerequest.width;
@@ -151,12 +158,32 @@ b8 platform_poll_events(struct platform platform)
 			event_system_fire(platform.impl->event_system,
 					  EVENT_TAG_WINDOW_RESIZED, payload);
 			break;
+
 		case ClientMessage:
 			if (event.xclient.data.l[0] ==
 			    (long)platform.impl->wm_delete) {
 				stay_open = false;
 			}
 			break;
+
+        case KeyPress: {
+            const KeySym key_sym = XkbKeycodeToKeysym(platform.impl->display, event.xkey.keycode, 0, event.xkey.state & ShiftMask ? 1 : 0);
+            enum keycode keycode = 0;
+            if (keysym_to_keycode(key_sym, &keycode)) {
+                payload.key_pressed.key = keycode;
+                event_system_fire(platform.impl->event_system, EVENT_TAG_KEY_PRESSED, payload);
+            }
+        } break;
+
+        case KeyRelease: {
+            const KeySym key_sym = XkbKeycodeToKeysym(platform.impl->display, event.xkey.keycode, 0, event.xkey.state & ShiftMask ? 1 : 0);
+            enum keycode keycode = 0;
+            if (keysym_to_keycode(key_sym, &keycode)) {
+                payload.key_pressed.key = keycode;
+                event_system_fire(platform.impl->event_system, EVENT_TAG_KEY_RELEASED, payload);
+            }
+        } break;
+
 		default:
 			break;
 		}
@@ -202,7 +229,7 @@ u64 platform_time_ms(void)
 	struct timeval time;
 	gettimeofday(&time, NULL);
 
-	const u64 time_in_ms = time.tv_sec * 1000LL + time.tv_usec / 1000LL;
+	const u64 time_in_ms = (time.tv_sec * 1000LL) + (time.tv_usec / 1000LL);
 
 	return time_in_ms %
 	       100000; // We mod it to save some bits, we have no use for the big part of the value.
@@ -342,6 +369,93 @@ void mutex_unlock(struct mutex mutex)
 		LERROR("Failed to unlock pthread mutex for Linux: %s",
 		       strerror(err));
 	}
+}
+
+/**
+ * Put this at the bottom to reduce clutter honestly
+ */
+b8 keysym_to_keycode(KeySym key_sym, enum keycode *key_code)
+{
+    b8 valid_key = true;
+    enum keycode key_code_out = 0;
+
+    switch (key_sym) {
+    case 'a': key_code_out = KEYCODE_A; break;
+    case 'b': key_code_out = KEYCODE_B; break;
+    case 'c': key_code_out = KEYCODE_C; break;
+    case 'd': key_code_out = KEYCODE_D; break;
+    case 'e': key_code_out = KEYCODE_E; break;
+    case 'f': key_code_out = KEYCODE_F; break;
+    case 'g': key_code_out = KEYCODE_G; break;
+    case 'h': key_code_out = KEYCODE_H; break;
+    case 'i': key_code_out = KEYCODE_I; break;
+    case 'j': key_code_out = KEYCODE_J; break;
+    case 'k': key_code_out = KEYCODE_K; break;
+    case 'l': key_code_out = KEYCODE_L; break;
+    case 'm': key_code_out = KEYCODE_M; break;
+    case 'n': key_code_out = KEYCODE_N; break;
+    case 'o': key_code_out = KEYCODE_O; break;
+    case 'p': key_code_out = KEYCODE_P; break;
+    case 'q': key_code_out = KEYCODE_Q; break;
+    case 'r': key_code_out = KEYCODE_R; break;
+    case 's': key_code_out = KEYCODE_S; break;
+    case 't': key_code_out = KEYCODE_T; break;
+    case 'u': key_code_out = KEYCODE_U; break;
+    case 'v': key_code_out = KEYCODE_V; break;
+    case 'w': key_code_out = KEYCODE_W; break;
+    case 'x': key_code_out = KEYCODE_X; break;
+    case 'y': key_code_out = KEYCODE_Y; break;
+    case 'z': key_code_out = KEYCODE_Z; break;
+
+    case XK_0: key_code_out = KEYCODE_0; break;
+    case XK_1: key_code_out = KEYCODE_1; break;
+    case XK_2: key_code_out = KEYCODE_2; break;
+    case XK_3: key_code_out = KEYCODE_3; break;
+    case XK_4: key_code_out = KEYCODE_4; break;
+    case XK_5: key_code_out = KEYCODE_5; break;
+    case XK_6: key_code_out = KEYCODE_6; break;
+    case XK_7: key_code_out = KEYCODE_7; break;
+    case XK_8: key_code_out = KEYCODE_8; break;
+    case XK_9: key_code_out = KEYCODE_9; break;
+
+    case XK_F1: key_code_out = KEYCODE_F1; break;
+    case XK_F2: key_code_out = KEYCODE_F2; break;
+    case XK_F3: key_code_out = KEYCODE_F3; break;
+    case XK_F4: key_code_out = KEYCODE_F4; break;
+    case XK_F5: key_code_out = KEYCODE_F5; break;
+    case XK_F6: key_code_out = KEYCODE_F6; break;
+    case XK_F7: key_code_out = KEYCODE_F7; break;
+    case XK_F8: key_code_out = KEYCODE_F8; break;
+    case XK_F9: key_code_out = KEYCODE_F9; break;
+    case XK_F10: key_code_out = KEYCODE_F10; break;
+    case XK_F11: key_code_out = KEYCODE_F11; break;
+    case XK_F12: key_code_out = KEYCODE_F12; break;
+
+    case XK_Shift_L: key_code_out = KEYCODE_SHIFT; break;
+    case XK_Control_L: key_code_out = KEYCODE_CTRL; break;
+    case XK_Alt_L: key_code_out = KEYCODE_ALT; break;
+    case XK_Caps_Lock: key_code_out = KEYCODE_CAPSLOCK; break;
+    case XK_Tab: key_code_out = KEYCODE_TAB; break;
+    case XK_Return: key_code_out = KEYCODE_ENTER; break;
+    case XK_space: key_code_out = KEYCODE_SPACE; break;
+    case XK_BackSpace: key_code_out = KEYCODE_BACKSPACE; break;
+    case XK_Escape: key_code_out = KEYCODE_ESC; break;
+
+    case XK_Left: key_code_out = KEYCODE_LEFT; break;
+    case XK_Right: key_code_out = KEYCODE_RIGHT; break;
+    case XK_Up: key_code_out = KEYCODE_UP; break;
+    case XK_Down: key_code_out = KEYCODE_DOWN; break;
+
+    default: valid_key = false; break;
+    }
+
+    if (valid_key) {
+        LINFO("FOUND VALID KEY!");
+        *key_code = key_code_out;
+        return true;
+    }
+
+    return false;
 }
 
 #endif
