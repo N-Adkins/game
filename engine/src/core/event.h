@@ -22,7 +22,7 @@ enum event_tag {
 /**
  * @brief The data sent to an event
  *
- * There should be one payload union member for each event_taag.
+ * There should be one payload union member for each event_tag.
  */
 union event_payload {
 	struct {
