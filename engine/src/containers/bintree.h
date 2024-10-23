@@ -65,10 +65,10 @@ typedef void (*pfn_bintree_free)(struct bintree_node *node);
  * };
  */
 struct bintree {
-	pfn_bintree_compare compare_func;
-	pfn_bintree_free free_func;
-	struct bintree_node *root;
-	u64 size;
+	pfn_bintree_compare compare_func; /**< Comparator for internal values */
+	pfn_bintree_free free_func; /**< Run at destruction for each value*/
+	struct bintree_node *root;  /**< Actual tree's root */
+	u64 size;		    /**< Current number of nodes in the tree */
 };
 
 /**

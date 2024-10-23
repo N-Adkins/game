@@ -12,17 +12,29 @@
 #include <core/memory.h>
 #include <defines.h>
 
+/**
+ * @brief The initial allocation size if none is specified for a
+ * a dynarray
+ */
 #define DYNARRAY_DEFAULT_CAPACITY 16
+
+/**
+ * @brief The amount that the capacity will be multiplied by once a dynarray
+ * is full enough
+ */
 #define DYNARRAY_RESIZE_FACTOR 2
 
 /**
  * @brief Dynamic array container
+ *
+ * To work generically this stores a "stride" field that denotes the size of
+ * the type you want to store. 
  */
 struct dynarray {
-	u64 capacity;
-	u64 length;
-	u64 stride; // type size in bytes
-	void *values; // values[0] guaranteed to be first element in array
+	u64 capacity; /**< Current value buffer size */
+	u64 length;   /**< Current number of elements in array */
+	u64 stride;   /**< Type size in bytes */
+	void *values; /**< Actual allocation, *values guaranteed to be first element in array */
 };
 
 /**
@@ -32,22 +44,22 @@ struct dynarray {
  * DYNARRAY_DEFUALT_CAPACITY capacity, it is just a wrapper to a call
  * to dynarray_create_capacity with that value.
  *
- * This **does** allocate.
+ * This **does** allocate memory (subject to change).
  */
 LAPI struct dynarray dynarray_create(u64 stride);
 
 /**
  * @brief Initialize dynamic array with passed capacity
  *
- * This **does** allocate.
+ * This **does** allocate memory.
  */
 LAPI struct dynarray dynarray_create_capacity(u64 capacity, u64 stride);
 
 /**
  * @brief Frees all memory in a dynarray
  *
- * This does **not** attempt to do anything with the actual values, that is 
- * completely up to the caller.
+ * This does **not** attempt to do anything to free the actual values, that is 
+ * completely the responsibility of the caller.
  */
 LAPI void dynarray_destroy(struct dynarray *array);
 

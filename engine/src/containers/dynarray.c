@@ -78,6 +78,10 @@ LAPI void dynarray_remove(struct dynarray *array, u64 index)
 		return;
 	}
 
+	// This segment takes all elements in the array **after** the one being
+	// deleted and copies them all back by one index, effectively deleting
+	// the passed index.
+
 	const u64 size_after = array->length - index - 1;
 	char *dest = ((char *)array->values) + index;
 	const char *source = ((char *)array->values) + index + 1;

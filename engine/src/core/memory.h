@@ -24,7 +24,7 @@
  * it is used
  */
 enum memory_tag {
-	MEMORY_TAG_UNKNOWN,
+	MEMORY_TAG_UNKNOWN, /**< Avoid using this, mostly for debugging.  */
 	MEMORY_TAG_ARRAY,
 	MEMORY_TAG_DYNARRAY,
 	MEMORY_TAG_STRING,
@@ -32,7 +32,14 @@ enum memory_tag {
 	MEMORY_TAG_MAX_TAGS,
 };
 
+/**
+ * Initialize global memory state
+ */
 void memory_system_startup(void);
+
+/**
+ * Deinitialize global memory state
+ */
 void memory_system_shutdown(void);
 
 /**
@@ -40,6 +47,7 @@ void memory_system_shutdown(void);
  *
  * This should be used pretty much anywhere memory is allocated.
  *
+ * @param size Allocation size in bytes
  * @param tag Allocation type
  */
 LAPI void *engine_alloc(u64 size, enum memory_tag tag);
@@ -50,6 +58,9 @@ LAPI void *engine_alloc(u64 size, enum memory_tag tag);
  * This must be called once for every engine_allocate function.
  * The tag parameter must be the same as engine_allocate.
  *
+ * @param ptr Pointer to free
+ * @param size Allocation size in bytes, must be same as equivalent 
+ * engine_alloc call.
  * @param tag Allocation type
  */
 LAPI void engine_free(void *ptr, u64 size, enum memory_tag tag);
@@ -58,6 +69,9 @@ LAPI void engine_free(void *ptr, u64 size, enum memory_tag tag);
  * @brief Zeroes memory
  *
  * Sets "size" bytes from ptr to zero
+ *
+ * @param ptr Pointer to zero out
+ * @param size Byte count that is to be zeroed
  */
 LAPI void *engine_zero_memory(void *ptr, u64 size);
 
@@ -65,7 +79,7 @@ LAPI void *engine_zero_memory(void *ptr, u64 size);
  * @brief Copies memory
  *
  * Copies "size" bytes from source to dest. Source and dest memory blocks
- * must not overlap.
+ * **must not** overlap.
  */
 LAPI void *engine_copy_memory(void *restrict dest, const void *restrict source,
 			      u64 size);
@@ -74,7 +88,8 @@ LAPI void *engine_copy_memory(void *restrict dest, const void *restrict source,
  * @brief Moves memory
  *
  * Copies "size" bytes from source to dest. Source and dest memory blocks
- * may overlap.
+ * **may** overlap. There is overhead compared to engine_copy_memory due to
+ * the allowance of overlapping blocks.
  */
 LAPI void *engine_move_memory(void *dest, const void *source, u64 size);
 

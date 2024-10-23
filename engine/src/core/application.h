@@ -21,11 +21,11 @@
  * when the application layer starts.
  */
 struct application_config {
-	const char *app_name;
-	i32 start_x;
-	i32 start_y;
-	i32 start_width;
-	i32 start_height;
+	const char *app_name; /**< The text at the top of the window */
+	i32 start_x;	      /**< Window starting X position */
+	i32 start_y;	      /**< Window starting Y position */
+	i32 start_width;      /**< Window starting width */
+	i32 start_height;     /**< Windodw starting height */
 };
 
 /**
@@ -36,14 +36,14 @@ struct application_config {
  * that game function pointers can be called
  */
 struct application {
-	struct event_system event_system;
-	struct platform platform_state;
-	struct game *game_state;
-	f32 last_time; // for deltatime
-	i32 width;
-	i32 height;
-	b8 is_running;
-	b8 is_paused;
+	struct event_system event_system; /**< Manages events */
+	struct platform platform_state; /**< Owning reference to platform state */
+	struct game *game_state; /**< Non-owning reference to game state */
+	f32 last_time; /**< Used for delta_time, is the last frame's time in ms */
+	i32 width;     /**< Current window width */
+	i32 height;    /**< Current window height */
+	b8 is_running; /**< True if the app is running, false if not */
+	b8 is_paused;  /**< True if the app is suspended, false if not */
 };
 
 /**

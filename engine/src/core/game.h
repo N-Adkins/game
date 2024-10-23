@@ -19,6 +19,8 @@
  * This holds *all* state that is to be used within the game. There is an opaque
  * handle provided for the game to hold an arbitrary state struct. The function pointers
  * are called at self-explanatory points of execution.
+ *
+ * All function pointers may or may not be implemented - they are optional.
  */
 struct game {
 	struct application_config config;
@@ -30,5 +32,5 @@ struct game {
 		void (*window_resized)(struct game *game, i32 width,
 				       i32 height);
 	} vtable;
-	void *state; // Internal game state
+	void *state; /**< Arbitrary state pointer */
 };

@@ -2,7 +2,7 @@
 
 #include <core/assert.h>
 
-/*
+/**
  * "Private" functions for bintree
  */
 static struct bintree_node *bintree_right_rotate(struct bintree_node *node)
@@ -23,6 +23,11 @@ static struct bintree_node *bintree_left_rotate(struct bintree_node *node)
 	return right;
 }
 
+/**
+ * TODO: Profile this
+ *
+ * @brief Hashes the passed pointer to use as the treap weight.
+ */
 static u32 bintree_hash_ptr(const struct bintree_node *node)
 {
 	u32 hash = (u32)((u64)(uintptr_t)(node) >> 32) ^
@@ -33,6 +38,10 @@ static u32 bintree_hash_ptr(const struct bintree_node *node)
 	return hash;
 }
 
+/**
+ * Performs a post-order traversal, freeing each node after both child
+ * subtrees are freed.
+ */
 static void bintree_destroy_node(struct bintree *tree,
 				 struct bintree_node *node)
 {
