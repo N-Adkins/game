@@ -26,9 +26,9 @@ static void application_key_pressed(union event_payload payload,
 
 	app->input_state.keyboard[payload.key_pressed.key] = true;
 
-    if (app->game_state->vtable.key_pressed != NULL) {
-		app->game_state->vtable.key_pressed(
-			app->game_state, payload.key_pressed.key);
+	if (app->game_state->vtable.key_pressed != NULL) {
+		app->game_state->vtable.key_pressed(app->game_state,
+						    payload.key_pressed.key);
 	}
 }
 
@@ -40,9 +40,9 @@ static void application_key_released(union event_payload payload,
 
 	app->input_state.keyboard[payload.key_released.key] = false;
 
-    if (app->game_state->vtable.key_released != NULL) {
-		app->game_state->vtable.key_released(
-			app->game_state, payload.key_released.key);
+	if (app->game_state->vtable.key_released != NULL) {
+		app->game_state->vtable.key_released(app->game_state,
+						     payload.key_released.key);
 	}
 }
 
