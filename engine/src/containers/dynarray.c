@@ -20,6 +20,13 @@ LAPI struct dynarray dynarray_create_capacity(u64 capacity, u64 stride)
 	return array;
 }
 
+LAPI struct dynarray dynarray_create_length(u64 length, u64 stride)
+{
+	struct dynarray array = dynarray_create_capacity(length, stride);
+	array.length = length;
+	return array;
+}
+
 LAPI void dynarray_destroy(struct dynarray *array)
 {
 	LASSERT(array != NULL);

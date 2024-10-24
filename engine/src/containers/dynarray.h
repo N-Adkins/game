@@ -49,11 +49,21 @@ struct dynarray {
 LAPI struct dynarray dynarray_create(u64 stride);
 
 /**
- * @brief Initialize dynamic array with passed capacity
+ * @brief Initialize dynamic array with passed capacity, but not
+ * the passed length. This should be used as an optimization.
  *
  * This **does** allocate memory.
  */
 LAPI struct dynarray dynarray_create_capacity(u64 capacity, u64 stride);
+
+/**
+ * @brief Initialize dynamic array with passed capacity **and**
+ * the passed length. This should be used when you know how large
+ * the array should be in advance.
+ *
+ * This **does** allocate memory.
+ */
+LAPI struct dynarray dynarray_create_length(u64 length, u64 stride);
 
 /**
  * @brief Frees all memory in a dynarray

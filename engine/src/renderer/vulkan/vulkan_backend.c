@@ -5,6 +5,7 @@
 #include <containers/dynarray.h>
 #include <core/assert.h>
 #include <core/memory.h>
+#include <utils/string.h>
 #include <defines.h>
 
 #include <vulkan/vulkan.h>
@@ -14,13 +15,48 @@ struct vulkan_backend {
 	VkInstance instance;
 };
 
+static const b8 ENABLE_VALIDATION_LAYERS =
+#ifdef LENGINE_DEBUG
+	true
+#else
+	false
+#endif
+	;
+
 /**
- * @brief Checks for vulkan call errors
+ * Requested validation layer string names
+ */
+static const char *const VALIDATION_LAYERS[] = {
+	"VK_LAYER_KHRONOS_validation",
+};
+
+/**
+ * Placeholder for when we make an actual allocator.
+ */
+static void *vulkan_allocator = NULL;
+
+/**
+ * @brief Checks for vulkan call errors safely
+ *
+ * If the passed call fails, it prints the entire call to the error log.
+ * Doesn't propogate any result code.
+ */
+#define VK_CALL(vk_call)                                                  \
+	do {                                                              \
+		const LTYPEOF(vk_call) LUNIQUE_ID(0) = vk_call;           \
+		if (LUNIQUE_ID(0) != VK_SUCCESS) {                        \
+			LERROR("Vulkan call failed with %s : %s",         \
+			       string_VkResult(LUNIQUE_ID(0)), #vk_call); \
+		}                                                         \
+	} while (0)
+
+/**
+ * @brief Checks for vulkan call errors and returns an error it does
  *
  * If the passed call fails, it prints the entire call to the error log
  * and returns 0.
  */
-#define VK_CALL(vk_call)                                                  \
+#define VK_CALL_RETURN(vk_call)                                           \
 	do {                                                              \
 		const LTYPEOF(vk_call) LUNIQUE_ID(0) = vk_call;           \
 		if (LUNIQUE_ID(0) != VK_SUCCESS) {                        \
@@ -30,15 +66,39 @@ struct vulkan_backend {
 		}                                                         \
 	} while (0)
 
-static const b8 ENABLE_VALIDATION_LAYERS =
-#ifdef LENGINE_DEBUG
-	true
-#else
-	false
-#endif
-	;
+static b8 vulkan_check_validation_layer_support(void)
+{
+	u32 layer_count = 0;
+	VK_CALL(vkEnumerateInstanceLayerProperties(&layer_count, NULL));
 
-static void *vulkan_allocator = NULL;
+	struct dynarray available_layers =
+		dynarray_create_length(layer_count, sizeof(VkLayerProperties));
+	VK_CALL(vkEnumerateInstanceLayerProperties(&layer_count,
+						   available_layers.values));
+
+	for (u64 i = 0; i < LARRAY_LENGTH(VALIDATION_LAYERS); i++) {
+		b8 layer_found = false;
+		const char *required_layer = VALIDATION_LAYERS[i];
+
+		for (u64 j = 0; j < layer_count; j++) {
+			VkLayerProperties available_layer = {};
+			dynarray_get(&available_layers, j, &available_layer);
+			if (strings_equal(required_layer,
+					  available_layer.layerName)) {
+				layer_found = true;
+				break;
+			}
+		}
+
+		if (!layer_found) {
+			dynarray_destroy(&available_layers);
+			return false;
+		}
+	}
+
+	dynarray_destroy(&available_layers);
+	return true;
+}
 
 LRESULT vulkan_backend_startup(struct renderer_backend *renderer_backend,
 			       const char *app_name)
@@ -47,6 +107,14 @@ LRESULT vulkan_backend_startup(struct renderer_backend *renderer_backend,
 	LASSERT(app_name != NULL);
 
 	struct vulkan_backend *vulkan = renderer_backend->impl;
+
+	if (ENABLE_VALIDATION_LAYERS) {
+		LINFO("Validation layers enabled, checking support");
+		if (!vulkan_check_validation_layer_support()) {
+			LERROR("Failed to find all requested validation layers");
+			return LRESULT_FAILURE;
+		}
+	}
 
 	VkApplicationInfo app_info = {
 		.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO,
@@ -68,8 +136,16 @@ LRESULT vulkan_backend_startup(struct renderer_backend *renderer_backend,
 		.ppEnabledExtensionNames =
 			(const char **)required_extensions.values,
 		.enabledExtensionCount = required_extensions.length,
-		.enabledLayerCount = 0, // TODO
 	};
+
+	if (ENABLE_VALIDATION_LAYERS) {
+		instance_create_info.ppEnabledLayerNames = VALIDATION_LAYERS;
+		instance_create_info.enabledLayerCount =
+			LARRAY_LENGTH(VALIDATION_LAYERS);
+	} else {
+		instance_create_info.ppEnabledLayerNames = NULL;
+		instance_create_info.enabledLayerCount = 0;
+	}
 
 	VkInstance instance = {};
 	VK_CALL(vkCreateInstance(&instance_create_info, vulkan_allocator,

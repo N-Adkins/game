@@ -1,4 +1,3 @@
-#include "core/memory.h"
 #include <entry.h>
 #include <core/logger.h>
 
@@ -9,13 +8,13 @@ struct game_state {
 void game_init(struct game *game)
 {
     LINFO("Game initializing");
-    game->state = engine_alloc(sizeof(struct game_state), MEMORY_TAG_UNKNOWN);
+    (void)game;
 }
 
 void game_deinit(struct game *game)
 {
 	LINFO("Game deinitializing");
-	engine_free(game->state, sizeof(struct game_state), MEMORY_TAG_UNKNOWN);
+	(void)game;
 }
 
 void game_fixed_step(struct game *game, f32 delta_time)
