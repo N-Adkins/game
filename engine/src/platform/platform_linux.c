@@ -251,6 +251,11 @@ LAPI void platform_debug_break(void)
 	(void)raise(SIGTRAP);
 }
 
+void platform_get_required_extensions(struct dynarray *array)
+{
+	dynarray_push(array, &"VK_KHR_xlib_surface");
+}
+
 // On linux these are all just going to basically be glibc wrappers.
 
 void *platform_allocate(u64 size, b8 aligned)

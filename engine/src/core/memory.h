@@ -27,7 +27,7 @@ enum memory_tag {
 	MEMORY_TAG_UNKNOWN, /**< Avoid using this, mostly for debugging.  */
 	MEMORY_TAG_ARRAY,
 	MEMORY_TAG_DYNARRAY,
-	MEMORY_TAG_STRING,
+	MEMORY_TAG_VULKAN,
 
 	MEMORY_TAG_MAX_TAGS,
 };

@@ -83,9 +83,10 @@ LAPI void *engine_set_memory(void *dest, u8 value, u64 size)
 LAPI void engine_dump_memory_usage(void)
 {
 	const char *tag_strings[] = {
-		"UNKNOWN  ",
-		"ARRAY    ",
-		"DYNARRAY ",
+		[MEMORY_TAG_UNKNOWN] = "UNKNOWN  ",
+		[MEMORY_TAG_ARRAY] = "ARRAY    ",
+		[MEMORY_TAG_DYNARRAY] = "DYNARRAY ",
+		[MEMORY_TAG_VULKAN] = "VULKAN ",
 		"STRING   ",
 	};
 

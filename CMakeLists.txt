@@ -41,5 +41,5 @@ endif()
 
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
     target_compile_definitions(engine PRIVATE LENGINE_DEBUG)
-    target_compile_definitions(editor PRIVATE LENGINE_DEBUG)
+    target_compile_definitions(editor PRIVATE LEDITOR_DEBUG)
 endif()

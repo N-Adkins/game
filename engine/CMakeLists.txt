@@ -9,7 +9,9 @@ target_compile_definitions(engine PRIVATE LENGINE_BUILD)
 
 if (NOT WIN32)
     find_package(X11 REQUIRED)
-    target_link_libraries(engine PRIVATE ${X11_LIBRARIES})
+    find_package(Vulkan REQUIRED)
+    target_link_libraries(engine PRIVATE ${X11_LIBRARIES} Vulkan::Vulkan)
+    target_include_directories(engine PRIVATE ${X11_INCLUDE_DIRS} ${Vulkan_INCLUDE_DIRS})
 
     target_compile_options(engine PRIVATE
         -Wall -Wformat -Wextra -Werror -fdiagnostics-color=always 

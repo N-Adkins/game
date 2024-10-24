@@ -9,6 +9,7 @@
  * above the platform layer.
  */
 
+#include <renderer/renderer_backend.h>
 #include <platform/platform.h>
 #include <core/event.h>
 #include <core/memory.h>
@@ -40,6 +41,8 @@ struct application {
 	struct event_system event_system; /**< Manages events */
 	struct input_state input_state;	  /**< Keeps track of held keys */
 	struct platform platform_state; /**< Owning reference to platform state */
+	struct renderer_backend
+		renderer_backend; /**< TODO: Delete from here, this is for testing */
 	struct game *game_state; /**< Non-owning reference to game state */
 	f32 last_time; /**< Used for delta_time, is the last frame's time in ms */
 	i32 width;     /**< Current window width */

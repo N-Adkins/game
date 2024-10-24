@@ -2,6 +2,7 @@
 
 #include "core/event.h"
 #include "core/memory.h"
+#include "renderer/renderer_backend.h"
 #include <core/assert.h>
 #include <core/game.h>
 
@@ -63,6 +64,10 @@ LAPI void application_create(struct application *app, struct game *game_state)
 
 	memory_system_startup();
 
+	(void)renderer_backend_startup(RENDERER_BACKEND_VULKAN,
+				       game_state->config.app_name,
+				       &app->renderer_backend);
+
 	input_state_create(&app->input_state);
 
 	event_system_startup(&app->event_system);
@@ -84,6 +89,7 @@ LAPI void application_destroy(struct application *app)
 		app->game_state->vtable.deinit(app->game_state);
 	}
 	event_system_shutdown(&app->event_system);
+	renderer_backend_shutdown(&app->renderer_backend);
 	memory_system_shutdown();
 	platform_shutdown(app->platform_state);
 }

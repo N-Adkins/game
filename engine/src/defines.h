@@ -28,6 +28,14 @@ typedef _Bool b8;
 #define false ((b8)0)
 
 /**
+ * Use these for propogating errors.
+ */
+typedef enum {
+	LRESULT_SUCCESS = false,
+	LRESULT_FAILURE = true,
+} LRESULT;
+
+/**
  * @brief Returns the number of elements in a statically-sized array.
  */
 #define LARRAY_LENGTH(x) (sizeof(x) / sizeof((x)[0]))

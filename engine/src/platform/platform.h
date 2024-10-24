@@ -29,17 +29,15 @@ enum terminal_color {
 /**
  * @brief Wrapper for internal platform state
  */
-typedef struct platform_impl platform_impl;
 struct platform {
-	platform_impl *impl;
+	struct platform_impl *impl;
 };
 
 /**
  * @brief Wrapper for internal platform mutex
  */
-typedef struct mutex_impl mutex_impl;
 struct mutex {
-	mutex_impl *impl;
+	struct mutex_impl *impl;
 };
 
 /*
@@ -119,6 +117,13 @@ u64 platform_time_ms(void);
  * break for a debugger. Otherwise, aborts.
  */
 LAPI void platform_debug_break(void);
+
+/**
+ * @brief Returns the required vulkan extensions for the platform
+ *
+ * Pushes the required extensions to the passed dynarray.
+ */
+void platform_get_required_extensions(struct dynarray *array);
 
 /*
 The main justification for these memory functions is the case of a console / strange platform.
