@@ -120,6 +120,8 @@ void platform_startup(struct platform *platform,
 		return;
 	}
 
+    XAutoRepeatOff(linux_impl->display);
+
 	if (XFlush(linux_impl->display) <= 0) {
 		LFATAL("Failed to flush X11");
 		return;
@@ -131,6 +133,8 @@ void platform_shutdown(struct platform platform)
 	LASSERT(platform.impl != NULL);
 
 	LINFO("Shutting down the Linux platform state");
+
+    XAutoRepeatOn(platform.impl->display);
 
 	XDestroyWindow(platform.impl->display, platform.impl->window);
 	XCloseDisplay(platform.impl->display);
